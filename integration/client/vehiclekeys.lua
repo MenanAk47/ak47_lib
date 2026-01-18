@@ -46,6 +46,14 @@ Bridge.GiveVehicleKey = function(plate, vehicle, virtual)
     end
 end
 
+lib.callback.register('ak47_bridge:callback:client:GiveVehicleKey', function( plate, vehNetId, virtual )
+    local vehicle = nil
+    if NetworkDoesNetworkIdExist(vehNetId) then
+        vehicle = NetToVeh(vehNetId)
+    end
+    return Bridge.GiveVehicleKey(plate, vehicle, virtual)
+end)
+
 Bridge.RemoveVehicleKey = function(plate, vehicle, virtual)
     if Config.VehicleKey == 'ak47_vehiclekeys' then
         if virtual then
@@ -72,3 +80,11 @@ Bridge.RemoveVehicleKey = function(plate, vehicle, virtual)
 
     end
 end
+
+lib.callback.register('ak47_bridge:callback:client:RemoveVehicleKey', function( plate, vehNetId, virtual )
+    local vehicle = nil
+    if NetworkDoesNetworkIdExist(vehNetId) then
+        vehicle = NetToVeh(vehNetId)
+    end
+    return Bridge.RemoveVehicleKey(plate, vehicle, virtual)
+end)
