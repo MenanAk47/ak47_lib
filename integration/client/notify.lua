@@ -18,4 +18,4 @@ Bridge.Notify = function(msg, type, duration)
 end
 
 -- Don't change below
-RegisterNetEvent('ak47_bridge:notify', Bridge.Notify)
+RegisterNetEvent('ak47_bridge:client:Notify', Bridge.Notify)

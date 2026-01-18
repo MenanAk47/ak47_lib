@@ -10,7 +10,7 @@ local function CalculateLastStand(target)
             return true
         end
 
-        return lib.callback.await('ak47_bridge:callback:getmetavalue', nil, target, 'inlaststand')
+        return Bridge.GetTargetMetaValue(target, 'inlaststand')
     else
         if (GetResourceState('ak47_ambulancejob') == 'started' or GetResourceState('ak47_qb_ambulancejob') == 'started') and LocalPlayer.state.down then
             return true
@@ -39,7 +39,7 @@ local function CalculateIsDead(target)
             return Player(target).state.isDead
         end
 
-        return lib.callback.await('ak47_bridge:callback:getmetavalue', nil, target, 'isdead')
+        return Bridge.GetTargetMetaValue(target, 'isdead')
     else
         if (GetResourceState('ak47_ambulancejob') == 'started' or GetResourceState('ak47_qb_ambulancejob') == 'started') and LocalPlayer.state.dead then
             return true
@@ -50,7 +50,7 @@ local function CalculateIsDead(target)
         end
 
         if Config.Framework == 'qb' or Config.Framework == 'qbx' then
-            return PlayerData.metadata.isdead -- Fixed 'isdead' check
+            return PlayerData.metadata.isdead
         end
     end
 

@@ -99,5 +99,5 @@ Bridge.ShowProgress = function(progressData, onSuccess, onCancel)
 end
 
 -- Don't change below
-RegisterNetEvent('ak47_bridge:progress', Bridge.ShowProgress)
-lib.callback.register('ak47_bridge:progress', Bridge.ShowProgress)
+RegisterNetEvent('ak47_bridge:client:ShowProgress', Bridge.ShowProgress)
+lib.callback.register('ak47_bridge:callback:client:ShowProgress', Bridge.ShowProgress)
