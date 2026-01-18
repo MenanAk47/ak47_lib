@@ -1,4 +1,4 @@
-# [Ak47 Bridge Documentation](https://docs.menanak47.com/ak47_bridge)
+# [Ak47 Bridge Documentation](https://docs.menanak47.com/plugins/ak47_bridge)
 
 **ak47_bridge** is a unified compatibility layer designed to support multiple FiveM frameworks (ESX, QBCore, QBX) and various third-party resources (Inventory, Target, Fuel, etc.) through a single, consistent API. This allows developers to write scripts that work across different server setups without writing complex adaptation code.
 
