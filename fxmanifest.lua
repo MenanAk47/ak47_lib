@@ -2,7 +2,7 @@ fx_version 'adamant'
 game 'gta5'
 description 'Ak47 Bridge'
 author 'MenanAk47'
-version '1.0'
+version '1.0.0'
 
 shared_scripts {
     "config.lua",
