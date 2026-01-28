@@ -5,30 +5,25 @@ Config.Framework = 'esx'
 print(string.format("^2['FRAMEWORK']: %s^0", Config.Framework))
 
 ESX = exports['es_extended']:getSharedObject()
-Bridge = {}
-Integration = {}
-
-PlayerData = {}
-PlayerLoaded = false
 
 -- ====================================================================================
 --                                     EVENTS
 -- ====================================================================================
 
 RegisterNetEvent('esx:playerLoaded', function(xPlayer)
-    PlayerData = xPlayer
-    PlayerLoaded = true
+    Bridge.PlayerData = xPlayer
+    Bridge.PlayerLoaded = true
     TriggerEvent('ak47_bridge:OnPlayerLoaded', PlayerData)
 end)
 
 RegisterNetEvent('esx:setJob', function(job)
-    PlayerData.job = job
+    Bridge.PlayerData.job = job
     TriggerEvent('ak47_bridge:OnJobUpdate', job)
 end)
 
 RegisterNetEvent('esx:updatePlayerData', function(key, value)
-    PlayerData[key] = value
-    TriggerEvent('ak47_bridge:OnPlayerDataUpdate', PlayerData)
+    Bridge.PlayerData[key] = value
+    TriggerEvent('ak47_bridge:OnPlayerDataUpdate', Bridge.PlayerData)
 end)
 
 AddEventHandler('esx:restoreLoadout', function()
@@ -39,12 +34,12 @@ AddEventHandler('onResourceStart', function(resourceName)
     if resourceName == GetCurrentResourceName() then
         local data = ESX.GetPlayerData()
         if data and data.job then
-            PlayerData = data
-            PlayerLoaded = true
+            Bridge.PlayerData = data
+            Bridge.PlayerLoaded = true
         end
     end
-    if PlayerLoaded then
-        TriggerEvent('ak47_bridge:OnPlayerLoaded', PlayerData)
+    if Bridge.PlayerLoaded then
+        TriggerEvent('ak47_bridge:OnPlayerLoaded', Bridge.PlayerData, resourceName)
     end
 end)
 
@@ -52,24 +47,26 @@ end)
 --                                     FUNCTIONS
 -- ====================================================================================
 
+Bridge.GetPlayerData = function()
+    Bridge.PlayerData = ESX.GetPlayerData()
+    return Bridge.PlayerData
+end
+
 -- Returns client job data formatted like QBCore for consistency
 Bridge.GetJob = function()
-    if not PlayerData or not PlayerData.job then return nil end
+    if not Bridge.PlayerData or not Bridge.PlayerData.job then return nil end
 
     local job = {}
-    job.name = PlayerData.job.name
-    job.label = PlayerData.job.label
-    job.payment = PlayerData.job.grade_salary
+    job.name = Bridge.PlayerData.job.name
+    job.label = Bridge.PlayerData.job.label
+    job.payment = Bridge.PlayerData.job.grade_salary
     
-    job.isboss = PlayerData.job.grade_name == 'boss'
+    job.isboss = Bridge.PlayerData.job.grade_name == 'boss'
 
     job.grade = {}
-    job.grade.name = PlayerData.job.grade_label
-    job.grade.level = PlayerData.job.grade
+    job.grade.name = Bridge.PlayerData.job.grade_label
+    job.grade.level = Bridge.PlayerData.job.grade
 
     return job
 end
 
-exports('GetBridge', function()
-    return Bridge
-end)

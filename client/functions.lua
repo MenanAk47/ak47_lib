@@ -1,5 +1,3 @@
-Functions = {}
-
 Functions.GetInventoryCounts = function(items)
     local counts = {}
     local itemData = {} -- Store one instance of item data for the event return

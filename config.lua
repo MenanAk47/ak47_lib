@@ -6,8 +6,8 @@ Config.Framework = 'auto'
  -- 'ox', 'esx', 'qb', 'qbx', 'custom'
 Config.Notify = 'ox'
 
- -- 'ox', 'esx', 'qb', 'qbx', 'custom'
-Config.Progressbar = 'ox'
+ -- 'default', 'ox', 'esx', 'qb', 'qbx', 'custom'
+Config.Progressbar = 'default'
 
 -- 'ak47_garage', 'ak47_qb_garage', 'cd_garage', 'okokGarage' 
 -- 'jg-advancedgarages', 'loaf_garage', 'qb-garages', 'qbx_garages' 'custom'

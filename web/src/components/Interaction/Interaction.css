@@ -1,0 +1,172 @@
+/* Ensure the overlay doesn't block clicks unless hitting a UI element */
+.interaction-layer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 9999;
+    font-family: 'Oswald', sans-serif;
+    overflow: hidden;
+}
+
+.interaction-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0);
+    will-change: transform, left, top;
+    
+    transition: opacity 0.2s ease-out, transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    
+    --target-scale: 1; 
+}
+
+.interaction-container.show {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(var(--target-scale)); 
+}
+
+/* Bubble Mode Override */
+.interaction-container.mode-mini .bubble-dot {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.interaction-container.mode-mini .options-list,
+.interaction-container.mode-mini .arc-line {
+    opacity: 0;
+    transform: scale(0.5);
+    transition: opacity 0.1s ease-in, transform 0.2s ease-in;
+}
+
+.interaction-container.mode-mini.show {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(var(--target-scale));
+}
+
+.bubble-dot {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.9);
+    opacity: 0;
+    transform: scale(0);
+    transition: all 0.3s ease;
+}
+
+.options-list, .arc-line {
+    opacity: 1;
+    transform: scale(1);
+    transform-origin: center center;
+    transition: opacity 0.2s ease-out, transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.options-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 5px;
+    will-change: transform;
+}
+
+.option-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transform: translateZ(0); 
+}
+
+.key-box {
+    width: 32px;
+    height: 32px;
+    border: 2px solid rgba(255, 255, 255, 0.9);
+    border-radius: 4px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.4);
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    color: white;
+    font-size: 18px;
+    font-weight: 700;
+    position: relative;
+    box-sizing: border-box; 
+    overflow: visible;
+}
+
+.key-box.is-hold {
+    border-color: rgba(255, 255, 255, 0.2); 
+}
+
+.progress-svg {
+    position: absolute;
+    top: -2px; 
+    left: -2px;
+    width: 32px; 
+    height: 32px;
+    pointer-events: none;
+    overflow: visible;
+}
+
+.progress-path {
+    fill: none;
+    stroke: white;
+    stroke-width: 2;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.05s linear;
+    filter: drop-shadow(0 0 2px white);
+}
+
+.key-text { 
+    z-index: 5; 
+    position: relative;
+    backface-visibility: hidden;
+    transform: translateZ(0);
+    -webkit-font-smoothing: antialiased;
+}
+
+.action-label {
+    color: white;
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+    white-space: nowrap;
+    backface-visibility: hidden;
+    transform: translateZ(0);
+    -webkit-font-smoothing: antialiased;
+}
+
+.arc-line {
+    width: 100%;
+    height: 10px;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.6);
+    border-radius: 50%;
+    margin-top: -2px;
+}
+
+@keyframes bump-pop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); border-color: rgba(255, 255, 255, 1); box-shadow: 0 0 15px rgba(255,255,255,0.5); }
+    100% { transform: scale(1); }
+}
+
+.key-box.bump {
+    animation: bump-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.key-box.bump .key-text {
+    text-shadow: 0 0 10px white;
+}

@@ -5,43 +5,38 @@ Config.Framework = 'qb'
 print(string.format("^2['FRAMEWORK']: %s^0", Config.Framework))
 
 QBCore = exports['qb-core']:GetCoreObject()
-Bridge = {}
-Integration = {}
-
-PlayerData = {}
-PlayerLoaded = false
 
 -- ====================================================================================
 --                                     EVENTS
 -- ====================================================================================
 
 RegisterNetEvent('QBCore:Client:OnPlayerLoaded', function()
-    PlayerData = QBCore.Functions.GetPlayerData()
-    PlayerLoaded = true
-    TriggerEvent('ak47_bridge:OnPlayerLoaded', PlayerData)
+    Bridge.PlayerData = QBCore.Functions.GetPlayerData()
+    Bridge.PlayerLoaded = true
+    TriggerEvent('ak47_bridge:OnPlayerLoaded', Bridge.PlayerData)
 end)
 
 RegisterNetEvent('QBCore:Client:OnJobUpdate', function(JobInfo)
-    PlayerData.job = JobInfo
+    Bridge.PlayerData.job = JobInfo
     TriggerEvent('ak47_bridge:OnJobUpdate', job)
 end)
 
 RegisterNetEvent('QBCore:Player:SetPlayerData', function(val)
-    Functions.HasAnyItemRemoved(PlayerData.items, val.items)
-    PlayerData = val
-    TriggerEvent('ak47_bridge:OnPlayerDataUpdate', PlayerData)
+    Functions.HasAnyItemRemoved(Bridge.PlayerData.items, val.items)
+    Bridge.PlayerData = val
+    TriggerEvent('ak47_bridge:OnPlayerDataUpdate', Bridge.PlayerData)
 end)
 
 AddEventHandler('onResourceStart', function(resourceName)
     if resourceName == GetCurrentResourceName() then
         local data = QBCore.Functions.GetPlayerData()
         if data and data.job then
-            PlayerData = data
-            PlayerLoaded = true
+            Bridge.PlayerData = data
+            Bridge.PlayerLoaded = true
         end
     end
-    if PlayerLoaded then
-        TriggerEvent('ak47_bridge:OnPlayerLoaded', PlayerData)
+    if Bridge.PlayerLoaded then
+        TriggerEvent('ak47_bridge:OnPlayerLoaded', Bridge.PlayerData, resourceName)
     end
 end)
 
@@ -49,11 +44,12 @@ end)
 --                                     FUNCTIONS
 -- ====================================================================================
 
+Bridge.GetPlayerData = function()
+    Bridge.PlayerData = QBCore.Functions.GetPlayerData()
+    return Bridge.PlayerData
+end
+
 Bridge.GetJob = function()
     if not PlayerData or not PlayerData.job then return nil end
     return PlayerData.job
 end
-
-exports('GetBridge', function()
-    return Bridge
-end)

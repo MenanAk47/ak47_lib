@@ -5,8 +5,6 @@ Config.Framework = 'esx'
 print(string.format("^2['FRAMEWORK']: %s^0", Config.Framework))
 
 ESX = exports['es_extended']:getSharedObject()
-Bridge = {}
-Integration = {}
 
 -- ====================================================================================
 --                                    CORE PLAYER
@@ -297,8 +295,4 @@ Citizen.CreateThread(function()
     else
         print('^1Vehicle table not found!^0')
     end
-end)
-
-exports('GetBridge', function()
-	return Bridge
 end)

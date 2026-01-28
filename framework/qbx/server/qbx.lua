@@ -4,9 +4,6 @@ Config.Framework = 'qbx'
 
 print(string.format("^2['FRAMEWORK']: %s^0", Config.Framework))
 
-Bridge = {}
-Integration = {}
-
 -- ====================================================================================
 --                                    CORE PLAYER
 -- ====================================================================================
@@ -273,8 +270,4 @@ Citizen.CreateThread(function()
             Bridge.Vehicles[GetHashKey(v.model)] = v.name
         end
     end
-end)
-
-exports('GetBridge', function()
-    return Bridge
 end)

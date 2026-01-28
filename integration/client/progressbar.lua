@@ -1,7 +1,9 @@
 Bridge.ShowProgress = function(progressData, onSuccess, onCancel)
     local result = false
 
-    if Config.Progressbar == 'ox' or Config.Progressbar == 'qbx' then
+    if Config.Progressbar == 'default' then
+        return Interface.StartProgress(progressData, onSuccess, onCancel)
+    elseif Config.Progressbar == 'ox' or Config.Progressbar == 'qbx' then
         if lib.progressCircle({
             label = progressData.label,
             position = progressData.position,

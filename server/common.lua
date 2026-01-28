@@ -10,3 +10,7 @@ end
 lib.callback.register('ak47_bridge:callback:server:GetTargetMetaValue', function( source, target, type )
     return Bridge.GetPlayerMetaValue(target, type)
 end)
+
+exports('GetBridge', function()
+    return Bridge
+end)

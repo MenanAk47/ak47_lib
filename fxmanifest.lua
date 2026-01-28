@@ -2,7 +2,13 @@ fx_version 'adamant'
 game 'gta5'
 description 'Ak47 Bridge'
 author 'MenanAk47'
-version '1.0.2'
+version '1.0.3'
+
+ui_page 'web/build/index.html'
+
+files {
+    '**/*',
+}
 
 shared_scripts {
     "config.lua",
@@ -10,8 +16,10 @@ shared_scripts {
 }
 
 client_scripts {
+    "store/**/client/*.lua",
     "framework/**/client/*.lua",
     "integration/client/*.lua",
+    "interface/client/*.lua",
 
     "client/*.lua",
 }
@@ -19,6 +27,7 @@ client_scripts {
 server_scripts {
     "@mysql-async/lib/MySQL.lua",
     
+    "store/**/server/*.lua",
     "framework/**/server/*.lua",
     "integration/server/*.lua",
 
