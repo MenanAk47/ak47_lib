@@ -5,6 +5,7 @@ author 'MenanAk47'
 version '1.0.3'
 
 ui_page 'web/build/index.html'
+--ui_page 'http://localhost:5173'
 
 files {
     '**/*',

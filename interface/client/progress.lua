@@ -208,17 +208,11 @@ exports('StartProgress', Interface.StartProgress)
 
 RegisterCommand('testbar', function(_, args)
     Interface.StartProgress({
-        duration = 5000,
-        label = "Drinking..",
+        duration = 10000,
+        label = "Drinking",
         useWhileDead = false,
         canCancel = true,
-        disable = { move = true, car = true, combat = true },
-        anim = { dict = 'mp_player_intdrink', clip = 'loop_bottle', flag = 49 },
-        prop = {
-            model = "prop_ld_flow_bottle",
-            pos = vec3(0.03, 0.03, 0.02),
-            rot = vec3(0.0, 0.0, -1.5)
-        },
+        disable = { car = true, combat = true },
         type = args[1],
     }, function()
         print("Success")
