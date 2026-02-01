@@ -3,6 +3,18 @@ local isLoopActive = false
 local soundCounter = 0
 local pendingPromises = {}
 
+-- Gizmo State
+local isGizmoOpen = false
+local isGizmoFocused = false
+
+-- Visuals
+local gizmoEntity = nil
+local currentGizmoData = {
+    coords = vector3(0,0,0),
+    rot = vector3(0,0,0),
+    maxDistance = 10.0
+}
+
 local PlayerPedId = PlayerPedId
 local GetEntityCoords = GetEntityCoords
 local GetGameplayCamCoord = GetGameplayCamCoord
@@ -33,10 +45,42 @@ local function GetUniqueId()
     return "sound_" .. GetGameTimer() .. "_" .. soundCounter
 end
 
+local function EnsureGizmoEntity(coords, rot)
+    if not isGizmoOpen then 
+        if gizmoEntity and DoesEntityExist(gizmoEntity) then DeleteEntity(gizmoEntity) end
+        gizmoEntity = nil
+        return 
+    end
+
+    -- Create Prop if missing
+    if not gizmoEntity or not DoesEntityExist(gizmoEntity) then
+        local model = `prop_speaker_05`
+        RequestModel(model)
+        while not HasModelLoaded(model) do Wait(0) end
+        gizmoEntity = CreateObject(model, coords.x, coords.y, coords.z, false, false, false)
+        SetEntityCollision(gizmoEntity, false, false) -- No collision
+        SetEntityAlpha(gizmoEntity, 200, false)
+    end
+
+    -- Update Position & Rotation
+    SetEntityCoords(gizmoEntity, coords.x, coords.y, coords.z, false, false, false, false)
+    SetEntityRotation(gizmoEntity, rot.x, rot.y, rot.z + 180.0, 2, true)
+end
+
 RegisterNUICallback('audioDataResult', function(data, cb)
     if data.reqId and pendingPromises[data.reqId] then
         pendingPromises[data.reqId]:resolve(data)
         pendingPromises[data.reqId] = nil
+    end
+    cb('ok')
+end)
+
+RegisterNUICallback('soundEnded', function(data, cb)
+    local sId = data.soundId
+    if activeSounds[sId] then
+        activeSounds[sId].isPlaying = false
+        activeSounds[sId].isInitialized = false
+        activeSounds[sId] = nil
     end
     cb('ok')
 end)
@@ -51,7 +95,7 @@ function StartAudioLoop()
     
     Citizen.CreateThread(function()
         while isLoopActive do
-            if next(activeSounds) == nil then
+            if next(activeSounds) == nil and not isGizmoOpen then
                 isLoopActive = false
                 break
             end
@@ -62,23 +106,26 @@ function StartAudioLoop()
             local forward = RotationToDirection(camRot)
             local playerInterior = GetInteriorFromEntity(playerPed)
             
-            -- Update Listener Position (Camera)
             SendNUIMessage({
                 action = "updateListener",
                 camCoords = { x = camCoords.x, y = camCoords.y, z = camCoords.z },
+                camRot = { x = camRot.x, y = camRot.y, z = camRot.z }, -- NEW: Send raw rotation
+                camFov = GetGameplayCamFov(),
                 camForward = { x = forward.x, y = forward.y, z = forward.z },
                 camUp = { x = 0.0, y = 0.0, z = 1.0 }
             })
 
             local sleep = 1000
+            local playerCoords = GetEntityCoords(playerPed)
 
-            -- Update Occlusion and Distances
             for id, sound in pairs(activeSounds) do
-                if sound.is3d and sound.isPlaying then
-                    if sound.maxDistance and #(GetEntityCoords(playerPed) - sound.coords) <= sound.maxDistance then
-                        sleep = 50
+                if sound.isPlaying then
+                    if sound.coords and sound.maxDistance then
+                        if #(playerCoords - sound.coords) <= sound.maxDistance then
+                            sleep = 50
+                        end
                     end
-                    
+
                     local shouldOcclude = false
                     if sound.interiorEffect then
                         shouldOcclude = (playerInterior ~= sound.interiorId)
@@ -94,6 +141,9 @@ function StartAudioLoop()
                     end
                 end
             end
+            if isGizmoOpen then
+                sleep = 1
+            end
             Wait(sleep)
         end
     end)
@@ -106,14 +156,18 @@ end
 local SoundObject = {}
 SoundObject.__index = SoundObject
 
--- 1. PLAY / RESUME
 function SoundObject:play()
+    if self.isPlaying and self.isInitialized then return self end
     self.isPlaying = true
-    
     if not self.isInitialized then
-        -- First time play: Create the sound in NUI
         self.isInitialized = true
         activeSounds[self.soundId] = self
+        
+        -- Resolve orientation for NUI
+        local orientation = self.orientation
+        if not orientation and self.setting3d and self.setting3d.orientation then
+            orientation = self.setting3d.orientation
+        end
 
         SendNUIMessage({
             action = "playSound",
@@ -123,71 +177,61 @@ function SoundObject:play()
             volume = self.volume,
             rate = self.rate,
             is3d = self.is3d,
-            maxDistance = self.maxDistance
+            setting3d = self.setting3d,
+            orientation = orientation, 
+            maxDistance = self.maxDistance,
+            loop = self.loop,
         })
-
         StartAudioLoop()
-
-        -- Handle Global Sync (Create on other clients)
         if self.global and not self.isReplicated then
             TriggerServerEvent('ak47_bridge:server:PlaySound', {
                 soundId = self.soundId,
                 url = self.url,
                 coords = self.coords,
-                maxVolume = self.volume, -- sync current volume as max
+                maxVolume = self.volume,
                 maxDistance = self.maxDistance,
                 is3d = self.is3d,
+                setting3d = self.setting3d,
                 interiorEffect = self.interiorEffect,
                 global = true,
-                rate = self.rate
+                rate = self.rate,
+                loop = self.loop,
             })
         end
     else
-        -- Resume: Just unpause in NUI
         SendNUIMessage({ action = "resumeSound", soundId = self.soundId })
-        
-        -- Handle Global Sync (Resume)
         if self.global and not self.isReplicated then
             TriggerServerEvent('ak47_bridge:server:ResumeSound', self.soundId)
         end
     end
-    
     return self
 end
 
--- 2. PAUSE
 function SoundObject:pause()
     self.isPlaying = false
     SendNUIMessage({ action = "pauseSound", soundId = self.soundId })
-    
     if self.global and not self.isReplicated then
         TriggerServerEvent('ak47_bridge:server:PauseSound', self.soundId)
     end
     return self
 end
 
--- 3. DESTROY / STOP
 function SoundObject:destroy()
     self.isPlaying = false
     self.isInitialized = false
     activeSounds[self.soundId] = nil
-    
     SendNUIMessage({ action = "stopSound", soundId = self.soundId })
-    
     if self.global and not self.isReplicated then
         TriggerServerEvent('ak47_bridge:server:StopSound', self.soundId)
     end
-    return nil -- Return nil so user can do: sound = sound:destroy()
+    return nil
 end
 
--- 4. SETTERS
 function SoundObject:setVolume(volume)
     self.volume = volume
     if self.isInitialized then
         SendNUIMessage({ action = "updateVolume", soundId = self.soundId, volume = volume })
     end
-    -- Usually volume is local preference, but if you want global volume sync:
-    -- if self.global then TriggerServerEvent(...) end
     return self
 end
 
@@ -213,7 +257,6 @@ end
 function SoundObject:updateCoords(coords)
     self.coords = coords
     self.interiorId = GetInteriorFromCollision(coords.x, coords.y, coords.z)
-    
     if self.isInitialized then
         SendNUIMessage({
             action = "updateSoundCoords",
@@ -221,58 +264,64 @@ function SoundObject:updateCoords(coords)
             coords = { x = coords.x, y = coords.y, z = coords.z }
         })
     end
-
     if self.global and not self.isReplicated then
         TriggerServerEvent('ak47_bridge:server:UpdateSoundCoords', self.soundId, coords)
     end
     return self
 end
 
--- 5. GETTERS (Async)
-function SoundObject:getInfo()
-    -- 1. If sound isn't ready, return default immediately
-    if not self.isInitialized then 
-        return { duration = 0, currentTime = 0 }
+function SoundObject:updateSettings(data)
+    self.coords = data.coords or self.coords
+    self.maxDistance = data.maxDistance or self.maxDistance
+    self.volume = data.volume or self.volume
+    self.rate = data.rate or self.rate
+    if data.loop ~= nil then self.loop = data.loop end
+    if data.interiorEffect ~= nil then self.interiorEffect = data.interiorEffect end
+    
+    local orientation = nil
+    if data.rot then
+        orientation = RotationToDirection(data.rot)
+        self.orientation = orientation
     end
 
-    -- 2. Create a Promise
-    local p = promise.new()
-
-    -- 3. Create a unique ID for this specific request
-    local reqId = "req_" .. GetGameTimer() .. "_" .. math.random(9999)
-
-    -- 4. Store the promise so the NUI Callback can find it
-    pendingPromises[reqId] = p
-
-    -- 5. Send the request to JS
-    SendNUIMessage({
-        action = "getInfo",
-        soundId = self.soundId,
-        reqId = reqId
-    })
-
-    -- 6. PAUSE execution here until JS replies (Async/Await pattern)
-    -- This looks synchronous but doesn't freeze the game
-    local result = Citizen.Await(p)
-
-    -- 7. Return the data directly
-    return result
+    if self.isInitialized then
+        SendNUIMessage({
+            action = "updateSoundSettings",
+            soundId = self.soundId,
+            coords = self.coords,
+            orientation = orientation,
+            maxDistance = self.maxDistance,
+            volume = self.volume,
+            rate = self.rate,
+            loop = self.loop,
+            coneInnerAngle = data.coneInnerAngle,
+            coneOuterAngle = data.coneOuterAngle,
+            volumeFadeStarts = data.volumeFadeStarts,
+            volumeFadeMultiplier = data.volumeFadeMultiplier,
+        })
+    end
+    return self
 end
 
--- Compatibility
+function SoundObject:getInfo()
+    if not self.isInitialized then return { duration = 0, currentTime = 0 } end
+    local p = promise.new()
+    local reqId = "req_" .. GetGameTimer() .. "_" .. math.random(9999)
+    pendingPromises[reqId] = p
+    SendNUIMessage({ action = "getInfo", soundId = self.soundId, reqId = reqId })
+    local result = Citizen.Await(p)
+    return result
+end
 SoundObject.__tostring = function(self) return self.soundId end
-
 
 -- =========================================================================
 --                            INTERFACE / EXPORTS
 -- =========================================================================
 
--- The NEW Constructor
 Interface.CreateSound = function(data)
     local coords = data.coords
     local is3d = data.is3d
     local interiorId = 0
-
     if coords then
         if is3d == nil then is3d = true end
         interiorId = GetInteriorFromCollision(coords.x, coords.y, coords.z)
@@ -280,118 +329,231 @@ Interface.CreateSound = function(data)
         is3d = false
         coords = vector3(0, 0, 0)
     end
-
     local id = data.soundId or GetUniqueId()
-
-    local newSound = setmetatable({
+    local internalInstance = setmetatable({
         soundId = id,
         url = data.url,
         coords = coords,
         is3d = is3d,
+        setting3d = {
+            volumeFadeStarts = data.volumeFadeStarts and data.setting3d.volumeFadeStarts or 3.0,
+            volumeFadeMultiplier = data.volumeFadeMultiplier and data.setting3d.volumeFadeMultiplier or 1.0,
+            coneInnerAngle = data.coneInnerAngle and data.setting3d.coneInnerAngle or 360.0,
+            coneOuterAngle = data.coneOuterAngle and data.setting3d.coneOuterAngle or 360.0,
+            orientation = data.setting3d and data.setting3d.orientation or nil
+        },
         maxDistance = data.maxDistance or 20.0,
         volume = data.volume or data.maxVolume or 0.5,
         rate = data.rate or 1.0,
         interiorEffect = data.interiorEffect,
         interiorId = interiorId,
         global = data.global,
-        
-        -- State flags
-        isInitialized = false, -- Has not been sent to NUI yet
+        loop = data.loop or false,
+        isInitialized = false,
         isPlaying = false,
-        isReplicated = data.replicated or false, -- If true, it came from server
+        isReplicated = data.replicated or false,
         isOccluded = false,
+        orientation = data.setting3d and data.setting3d.orientation or nil
     }, SoundObject)
 
-    -- If this is a replicated sound (from server), we auto-initialize it
-    if data.replicated then
-        newSound:play() 
-    end
-
-    return newSound
+    local publicWrapper = {
+        soundId = id,
+        play = function() internalInstance:play() return publicWrapper end,
+        pause = function() internalInstance:pause() return publicWrapper end,
+        destroy = function() internalInstance:destroy() return nil end,
+        setVolume = function(_, vol) local v = type(_) == "number" and _ or vol; internalInstance:setVolume(v); return publicWrapper end,
+        setRate = function(_, rate) local r = type(_) == "number" and _ or rate; internalInstance:setRate(r); return publicWrapper end,
+        setMaxDistance = function(_, dist) local d = type(_) == "number" and _ or dist; internalInstance:setMaxDistance(d); return publicWrapper end,
+        updateCoords = function(_, newCoords) local c = (type(_) == "vector3" or type(_) == "table") and _ or newCoords; internalInstance:updateCoords(c); return publicWrapper end,
+        getInfo = function() return internalInstance:getInfo() end
+    }
+    if data.replicated then internalInstance:play() end
+    return publicWrapper
 end
 
-
--- Legacy/Direct wrapper for backward compatibility or simple usage
-Interface.PlaySound = function(data)
-    local sound = Interface.CreateSound(data)
-    sound:play()
-    return sound
-end
-
--- Network Events for Global Sounds
 RegisterNetEvent('ak47_bridge:client:PlaySound', function(data)
+    if activeSounds[data.soundId] then return end
     data.replicated = true 
-    Interface.CreateSound(data) -- CreateSound automatically calls :play() if replicated is true
+    Interface.CreateSound(data)
 end)
+RegisterNetEvent('ak47_bridge:client:PauseSound', function(soundId) if activeSounds[soundId] then activeSounds[soundId]:pause() end end)
+RegisterNetEvent('ak47_bridge:client:ResumeSound', function(soundId) if activeSounds[soundId] then activeSounds[soundId]:play() end end)
+RegisterNetEvent('ak47_bridge:client:StopSound', function(soundId) if activeSounds[soundId] then activeSounds[soundId]:destroy() end end)
+RegisterNetEvent('ak47_bridge:client:UpdateSoundCoords', function(soundId, coords) if activeSounds[soundId] then activeSounds[soundId]:updateCoords(coords) end end)
+RegisterNetEvent('ak47_bridge:client:SyncState', function(soundId, key, value) if activeSounds[soundId] and key == 'rate' then activeSounds[soundId]:setRate(value) end end)
+exports('CreateSound', Interface.CreateSound)
+Bridge.CreateSound = Interface.CreateSound
 
-RegisterNetEvent('ak47_bridge:client:PauseSound', function(soundId)
-    if activeSounds[soundId] then activeSounds[soundId]:pause() end
-end)
+-- =========================================================================
+--                            GIZMO / DEBUGGER
+-- =========================================================================
 
-RegisterNetEvent('ak47_bridge:client:ResumeSound', function(soundId)
-    if activeSounds[soundId] then activeSounds[soundId]:play() end
-end)
+-- Visuals & Input Loop
+local function StartGizmoLoop()
+    Citizen.CreateThread(function()
+        while isGizmoOpen do
+            -- 1. Input Handling
+            if not isGizmoFocused then
+                DisableControlAction(0, 19, true) -- Left Alt
+                if IsDisabledControlJustReleased(0, 19) then
+                    isGizmoFocused = true
+                    SetNuiFocus(true, true)
+                    SendNUIMessage({ action = "regainFocus" })
+                end
+            end
+            
+            -- 2. Visuals (Markers)
+            if currentGizmoData and currentGizmoData.coords then
+                -- Draw Max Distance Sphere (Type 28)
+                DrawMarker(28, 
+                    currentGizmoData.coords.x, currentGizmoData.coords.y, currentGizmoData.coords.z, 
+                    0.0, 0.0, 0.0, 
+                    0.0, 0.0, 0.0, 
+                    currentGizmoData.maxDistance, currentGizmoData.maxDistance, currentGizmoData.maxDistance, 
+                    66, 135, 245, 100, -- Blueish
+                    false, false, 2, nil, nil, false
+                )
+            end
 
-RegisterNetEvent('ak47_bridge:client:StopSound', function(soundId)
-    if activeSounds[soundId] then activeSounds[soundId]:destroy() end
-end)
+            Wait(0)
+        end
+        
+        -- Cleanup when loop ends
+        if gizmoEntity and DoesEntityExist(gizmoEntity) then 
+            DeleteEntity(gizmoEntity) 
+            gizmoEntity = nil
+        end
+    end)
+end
 
-RegisterNetEvent('ak47_bridge:client:UpdateSoundCoords', function(soundId, coords)
-    if activeSounds[soundId] then activeSounds[soundId]:updateCoords(coords) end
-end)
+RegisterCommand('soundgizmo', function()
+    isGizmoOpen = not isGizmoOpen
+    isGizmoFocused = isGizmoOpen
+    
+    SetNuiFocus(isGizmoOpen, isGizmoOpen)
 
-RegisterNetEvent('ak47_bridge:client:SyncState', function(soundId, key, value)
-    if activeSounds[soundId] then
-        if key == 'rate' then activeSounds[soundId]:setRate(value) end
+    local playerPed = PlayerPedId()
+    local pCoords = GetEntityCoords(playerPed)
+    local pRot = GetEntityRotation(playerPed, 2)
+    
+    -- Calculate Forward Offset (2.0 meters in front)
+    local forward = RotationToDirection(pRot)
+    local spawnCoords = pCoords + (forward * 1.5)
+
+    -- Calculate Rotation to face the player (Player Rotation + 180 degrees on Z)
+    -- We keep X and Y 0 to keep it upright initially
+    local spawnRot = vector3(0.0, 0.0, pRot.z + 180.0)
+
+    SendNUIMessage({
+        action = "toggleGizmo",
+        show = isGizmoOpen,
+        playerCoords = { x = pCoords.x, y = pCoords.y, z = pCoords.z }, -- Backup/Reference
+        spawnCoords = { x = spawnCoords.x, y = spawnCoords.y, z = spawnCoords.z },
+        spawnRot = { x = spawnRot.x, y = spawnRot.y, z = spawnRot.z }
+    })
+    
+    if isGizmoOpen then
+        -- Initialize data with the new spawn coordinates
+        currentGizmoData.coords = spawnCoords
+        StartAudioLoop() 
+        StartGizmoLoop()
     end
 end)
 
--- Exports
-exports('CreateSound', Interface.CreateSound) -- The new OOP way
-exports('PlaySound', Interface.PlaySound)     -- The old "Fire and Forget" way
+RegisterNUICallback('closeGizmo', function(data, cb)
+    isGizmoOpen = false
+    isGizmoFocused = false
+    SetNuiFocus(false, false)
+    cb('ok')
+end)
 
--- Global Access
-Bridge.CreateSound = Interface.CreateSound
-Bridge.PlaySound = Interface.PlaySound
+RegisterNUICallback('releaseFocus', function(data, cb)
+    isGizmoFocused = false
+    SetNuiFocus(false, false)
+    cb('ok')
+end)
 
--- =========================================================================
---                                 TESTING
--- =========================================================================
-
-RegisterCommand('testoop', function()
-    local ped = PlayerPedId()
-    local coords = GetEntityCoords(ped)
-    local url = 'https://raw.githubusercontent.com/rafaelreis-hotmart/Audio-Sample-files/master/sample.mp3'
-
-    print(" Creating Sound Object...")
+RegisterNUICallback('previewSound', function(data, cb)
+    local sId = 'gizmo_preview'
     
-    -- 1. Create the Object (Nothing plays yet)
-    local music = Bridge.CreateSound({
-        url = url,
-        coords = coords,
-        volume = 0.5,
-        maxDistance = 15.0,
-        is3d = true,
-        global = false -- Set to true to test network
-    })
+    if data.action == 'stop' then
+        if activeSounds[sId] then activeSounds[sId]:destroy() end
+        cb('ok')
+        return
+    end
 
-    print(" Object Created. ID:", music.soundId)
-    Wait(1000)
+    local current = activeSounds[sId]
+    
+    -- If URL changed, we must recreate the sound
+    if current and current.url ~= data.url then
+        current:destroy()
+        current = nil
+    end
 
-    print(" Playing...")
-    music:play() -- Now it starts
+    local coords = vector3(data.x, data.y, data.z)
+    local rot = vector3(data.rotX or 0, data.rotY or 0, data.rotZ or 0)
 
-    Wait(3000)
-    print(" Pausing...")
-    music:pause()
+    -- Update Gizmo Visuals Data
+    currentGizmoData.coords = coords
+    currentGizmoData.rot = rot
+    currentGizmoData.maxDistance = data.maxDistance
+    EnsureGizmoEntity(coords, rot)
 
-    Wait(2000)
-    print(" Changing Settings & Resuming...")
-    music:setVolume(0.2)
-    music:setRate(1.5)
-    music:play()
-
-    Wait(3000)
-    print(" Destroying...")
-    music:destroy()
-end, false)
+    if current then
+        -- Update existing sound completely
+        current:updateSettings({
+            coords = coords,
+            rot = rot,
+            maxDistance = data.maxDistance,
+            volume = data.volume,
+            rate = data.rate or 1.0,
+            loop = data.loop,
+            interiorEffect = data.interiorEffect,
+            coneInnerAngle = data.coneInnerAngle,
+            coneOuterAngle = data.coneOuterAngle,
+            volumeFadeStarts = data.volumeFadeStarts,
+            volumeFadeMultiplier = data.volumeFadeMultiplier
+        })
+        -- FIX: Force volume update (Some players don't update volume via generic settings update)
+        current:setVolume(data.volume)
+        
+        -- Handle Play/Pause State
+        if data.action == 'play' and not current.isPlaying then
+            current:play()
+        elseif data.action == 'update' and current.isPlaying then
+             -- Do nothing, let it keep playing
+        end
+    else
+        -- Create new sound
+        local direction = RotationToDirection(rot)
+        local sound = Interface.CreateSound({
+            soundId = sId,
+            url = data.url or 'https://raw.githubusercontent.com/audio-samples/audio-samples.github.io/refs/heads/master/samples/mp3/music/sample-0.mp3',
+            coords = coords,
+            maxDistance = data.maxDistance,
+            volume = data.volume,
+            rate = data.rate or 1.0,
+            is3d = data.is3d,
+            loop = data.loop,
+            interiorEffect = data.interiorEffect,
+            setting3d = {
+                coneInnerAngle = data.coneInnerAngle,
+                coneOuterAngle = data.coneOuterAngle,
+                orientation = direction,
+                volumeFadeStarts = data.volumeFadeStarts,
+                volumeFadeMultiplier = data.volumeFadeMultiplier
+            }
+        })
+        sound.orientation = direction 
+        
+        -- FIX: Only auto-play if the action is explicitly 'play'
+        -- This prevents the sound from auto-starting when just updating config/url
+        if data.action == 'play' then
+            sound:play()
+        else
+            -- Ensure it is created but paused/ready
+            -- Note: Interface.CreateSound does not auto-play unless replicated=true
+        end
+    end
+    cb('ok')
+end)
