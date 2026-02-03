@@ -4,8 +4,8 @@ description 'Ak47 Bridge'
 author 'MenanAk47'
 version '1.0.3'
 
-ui_page 'web/index.html'
---ui_page 'http://localhost:5173'
+--ui_page 'web/index.html'
+ui_page 'http://localhost:5173'
 
 files {
     'web/index.html',
