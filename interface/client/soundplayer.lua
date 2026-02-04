@@ -323,11 +323,12 @@ Interface.CreateSound = function(data)
     local is3d = data.is3d
     local interiorId = 0
     if coords then
-        if is3d == nil then is3d = true end
+        if is3d == nil then 
+            is3d = true 
+        end
         interiorId = GetInteriorFromCollision(coords.x, coords.y, coords.z)
     else
         is3d = false
-        coords = vector3(0, 0, 0)
     end
     local id = data.soundId or GetUniqueId()
     local internalInstance = setmetatable({

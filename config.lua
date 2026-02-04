@@ -3,8 +3,8 @@ Config = {}
  -- 'esx', 'qb', 'qbx'
 Config.Framework = 'auto'
 
- -- 'ox', 'esx', 'qb', 'qbx', 'custom'
-Config.Notify = 'ox'
+ -- 'default', ox', 'esx', 'qb', 'qbx', 'custom'
+Config.Notify = 'default'
 
  -- 'default', 'ox', 'esx', 'qb', 'qbx', 'custom'
 Config.Progressbar = 'default'
@@ -27,4 +27,29 @@ Config.Inventory = 'auto'
 
 -- 'qb-banking', 'okokBanking', 'Renewed-Banking'
 Config.Banking = 'auto'
+
+
+
+
+-- Default Config
+
+Config.Defaults = {
+	Notify = {
+		-- 'inform', 'success', 'warning', 'error'
+		type = 'inform',
+
+		-- 'top-left', 'top-right', 'top-center',
+		-- 'bottom-left', 'bottom-right', 'bottom-center',
+		-- 'center-left', 'center-right',
+		position = 'top-center', 
+
+		-- 'minimal', 'frost', 'frost-fade', 'glass', 'glow-dot', 'vertical-line'
+		style = 'minimal',
+
+		duration = 7 * 1000, -- 7 seconds
+		sound = true,
+		volume = 0.2,
+		nightEffect = true, -- different background color at night time
+	},
+}
 

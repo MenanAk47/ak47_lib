@@ -1,5 +1,11 @@
 Bridge.Notify = function(msg, type, duration)
-    if Config.Notify == 'ox' then
+    if Config.Notify == 'default' then
+        Interface.Notify({
+            type = type,
+            description = msg,
+            duration = duration,
+        })
+    elseif Config.Notify == 'ox' then
         exports['ox_lib']:notify({
             type = type or 'info',
             description = msg,

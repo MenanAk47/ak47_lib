@@ -1,4 +1,3 @@
--- Configuration: Default Titles mapped to Types
 local defaultTitles = {
     inform = "INFO",
     success = "SUCCESS",
@@ -6,7 +5,6 @@ local defaultTitles = {
     error = "ERROR"
 }
 
--- Configuration: Default Icons mapped to Types
 local defaultIcons = {
     inform = "fa-circle-info",
     success = "fa-circle-check",
@@ -14,65 +12,64 @@ local defaultIcons = {
     error = "fa-circle-xmark"
 }
 
--- Valid Positions Lookup
 local validPositions = {
     ['top-left'] = true, ['top-right'] = true, ['top-center'] = true,
     ['bottom-left'] = true, ['bottom-right'] = true, ['bottom-center'] = true,
     ['center-left'] = true, ['center-right'] = true
 }
 
-local function playNotificationSound(soundData)
-    if not soundData then return end
-    if soundData.name and soundData.set then
-        PlaySoundFrontend(-1, soundData.name, soundData.set, true)
-    elseif soundData.name then
-        PlaySoundFrontend(-1, soundData.name, "HUD_FRONTEND_DEFAULT_SOUNDSET", true)
-    end
-end
+local validStyles = {
+    ['minimal'] = true, ['frost'] = true, ['frost-fade'] = true,
+    ['glass'] = true, ['glow-dot'] = true, ['vertical-line'] = true,
+}
 
-local function SendNotification(data)
+Interface.Notify = function(data)
     if not data then data = {} end
-
-    -- 1. Validate Type (Default: 'inform')
+    
     local msgType = data.type
     if not msgType or not defaultTitles[msgType] then
-        msgType = 'inform'
+        msgType = Config.Defaults.type
     end
 
-    -- 2. Validate/Set Default Title
     local title = data.title
     if not title or title == "" then
         title = defaultTitles[msgType]
     end
 
-    -- 3. Validate/Set Default Icon
     local icon = data.icon
     if not icon or icon == "" then
         icon = defaultIcons[msgType]
     end
 
-    -- 4. Validate Position (Default: 'top-right')
     local position = data.position
     if not position or not validPositions[position] then
-        position = 'center-right'
+        position = Config.Defaults.position
     end
 
-    -- 5. Validate Duration (Default: 3000)
     local duration = tonumber(data.duration)
-    if not duration then duration = 8000 end
+    if not duration then 
+        duration = Config.Defaults.duration 
+    end
 
-    -- 6. Handle Style (String vs Table)
-    local styleName = 'minimal'
+    local styleName = Config.Defaults.style
     local customStyle = nil
-
     if type(data.style) == 'string' then
-        styleName = data.style
+        styleName = validStyles[data.style] or 'minimal'
     elseif type(data.style) == 'table' then
         customStyle = data.style
-        styleName = 'minimal' -- Fallback base class if custom CSS is passed
+        styleName = 'minimal'
     end
 
-    -- Construct Final Payload
+    local sound = nil
+    if data.sound then
+        if type(data.sound) == 'boolean' then
+            data.sound = './sounds/notify.mp3'
+        end
+    end
+
+    local hour = GetClockHours()
+    local isNight = Config.Defaults.nightEffect and (hour >= 21 or hour < 6)
+
     local payload = {
         id = data.id,
         title = title,
@@ -81,43 +78,100 @@ local function SendNotification(data)
         showDuration = (data.showDuration ~= false),
         position = position,
         type = msgType,
+        sound = sound,
         styleName = styleName,
         style = customStyle,
         icon = icon,
         iconColor = data.iconColor,
         iconAnimation = data.iconAnimation,
-        alignIcon = data.alignIcon or 'center'
+        alignIcon = data.alignIcon or 'center',
+        isNight = isNight,
     }
 
-    -- Play Sound
-    if data.sound then
-        playNotificationSound(data.sound)
-    end
-
-    -- Send to React
     SendNUIMessage({
         action = 'notification',
         data = payload
     })
+
+    if data.sound then
+        local soundData = Interface.CreateSound({
+            url = data.sound,
+            volume = 0.2,
+        })
+        soundData:play()
+    end
 end
 
 -- Export
-exports('Notify', SendNotification)
-
--- Event
-RegisterNetEvent('notify:client:send')
-AddEventHandler('notify:client:send', function(data)
-    SendNotification(data)
-end)
+exports('Notify', Interface.Notify)
 
 -- Test Command
-RegisterCommand('testnotify', function()
-    -- This test has no Title and no Icon. 
-    -- It should default to Title: "WARNING" and Icon: "fa-triangle-exclamation"
+RegisterCommand('testnotify', function(_, args)
     exports[GetCurrentResourceName()]:Notify({
-        description = "Battery level critical.",
+        description = "This is a multi-line supported test notification modern UI!",
+        type = "success",
+        style = args[1],
+        position = "top-center",
+        duration = tonumber(args[2]) or 8000,
+        sound = true
+    })
+
+    exports[GetCurrentResourceName()]:Notify({
+        description = "This is a multi-line supported test notification modern UI!",
         type = "warning",
-        style = "minimal",
-        duration = 5000,
+        style = args[1],
+        position = "top-right",
+        duration = tonumber(args[2]) or 8000,
+        sound = true
+    }) 
+    exports[GetCurrentResourceName()]:Notify({
+        description = "This is a multi-line supported test notification modern UI!",
+        type = "warning",
+        style = args[1],
+        position = "center-right",
+        duration = tonumber(args[2]) or 8000,
+        sound = true
+    })
+    exports[GetCurrentResourceName()]:Notify({
+        description = "This is a multi-line supported test notification modern UI!",
+        type = "warning",
+        style = args[1],
+        position = "bottom-right",
+        duration = tonumber(args[2]) or 8000,
+        sound = true
+    })
+
+    exports[GetCurrentResourceName()]:Notify({
+        description = "This is a multi-line supported test notification modern UI!",
+        type = "inform",
+        style = args[1],
+        position = "top-left",
+        duration = tonumber(args[2]) or 8000,
+        sound = true
+    })
+    exports[GetCurrentResourceName()]:Notify({
+        description = "This is a multi-line supported test notification modern UI!",
+        type = "inform",
+        style = args[1],
+        position = "center-left",
+        duration = tonumber(args[2]) or 8000,
+        sound = true
+    })
+    exports[GetCurrentResourceName()]:Notify({
+        description = "This is a multi-line supported test notification modern UI!",
+        type = "inform",
+        style = args[1],
+        position = "bottom-left",
+        duration = tonumber(args[2]) or 8000,
+        sound = true
+    })
+
+    exports[GetCurrentResourceName()]:Notify({
+        description = "This is a multi-line supported test notification modern UI!",
+        type = "error",
+        style = args[1],
+        position = "bottom-center",
+        duration = tonumber(args[2]) or 8000,
+        sound = true
     })
 end)
