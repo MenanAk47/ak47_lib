@@ -46,7 +46,7 @@ Config.Defaults = {
 		-- 'minimal', 'frost', 'frost-fade', 'glass', 'glow-dot', 'vertical-line'
 		style = 'minimal',
 
-		duration = 7 * 1000, -- 7 seconds
+		duration = 5 * 1000, -- 5 seconds
 		sound = true,
 		volume = 0.2,
 		nightEffect = true, -- different background color at night time

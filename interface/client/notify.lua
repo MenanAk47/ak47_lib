@@ -28,7 +28,7 @@ Interface.Notify = function(data)
     
     local msgType = data.type
     if not msgType or not defaultTitles[msgType] then
-        msgType = Config.Defaults.type
+        msgType = Config.Defaults.Notify.type
     end
 
     local title = data.title
@@ -43,15 +43,15 @@ Interface.Notify = function(data)
 
     local position = data.position
     if not position or not validPositions[position] then
-        position = Config.Defaults.position
+        position = Config.Defaults.Notify.position
     end
 
     local duration = tonumber(data.duration)
     if not duration then 
-        duration = Config.Defaults.duration 
+        duration = Config.Defaults.Notify.duration 
     end
 
-    local styleName = Config.Defaults.style
+    local styleName = Config.Defaults.Notify.style
     local customStyle = nil
     if type(data.style) == 'string' then
         styleName = validStyles[data.style] or 'minimal'
@@ -68,7 +68,7 @@ Interface.Notify = function(data)
     end
 
     local hour = GetClockHours()
-    local isNight = Config.Defaults.nightEffect and (hour >= 21 or hour < 6)
+    local isNight = Config.Defaults.Notify.nightEffect and (hour >= 21 or hour < 6)
 
     local payload = {
         id = data.id,
