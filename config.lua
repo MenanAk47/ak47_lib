@@ -51,5 +51,21 @@ Config.Defaults = {
 		volume = 0.2,
 		nightEffect = true, -- different background color at night time
 	},
+	Checklist = {
+		title = 'Checklist',
+
+		-- 'top', 'center', 'bottom'
+		position = 'center', 
+
+		nightEffect = true, -- less dark background at night time
+	},
+	Objective = {
+		title = 'Objective',
+
+		-- 'top', 'center', 'bottom'
+		position = 'center', 
+
+		nightEffect = true, -- less dark background at night time
+	},
 }
 

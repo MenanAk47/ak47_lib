@@ -22,7 +22,9 @@ RegisterNetEvent('QBCore:Client:OnJobUpdate', function(JobInfo)
 end)
 
 RegisterNetEvent('QBCore:Player:SetPlayerData', function(val)
-    Functions.HasAnyItemRemoved(Bridge.PlayerData.items, val.items)
+    if Bridge.PlayerData then
+        Functions.HasAnyItemRemoved(Bridge.PlayerData.items, val.items)
+    end
     Bridge.PlayerData = val
     TriggerEvent('ak47_bridge:OnPlayerDataUpdate', Bridge.PlayerData)
 end)
