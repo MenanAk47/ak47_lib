@@ -12,11 +12,13 @@ RegisterNetEvent('QBCore:Client:OnPlayerLoaded', function()
     Lib47.PlayerData = exports.qbx_core:GetPlayerData()
     Lib47.PlayerLoaded = true
     TriggerEvent('ak47_lib:OnPlayerLoaded', Lib47.PlayerData)
+    TriggerEvent('ak47_bridge:OnPlayerLoaded', Lib47.PlayerData) -- will be removed soon
 end)
 
 RegisterNetEvent('QBCore:Client:OnJobUpdate', function(JobInfo)
     Lib47.PlayerData.job = JobInfo
     TriggerEvent('ak47_lib:OnJobUpdate', job)
+    TriggerEvent('ak47_bridge:OnJobUpdate', job) -- will be removed soon
 end)
 
 RegisterNetEvent('QBCore:Player:SetPlayerData', function(val)
@@ -25,6 +27,7 @@ RegisterNetEvent('QBCore:Player:SetPlayerData', function(val)
     end
     Lib47.PlayerData = val
     TriggerEvent('ak47_lib:OnPlayerDataUpdate', Lib47.PlayerData)
+    TriggerEvent('ak47_bridge:OnPlayerDataUpdate', Lib47.PlayerData) -- will be removed soon
 end)
 
 AddEventHandler('onResourceStart', function(resourceName)
@@ -37,6 +40,7 @@ AddEventHandler('onResourceStart', function(resourceName)
     end
     if Lib47.PlayerLoaded then
         TriggerEvent('ak47_lib:OnPlayerLoaded', Lib47.PlayerData, resourceName)
+        TriggerEvent('ak47_bridge:OnPlayerLoaded', Lib47.PlayerData, resourceName) -- will be removed soon
     end
 end)
 

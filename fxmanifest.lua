@@ -14,11 +14,12 @@ files {
 
 shared_scripts {
     "config.lua",
-    "@ox_lib/init.lua",
+    "store/**/shared/*.lua",
+    "callback/**/shared/*.lua",
 }
 
 client_scripts {
-    "store/**/client/*.lua",
+    "callback/**/client/*.lua",
     "framework/**/client/*.lua",
     "integration/client/*.lua",
     "interface/client/*.lua",
@@ -29,7 +30,7 @@ client_scripts {
 server_scripts {
     "@mysql-async/lib/MySQL.lua",
     
-    "store/**/server/*.lua",
+    "callback/**/server/*.lua",
     "framework/**/server/*.lua",
     "integration/server/*.lua",
     "interface/server/*.lua",

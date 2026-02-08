@@ -14,16 +14,19 @@ RegisterNetEvent('esx:playerLoaded', function(xPlayer)
     Lib47.PlayerData = xPlayer
     Lib47.PlayerLoaded = true
     TriggerEvent('ak47_lib:OnPlayerLoaded', PlayerData)
+    TriggerEvent('ak47_bridge:OnPlayerLoaded', PlayerData) -- will be removed soon
 end)
 
 RegisterNetEvent('esx:setJob', function(job)
     Lib47.PlayerData.job = job
     TriggerEvent('ak47_lib:OnJobUpdate', job)
+    TriggerEvent('ak47_bridge:OnJobUpdate', job) -- will be removed soon
 end)
 
 RegisterNetEvent('esx:updatePlayerData', function(key, value)
     Lib47.PlayerData[key] = value
     TriggerEvent('ak47_lib:OnPlayerDataUpdate', Lib47.PlayerData)
+    TriggerEvent('ak47_bridge:OnPlayerDataUpdate', Lib47.PlayerData) -- will be removed soon
 end)
 
 AddEventHandler('esx:restoreLoadout', function()
@@ -40,6 +43,7 @@ AddEventHandler('onResourceStart', function(resourceName)
     end
     if Lib47.PlayerLoaded then
         TriggerEvent('ak47_lib:OnPlayerLoaded', Lib47.PlayerData, resourceName)
+        TriggerEvent('ak47_bridge:OnPlayerLoaded', Lib47.PlayerData, resourceName) -- will be removed soon
     end
 end)
 

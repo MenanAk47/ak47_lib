@@ -47,7 +47,7 @@ Lib47.GetGangList = function()
         GetResourceState('ak47_qb_gangs') == 'started' or 
         GetResourceState('ak47_territories') == 'started' or 
         GetResourceState('ak47_qb_territories') == 'started' then
-        return lib.callback.await('ak47_lib:getakganglist')
+        return Lib47.Callback.Await('ak47_lib:getakganglist')
     end
 
     if Config.Framework == 'qb' then

@@ -102,4 +102,4 @@ end
 
 -- Don't change below
 RegisterNetEvent('ak47_lib:client:ShowProgress', Lib47.ShowProgress)
-lib.callback.register('ak47_lib:callback:client:ShowProgress', Lib47.ShowProgress)
+Lib47.Callback.Register('ak47_lib:callback:client:ShowProgress', Lib47.ShowProgress)

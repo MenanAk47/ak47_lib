@@ -95,6 +95,6 @@ Integration.SetGang = function(source, name, grade)
     end
 end
 
-lib.callback.register('ak47_lib:getakganglist', function()
+Lib47.Callback.Register('ak47_lib:getakganglist', function()
     return Integration.GetGangs()
 end)

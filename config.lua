@@ -67,5 +67,7 @@ Config.Defaults = {
 
 		nightEffect = true, -- less dark background at night time
 	},
+
+	CallbackTimeout = 15 -- seconds
 }
 

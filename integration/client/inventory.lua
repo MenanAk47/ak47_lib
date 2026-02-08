@@ -185,10 +185,12 @@ RegisterInventoryEvents = function()
     if Config.Inventory == 'ak47_inventory' or Config.Inventory == 'ak47_qb_inventory' then
         RegisterNetEvent('ak47_inventory:onRemoveItem', function(item, amount, slot, has)
             TriggerEvent('ak47_lib:OnRemoveItem', item, has)
+            TriggerEvent('ak47_bridge:OnRemoveItem', item, has) -- will be removed soon
         end)
     elseif Config.Framework == 'esx' then
         RegisterNetEvent('esx:removeInventoryItem', function(item, count)
             TriggerEvent('ak47_lib:OnRemoveItem', item, count)
+            TriggerEvent('ak47_bridge:OnRemoveItem', item, count) -- will be removed soon
         end)
     end
     -- other detections are based on framework data set

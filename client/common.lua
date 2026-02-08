@@ -1,5 +1,5 @@
 Lib47.GetTargetMetaValue = function(targetServerId, metaKey)
-    return lib.callback.await('ak47_lib:callback:server:GetTargetMetaValue', nil, targetServerId, metaKey)
+    return Lib47.Callback.Await('ak47_lib:callback:server:GetTargetMetaValue', nil, targetServerId, metaKey)
 end
 
 exports('GetLibObject', function()

@@ -7,7 +7,7 @@ Lib47.IsItemTypeWeapon = function(name)
     return name:lower():find('weapon_')
 end
 
-lib.callback.register('ak47_lib:callback:server:GetTargetMetaValue', function( source, target, type )
+Lib47.Callback.Register('ak47_lib:callback:server:GetTargetMetaValue', function( source, target, type )
     return Lib47.GetPlayerMetaValue(target, type)
 end)
 

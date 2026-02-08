@@ -24,6 +24,7 @@ Functions.HasAnyItemRemoved = function(oldItems, newItems)
         if newAmount < oldAmount then
             local itemInfo = oldData[name]
             TriggerEvent('ak47_lib:OnRemoveItem', name, newAmount)
+            TriggerEvent('ak47_bridge:OnRemoveItem', name, newAmount) -- will be removed soon
         end
     end
 end

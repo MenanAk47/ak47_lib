@@ -46,7 +46,7 @@ Lib47.GiveVehicleKey = function(plate, vehicle, virtual)
     end
 end
 
-lib.callback.register('ak47_lib:callback:client:GiveVehicleKey', function( plate, vehNetId, virtual )
+Lib47.Callback.Register('ak47_lib:callback:client:GiveVehicleKey', function( plate, vehNetId, virtual )
     local vehicle = nil
     if NetworkDoesNetworkIdExist(vehNetId) then
         vehicle = NetToVeh(vehNetId)
@@ -81,7 +81,7 @@ Lib47.RemoveVehicleKey = function(plate, vehicle, virtual)
     end
 end
 
-lib.callback.register('ak47_lib:callback:client:RemoveVehicleKey', function( plate, vehNetId, virtual )
+Lib47.Callback.Register('ak47_lib:callback:client:RemoveVehicleKey', function( plate, vehNetId, virtual )
     local vehicle = nil
     if NetworkDoesNetworkIdExist(vehNetId) then
         vehicle = NetToVeh(vehNetId)
