@@ -62,9 +62,9 @@ exports('ShowChecklist', Interface.ShowChecklist)
 exports('UpdateChecklist', Interface.UpdateChecklist)
 exports('HideChecklist', Interface.HideChecklist)
 
-Bridge.ShowChecklist = Interface.ShowChecklist
-Bridge.UpdateChecklist = Interface.UpdateChecklist
-Bridge.HideChecklist = Interface.HideChecklist
+Lib47.ShowChecklist = Interface.ShowChecklist
+Lib47.UpdateChecklist = Interface.UpdateChecklist
+Lib47.HideChecklist = Interface.HideChecklist
 
 --[[
 

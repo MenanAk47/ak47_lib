@@ -1,4 +1,4 @@
-Bridge.Notify = function(msg, type, duration)
+Lib47.Notify = function(msg, type, duration)
     if Config.Notify == 'default' then
         Interface.Notify({
             type = type,
@@ -24,4 +24,4 @@ Bridge.Notify = function(msg, type, duration)
 end
 
 -- Don't change below
-RegisterNetEvent('ak47_bridge:client:Notify', Bridge.Notify)
+RegisterNetEvent('ak47_lib:client:Notify', Lib47.Notify)

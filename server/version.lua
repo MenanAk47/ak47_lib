@@ -25,13 +25,13 @@ local IsVersionLower = function(currentVersion, newVersion)
     return false
 end
 
-Bridge.IsVersionCompatible = function(requiredVersion)
+Lib47.IsVersionCompatible = function(requiredVersion)
     local invokedResource = GetInvokingResource()
     local currentVersion = GetResourceMetadata(GetCurrentResourceName(), 'version', 0)
     if IsVersionLower(currentVersion, requiredVersion) then
-        print(string.format("^1Incomatible ak47_bridge version for resource: [%s]^0", invokedResource))
-        print(string.format("^3You need minimum ak47_bridge version: %s^0", requiredVersion))
-        print(string.format("^3Download latest ak47_bridge:^5 %s^0", 'https://github.com/MenanAk47/ak47_bridge/releases/latest'))
+        print(string.format("^1Incomatible ak47_lib version for resource: [%s]^0", invokedResource))
+        print(string.format("^3You need minimum ak47_lib version: %s^0", requiredVersion))
+        print(string.format("^3Download latest ak47_lib:^5 %s^0", 'https://github.com/MenanAk47/ak47_lib/releases/latest'))
         return false
     end
     return true

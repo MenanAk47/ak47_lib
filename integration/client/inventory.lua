@@ -23,12 +23,12 @@ if Config.Inventory == 'auto' then
     end)
 end
 
-Bridge.SetInventoryBusy = function(state)
+Lib47.SetInventoryBusy = function(state)
     LocalPlayer.state:set('invBusy', state, true)
     LocalPlayer.state:set('inv_busy', state, true)
 end
 
-Bridge.OpenSearchInventory = function(targetServerId)
+Lib47.OpenSearchInventory = function(targetServerId)
     if Config.Inventory == 'ak47_inventory' then
         exports['ak47_inventory']:OpenInventory(targetServerId)
 
@@ -42,7 +42,7 @@ Bridge.OpenSearchInventory = function(targetServerId)
         TriggerServerEvent("inventory:server:OpenInventory", "otherplayer", targetServerId)
 
     elseif Config.Inventory == 'qb-inventory' then
-        TriggerServerEvent('ak47_bridge:openqbinventory', targetServerId)
+        TriggerServerEvent('ak47_lib:openqbinventory', targetServerId)
 
     elseif Config.Inventory == 'qb-inventory-old' then
         TriggerServerEvent("inventory:server:OpenInventory", "otherplayer", targetServerId)
@@ -65,7 +65,7 @@ Bridge.OpenSearchInventory = function(targetServerId)
     end
 end
 
-Bridge.OpenStash = function(identifier, name, weight, slots)
+Lib47.OpenStash = function(identifier, name, weight, slots)
     if Config.Inventory == 'ak47_inventory' then
         exports["ak47_inventory"]:OpenInventory({identifier = identifier, type = 'stash', label = name, maxWeight = weight * 1000, slots = slots})
 
@@ -88,7 +88,7 @@ Bridge.OpenStash = function(identifier, name, weight, slots)
         TriggerServerEvent("ak47_qb_policejob:OpenQbStash", identifier, {maxweight = weight * 1000, slots = slots, label = name})
 
     elseif Config.Inventory == 'ox_inventory' then
-        TriggerServerEvent('ak47_bridge:registeroxinventory', identifier, {weight = weight, slots = slots}, uid)
+        TriggerServerEvent('ak47_lib:registeroxinventory', identifier, {weight = weight, slots = slots}, uid)
         exports["ox_inventory"]:openInventory('stash', identifier)
 
     elseif Config.Inventory == 'qs-inventory' then
@@ -106,7 +106,7 @@ Bridge.OpenStash = function(identifier, name, weight, slots)
     end
 end
 
-Bridge.CloseInventory = function()
+Lib47.CloseInventory = function()
     if Config.Inventory == 'ak47_inventory' then
         exports['ak47_inventory']:CloseInventory()
 
@@ -117,7 +117,7 @@ Bridge.CloseInventory = function()
         exports['ox_inventory']:closeInventory()
 
     elseif Config.Inventory == 'qb-inventory' then
-        TriggerServerEvent('ak47_bridge:closeqbinventory')
+        TriggerServerEvent('ak47_lib:closeqbinventory')
 
     elseif Config.Inventory == 'cheeza_inventory' then
         exports['inventory']:CloseInventory()
@@ -143,7 +143,7 @@ Bridge.CloseInventory = function()
     end
 end
 
-Bridge.GetInventoryImageLink = function()
+Lib47.GetInventoryImageLink = function()
     if Config.Inventory == 'ak47_inventory' then
         return "nui://ak47_inventory/web/build/images/"
 
@@ -173,22 +173,22 @@ Bridge.GetInventoryImageLink = function()
     end
 end
 
-Bridge.GetItemImageLink = function(name, format)
+Lib47.GetItemImageLink = function(name, format)
     if not name then
         print("^1Image link requested but no item name was provided!^0")
         return 
     end
-    return Bridge.GetInventoryImageLink() .. name .. (format or '.png')
+    return Lib47.GetInventoryImageLink() .. name .. (format or '.png')
 end
 
 RegisterInventoryEvents = function()
     if Config.Inventory == 'ak47_inventory' or Config.Inventory == 'ak47_qb_inventory' then
         RegisterNetEvent('ak47_inventory:onRemoveItem', function(item, amount, slot, has)
-            TriggerEvent('ak47_bridge:OnRemoveItem', item, has)
+            TriggerEvent('ak47_lib:OnRemoveItem', item, has)
         end)
     elseif Config.Framework == 'esx' then
         RegisterNetEvent('esx:removeInventoryItem', function(item, count)
-            TriggerEvent('ak47_bridge:OnRemoveItem', item, count)
+            TriggerEvent('ak47_lib:OnRemoveItem', item, count)
         end)
     end
     -- other detections are based on framework data set

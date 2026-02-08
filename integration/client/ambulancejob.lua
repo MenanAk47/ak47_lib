@@ -10,7 +10,7 @@ local function CalculateLastStand(target)
             return true
         end
 
-        return Bridge.GetTargetMetaValue(target, 'inlaststand')
+        return Lib47.GetTargetMetaValue(target, 'inlaststand')
     else
         if (GetResourceState('ak47_ambulancejob') == 'started' or GetResourceState('ak47_qb_ambulancejob') == 'started') and LocalPlayer.state.down then
             return true
@@ -39,7 +39,7 @@ local function CalculateIsDead(target)
             return Player(target).state.isDead
         end
 
-        return Bridge.GetTargetMetaValue(target, 'isdead')
+        return Lib47.GetTargetMetaValue(target, 'isdead')
     else
         if (GetResourceState('ak47_ambulancejob') == 'started' or GetResourceState('ak47_qb_ambulancejob') == 'started') and LocalPlayer.state.dead then
             return true
@@ -64,7 +64,7 @@ local function CalculateIsDead(target)
     return false
 end
 
-Bridge.IsLastStand = function(target)
+Lib47.IsLastStand = function(target)
     local currentTime = GetGameTimer()
     local cacheKey = target or 'self'
 
@@ -78,7 +78,7 @@ Bridge.IsLastStand = function(target)
     return result
 end
 
-Bridge.IsDead = function(target)
+Lib47.IsDead = function(target)
     local currentTime = GetGameTimer()
     local cacheKey = target or 'self'
 
@@ -92,6 +92,6 @@ Bridge.IsDead = function(target)
     return result
 end
 
-Bridge.IsIncapacitated = function(target)
-    return Bridge.IsLastStand(target) or Bridge.IsDead(target)
+Lib47.IsIncapacitated = function(target)
+    return Lib47.IsLastStand(target) or Lib47.IsDead(target)
 end

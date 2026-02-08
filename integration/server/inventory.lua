@@ -17,20 +17,20 @@ if Config.Inventory == 'auto' then
                 Config.Inventory = script
                 
                 if Config.Inventory == 'qb-inventory' then
-                    RegisterNetEvent('ak47_bridge:closeqbinventory', function()
+                    RegisterNetEvent('ak47_lib:closeqbinventory', function()
                         local source = source
                         exports['qb-inventory']:CloseInventory(source, GetIdentifier(source))
                     end)
 
-                    RegisterNetEvent('ak47_bridge:openqbinventory', function(target)
+                    RegisterNetEvent('ak47_lib:openqbinventory', function(target)
                         exports['qb-inventory']:OpenInventoryById(source, target)
                     end)
 
-                    RegisterNetEvent('ak47_bridge:OpenQbStash', function(identifier, data)
+                    RegisterNetEvent('ak47_lib:OpenQbStash', function(identifier, data)
                         exports["qb-inventory"]:OpenInventory(source, identifier, data)
                     end)
                 elseif Config.Inventory == 'ox_inventory' then
-                    RegisterNetEvent('ak47_bridge:registeroxinventory', function(identifier, data)
+                    RegisterNetEvent('ak47_lib:registeroxinventory', function(identifier, data)
                         exports["ox_inventory"]:RegisterStash(identifier, identifier, data.slots, data.weight * 1000)
                     end)
                 end
@@ -76,10 +76,10 @@ Integration.AddItem = function(source, item, amount, slot, meta)
     
     -- add your inventory support above this code
     elseif Config.Framework == 'esx' then
-        local xPlayer = Bridge.GetPlayer(source)
+        local xPlayer = Lib47.GetPlayer(source)
         return xPlayer.addInventoryItem(item, amount)
     elseif Config.Framework == 'qb' then
-        local Player = Bridge.GetPlayer(source)
+        local Player = Lib47.GetPlayer(source)
         return Player.Functions.AddItem(item, amount, slot, meta)
     end
 end
@@ -111,7 +111,7 @@ Integration.GetInventoryItems = function(inventoryId)
         return inventory and inventory.items or {}
 
     elseif Config.Inventory == 'codem-inventory' then
-        if Bridge.GetPlayer(inventoryId) then
+        if Lib47.GetPlayer(inventoryId) then
             local inventory = exports['codem-inventory']:GetInventory(inventoryId, inventoryId)
             return inventory and inventory.items or {}
         else
@@ -119,7 +119,7 @@ Integration.GetInventoryItems = function(inventoryId)
         end
 
     elseif Config.Inventory == 'tgiann-inventory' then
-        if Bridge.GetPlayer(inventoryId) then
+        if Lib47.GetPlayer(inventoryId) then
             return exports["tgiann-inventory"]:GetPlayerItems(inventoryId)
         else
             local inventory = exports["tgiann-inventory"]:GetInventory(inventoryId, "stash")
@@ -132,11 +132,11 @@ Integration.GetInventoryItems = function(inventoryId)
 
     -- add your inventory support above this code
     elseif Config.Framework == 'esx' then
-        local xPlayer = Bridge.GetPlayer(source)
+        local xPlayer = Lib47.GetPlayer(source)
         return xPlayer.getInventory()
 
     elseif Config.Framework == 'qb' then
-        local Player = Bridge.GetPlayer(source)
+        local Player = Lib47.GetPlayer(source)
         return Player.PlayerData.items
     end
 end

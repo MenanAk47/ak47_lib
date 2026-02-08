@@ -145,7 +145,7 @@ local function convert(options)
     return options
 end
 
-Bridge.AddBoxZone = function(name, center, length, width, options, targetoptions)
+Lib47.AddBoxZone = function(name, center, length, width, options, targetoptions)
     local resource = GetInvokingResource()
     if GetResourceState('ox_target') == 'started' then
         local z = center.z
@@ -176,7 +176,7 @@ Bridge.AddBoxZone = function(name, center, length, width, options, targetoptions
     end
 end
 
-Bridge.AddPolyZone = function(name, points, options, targetoptions)
+Lib47.AddPolyZone = function(name, points, options, targetoptions)
     local resource = GetInvokingResource()
     if GetResourceState('ox_target') == 'started' then
         local newPoints = table.create(#points, 0)
@@ -205,7 +205,7 @@ Bridge.AddPolyZone = function(name, points, options, targetoptions)
     end
 end
 
-Bridge.AddCircleZone = function(name, center, radius, options, targetoptions)
+Lib47.AddCircleZone = function(name, center, radius, options, targetoptions)
     local resource = GetInvokingResource()
     if GetResourceState('ox_target') == 'started' then
         local id = exports.ox_target:addSphereZone({
@@ -228,7 +228,7 @@ Bridge.AddCircleZone = function(name, center, radius, options, targetoptions)
     end
 end
 
-Bridge.RemoveZone = function(id)
+Lib47.RemoveZone = function(id)
     if GetResourceState('ox_target') == 'started' then
         exports.ox_target:removeZone(id, true)
     elseif GetResourceState('qb-target') == 'started' then
@@ -238,7 +238,7 @@ Bridge.RemoveZone = function(id)
     end
 end
 
-Bridge.AddTargetBone = function(bones, options)
+Lib47.AddTargetBone = function(bones, options)
     local resource = GetInvokingResource()
     local labels = getLabels(options)
     
@@ -259,7 +259,7 @@ Bridge.AddTargetBone = function(bones, options)
     end
 end
 
-Bridge.AddTargetEntity = function(entities, options)
+Lib47.AddTargetEntity = function(entities, options)
     local resource = GetInvokingResource()
     local labels = getLabels(options)
 
@@ -284,7 +284,7 @@ Bridge.AddTargetEntity = function(entities, options)
     end
 end
 
-Bridge.RemoveTargetEntity = function(entities, labels)
+Lib47.RemoveTargetEntity = function(entities, labels)
     if GetResourceState('ox_target') == 'started' then
         if type(entities) ~= 'table' then entities = { entities } end
         for i = 1, #entities do
@@ -302,7 +302,7 @@ Bridge.RemoveTargetEntity = function(entities, labels)
     end
 end
 
-Bridge.AddTargetModel = function(models, options)
+Lib47.AddTargetModel = function(models, options)
     local resource = GetInvokingResource()
     local labels = getLabels(options)
 
@@ -318,7 +318,7 @@ Bridge.AddTargetModel = function(models, options)
     end
 end
 
-Bridge.RemoveTargetModel = function(models, labels)
+Lib47.RemoveTargetModel = function(models, labels)
     if GetResourceState('ox_target') == 'started' then
         exports.ox_target:removeModel(models, labels)
     elseif GetResourceState('qb-target') == 'started' then
@@ -328,7 +328,7 @@ Bridge.RemoveTargetModel = function(models, labels)
     end
 end
 
-Bridge.AddGlobalPed = function(options)
+Lib47.AddGlobalPed = function(options)
     local resource = GetInvokingResource()
     local labels = getLabels(options)
 
@@ -344,7 +344,7 @@ Bridge.AddGlobalPed = function(options)
     end
 end
 
-Bridge.RemoveGlobalPed = function(labels)
+Lib47.RemoveGlobalPed = function(labels)
     if GetResourceState('ox_target') == 'started' then
         exports.ox_target:removeGlobalPed(labels)
     elseif GetResourceState('qb-target') == 'started' then
@@ -354,7 +354,7 @@ Bridge.RemoveGlobalPed = function(labels)
     end
 end
 
-Bridge.AddGlobalVehicle = function(options)
+Lib47.AddGlobalVehicle = function(options)
     local resource = GetInvokingResource()
     local labels = getLabels(options)
 
@@ -370,7 +370,7 @@ Bridge.AddGlobalVehicle = function(options)
     end
 end
 
-Bridge.RemoveGlobalVehicle = function(labels)
+Lib47.RemoveGlobalVehicle = function(labels)
     if GetResourceState('ox_target') == 'started' then
         exports.ox_target:removeGlobalVehicle(labels)
     elseif GetResourceState('qb-target') == 'started' then
@@ -380,7 +380,7 @@ Bridge.RemoveGlobalVehicle = function(labels)
     end
 end
 
-Bridge.AddGlobalObject = function(options)
+Lib47.AddGlobalObject = function(options)
     local resource = GetInvokingResource()
     local labels = getLabels(options)
 
@@ -396,7 +396,7 @@ Bridge.AddGlobalObject = function(options)
     end
 end
 
-Bridge.RemoveGlobalObject = function(labels)
+Lib47.RemoveGlobalObject = function(labels)
     if GetResourceState('ox_target') == 'started' then
         exports.ox_target:removeGlobalObject(labels)
     elseif GetResourceState('qb-target') == 'started' then
@@ -406,7 +406,7 @@ Bridge.RemoveGlobalObject = function(labels)
     end
 end
 
-Bridge.AddGlobalPlayer = function(options)
+Lib47.AddGlobalPlayer = function(options)
     local resource = GetInvokingResource()
     local labels = getLabels(options)
 
@@ -422,7 +422,7 @@ Bridge.AddGlobalPlayer = function(options)
     end
 end
 
-Bridge.RemoveGlobalPlayer = function(labels)
+Lib47.RemoveGlobalPlayer = function(labels)
     if GetResourceState('ox_target') == 'started' then
         exports.ox_target:removeGlobalPlayer(labels)
     elseif GetResourceState('qb-target') == 'started' then
@@ -440,19 +440,19 @@ AddEventHandler('onResourceStop', function(resource)
         local data = item.data
 
         if type == 'zone' then
-            Bridge.RemoveZone(data)
+            Lib47.RemoveZone(data)
         elseif type == 'model' then
-            Bridge.RemoveTargetModel(data.models, data.labels)
+            Lib47.RemoveTargetModel(data.models, data.labels)
         elseif type == 'entity' then
-            Bridge.RemoveTargetEntity(data.entities, data.labels)
+            Lib47.RemoveTargetEntity(data.entities, data.labels)
         elseif type == 'globalPed' then
-            Bridge.RemoveGlobalPed(data.labels)
+            Lib47.RemoveGlobalPed(data.labels)
         elseif type == 'globalVehicle' then
-            Bridge.RemoveGlobalVehicle(data.labels)
+            Lib47.RemoveGlobalVehicle(data.labels)
         elseif type == 'globalObject' then
-            Bridge.RemoveGlobalObject(data.labels)
+            Lib47.RemoveGlobalObject(data.labels)
         elseif type == 'globalPlayer' then
-            Bridge.RemoveGlobalPlayer(data.labels)
+            Lib47.RemoveGlobalPlayer(data.labels)
         elseif type == 'bone' then
             if GetResourceState('qb-target') == 'started' then
                 exports['qb-target']:RemoveTargetBone(data.bones, data.labels)

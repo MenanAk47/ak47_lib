@@ -1,6 +1,6 @@
-# [Ak47 Bridge Documentation](https://docs.menanak47.com/plugins/ak47_bridge)
+# [Ak47 Lib Documentation](https://docs.menanak47.com/plugins/ak47_lib)
 
-**ak47_bridge** is a unified compatibility layer designed to support multiple FiveM frameworks (ESX, QBCore, QBX) and various third-party resources (Inventory, Target, Fuel, etc.) through a single, consistent API. This allows developers to write scripts that work across different server setups without writing complex adaptation code.
+**ak47_lib** is a unified compatibility layer designed to support multiple FiveM frameworks (ESX, QBCore, QBX) and various third-party resources (Inventory, Target, Fuel, etc.) through a single, consistent API. This allows developers to write scripts that work across different server setups without writing complex adaptation code.
 
 ## 🌟 Features
 
@@ -13,7 +13,6 @@
 ## 📋 Requirements
 
 * **FiveM Server** (Artifacts enabling Lua 5.4 recommended)
-* **[ox_lib](https://github.com/overextended/ox_lib)** (Required for UI, callbacks, and utilities)
 * **A Supported Framework:**
 * ESX Legacy
 * QBCore
@@ -23,13 +22,11 @@
 
 ## 📦 Installation
 
-1. Download the `ak47_bridge` resource.
+1. Download the `ak47_lib` resource.
 2. Place the folder into your server's `resources` directory.
-3. Ensure `ox_lib` is started **before** the bridge.
-4. Add the following to your `server.cfg`:
+3. Add the following to your `server.cfg`:
 ```cfg
-ensure ox_lib
-ensure ak47_bridge
+ensure ak47_lib
 
 ```
 
@@ -37,7 +34,7 @@ ensure ak47_bridge
 
 ## ⚙️ Configuration
 
-The configuration is handled in `config.lua`. By default, most options are set to `'auto'`, meaning the bridge will scan your server resources and select the appropriate integration automatically.
+The configuration is handled in `config.lua`. By default, most options are set to `'auto'`, meaning the lib will scan your server resources and select the appropriate integration automatically.
 
 ```lua
 Config = {}

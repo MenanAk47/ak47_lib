@@ -1,4 +1,4 @@
-Bridge.ShowProgress = function(progressData, onSuccess, onCancel)
+Lib47.ShowProgress = function(progressData, onSuccess, onCancel)
     local result = false
 
     if Config.Progressbar == 'default' then
@@ -101,5 +101,5 @@ Bridge.ShowProgress = function(progressData, onSuccess, onCancel)
 end
 
 -- Don't change below
-RegisterNetEvent('ak47_bridge:client:ShowProgress', Bridge.ShowProgress)
-lib.callback.register('ak47_bridge:callback:client:ShowProgress', Bridge.ShowProgress)
+RegisterNetEvent('ak47_lib:client:ShowProgress', Lib47.ShowProgress)
+lib.callback.register('ak47_lib:callback:client:ShowProgress', Lib47.ShowProgress)

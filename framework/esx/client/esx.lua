@@ -11,19 +11,19 @@ ESX = exports['es_extended']:getSharedObject()
 -- ====================================================================================
 
 RegisterNetEvent('esx:playerLoaded', function(xPlayer)
-    Bridge.PlayerData = xPlayer
-    Bridge.PlayerLoaded = true
-    TriggerEvent('ak47_bridge:OnPlayerLoaded', PlayerData)
+    Lib47.PlayerData = xPlayer
+    Lib47.PlayerLoaded = true
+    TriggerEvent('ak47_lib:OnPlayerLoaded', PlayerData)
 end)
 
 RegisterNetEvent('esx:setJob', function(job)
-    Bridge.PlayerData.job = job
-    TriggerEvent('ak47_bridge:OnJobUpdate', job)
+    Lib47.PlayerData.job = job
+    TriggerEvent('ak47_lib:OnJobUpdate', job)
 end)
 
 RegisterNetEvent('esx:updatePlayerData', function(key, value)
-    Bridge.PlayerData[key] = value
-    TriggerEvent('ak47_bridge:OnPlayerDataUpdate', Bridge.PlayerData)
+    Lib47.PlayerData[key] = value
+    TriggerEvent('ak47_lib:OnPlayerDataUpdate', Lib47.PlayerData)
 end)
 
 AddEventHandler('esx:restoreLoadout', function()
@@ -34,12 +34,12 @@ AddEventHandler('onResourceStart', function(resourceName)
     if resourceName == GetCurrentResourceName() then
         local data = ESX.GetPlayerData()
         if data and data.job then
-            Bridge.PlayerData = data
-            Bridge.PlayerLoaded = true
+            Lib47.PlayerData = data
+            Lib47.PlayerLoaded = true
         end
     end
-    if Bridge.PlayerLoaded then
-        TriggerEvent('ak47_bridge:OnPlayerLoaded', Bridge.PlayerData, resourceName)
+    if Lib47.PlayerLoaded then
+        TriggerEvent('ak47_lib:OnPlayerLoaded', Lib47.PlayerData, resourceName)
     end
 end)
 
@@ -47,25 +47,25 @@ end)
 --                                     FUNCTIONS
 -- ====================================================================================
 
-Bridge.GetPlayerData = function()
-    Bridge.PlayerData = ESX.GetPlayerData()
-    return Bridge.PlayerData
+Lib47.GetPlayerData = function()
+    Lib47.PlayerData = ESX.GetPlayerData()
+    return Lib47.PlayerData
 end
 
 -- Returns client job data formatted like QBCore for consistency
-Bridge.GetJob = function()
-    if not Bridge.PlayerData or not Bridge.PlayerData.job then return nil end
+Lib47.GetJob = function()
+    if not Lib47.PlayerData or not Lib47.PlayerData.job then return nil end
 
     local job = {}
-    job.name = Bridge.PlayerData.job.name
-    job.label = Bridge.PlayerData.job.label
-    job.payment = Bridge.PlayerData.job.grade_salary
+    job.name = Lib47.PlayerData.job.name
+    job.label = Lib47.PlayerData.job.label
+    job.payment = Lib47.PlayerData.job.grade_salary
     
-    job.isboss = Bridge.PlayerData.job.grade_name == 'boss'
+    job.isboss = Lib47.PlayerData.job.grade_name == 'boss'
 
     job.grade = {}
-    job.grade.name = Bridge.PlayerData.job.grade_label
-    job.grade.level = Bridge.PlayerData.job.grade
+    job.grade.name = Lib47.PlayerData.job.grade_label
+    job.grade.level = Lib47.PlayerData.job.grade
 
     return job
 end

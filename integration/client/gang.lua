@@ -1,4 +1,4 @@
-Bridge.GetGangName = function()
+Lib47.GetGangName = function()
     if GetResourceState('ak47_gangs') == 'started' or GetResourceState('ak47_gangs') == 'uninitialized' then
         local gang = exports['ak47_gangs']:GetPlayerGang()
         return gang and gang.tag
@@ -20,7 +20,7 @@ Bridge.GetGangName = function()
     return nil
 end
 
-Bridge.GetGangRank = function()
+Lib47.GetGangRank = function()
     if GetResourceState('ak47_gangs') == 'started' or GetResourceState('ak47_gangs') == 'uninitialized' then
         local gang = exports['ak47_gangs']:GetPlayerGang()
         return gang and gang.rankid
@@ -42,12 +42,12 @@ Bridge.GetGangRank = function()
     return nil
 end
 
-Bridge.GetGangList = function()
+Lib47.GetGangList = function()
     if GetResourceState('ak47_gangs') == 'started' or 
         GetResourceState('ak47_qb_gangs') == 'started' or 
         GetResourceState('ak47_territories') == 'started' or 
         GetResourceState('ak47_qb_territories') == 'started' then
-        return lib.callback.await('ak47_bridge:getakganglist')
+        return lib.callback.await('ak47_lib:getakganglist')
     end
 
     if Config.Framework == 'qb' then

@@ -158,7 +158,7 @@ Interface.StartProgress = function(data, onFinish, onCancel)
             break
         end
 
-        if not data.useWhileDead and Bridge.IsIncapacitated() then cancelled = true break end
+        if not data.useWhileDead and Lib47.IsIncapacitated() then cancelled = true break end
         if not data.allowRagdoll and IsPedRagdoll(ped) then cancelled = true break end
         if not data.allowSwimming and IsPedSwimming(ped) then cancelled = true break end
         if not data.allowFalling and IsPedFalling(ped) then cancelled = true break end

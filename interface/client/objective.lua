@@ -34,8 +34,8 @@ end
 exports('ShowObjective', Interface.ShowObjective)
 exports('HideObjective', Interface.HideObjective)
 
-Bridge.ShowObjective = Interface.ShowObjective
-Bridge.HideObjective = Interface.HideObjective
+Lib47.ShowObjective = Interface.ShowObjective
+Lib47.HideObjective = Interface.HideObjective
 
 --[[
 
@@ -59,7 +59,7 @@ local text = {
     { "Cancel Creation <k>DEL<k>" } -- This renders as footer text
 }
 
-Bridge.ShowObjective(text, "Editor Mode", "center")
+Lib47.ShowObjective(text, "Editor Mode", "center")
 
 
 
@@ -70,16 +70,16 @@ local text2 = {
         "Option Two <m>2<m>"
     }
 }
-Bridge.ShowObjective(text2, "Menu", "right")
+Lib47.ShowObjective(text2, "Menu", "right")
 
 
 local text3 = {
     "Collect the evidence",
     "Escape the police"
 }
-Bridge.ShowObjective(text3, "Current Task", "top")
+Lib47.ShowObjective(text3, "Current Task", "top")
 
 local text4 = "Collect the evidence"
-Bridge.ShowObjective(text4, "Current Task", "top")
+Lib47.ShowObjective(text4, "Current Task", "top")
 
 ]]

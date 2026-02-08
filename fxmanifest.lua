@@ -1,6 +1,6 @@
 fx_version 'adamant'
 game 'gta5'
-description 'Ak47 Bridge'
+description 'Ak47 Lib'
 author 'MenanAk47'
 version '1.0.4'
 
@@ -43,6 +43,6 @@ escrow_ignore {
 
 lua54 'yes'
 
-dependencies {
-    'ox_lib',
+provides {
+    'ak47_bridge'
 }

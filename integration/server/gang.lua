@@ -61,7 +61,7 @@ Integration.GetGang = function(source)
     end
 
     if Config.Framework == 'qb' or Config.Framework == 'qbx' then
-        local Player = Bridge.GetPlayer(source)
+        local Player = Lib47.GetPlayer(source)
         return Player and Player.PlayerData.gang
     end
 
@@ -90,11 +90,11 @@ Integration.SetGang = function(source, name, grade)
     ]]
 
     if Config.Framework == 'qb' or Config.Framework == 'qbx' then
-        local Player = Bridge.GetPlayer(source)
+        local Player = Lib47.GetPlayer(source)
         return Player and Player.SetGang.SetGang(name, grade)
     end
 end
 
-lib.callback.register('ak47_bridge:getakganglist', function()
+lib.callback.register('ak47_lib:getakganglist', function()
     return Integration.GetGangs()
 end)

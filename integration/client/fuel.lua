@@ -16,7 +16,7 @@ if Config.FuelScript == 'auto' then
     end)
 end
 
-Bridge.SetVehicleFuel = function(vehicle, amount)
+Lib47.SetVehicleFuel = function(vehicle, amount)
     if Config.FuelScript == 'LegacyFuel' then
         exports['LegacyFuel']:SetFuel(vehicle, tonumber(amount) + 0.0)
     elseif Config.FuelScript == 'ox_fuel' then

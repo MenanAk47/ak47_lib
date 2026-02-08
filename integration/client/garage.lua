@@ -20,7 +20,7 @@ if Config.Garage == 'auto' then
     end)
 end
 
-Bridge.StoreVehicleHousing = function(garageid, vehicle)
+Lib47.StoreVehicleHousing = function(garageid, vehicle)
     if Config.Garage == 'ak47_garage' then
         TriggerEvent("ak47_garage:housing:storevehicle", "Housing "..garageid, 'car')
     elseif Config.Garage == 'ak47_qb_garage' then
@@ -39,7 +39,7 @@ Bridge.StoreVehicleHousing = function(garageid, vehicle)
     end
 end
 
-Bridge.OpenGarageHousing = function(garageid)
+Lib47.OpenGarageHousing = function(garageid)
     local playerCoords, playerHeading = GetEntityCoords(cache.ped), GetEntityHeading(cache.ped)
     if Config.Garage == 'cd_garage' then
         TriggerEvent('cd_garage:PropertyGarage', 'quick', nil)

@@ -184,7 +184,7 @@ function SoundObject:play()
         })
         StartAudioLoop()
         if self.global and not self.isReplicated then
-            TriggerServerEvent('ak47_bridge:server:PlaySound', {
+            TriggerServerEvent('ak47_lib:server:PlaySound', {
                 soundId = self.soundId,
                 url = self.url,
                 coords = self.coords,
@@ -201,7 +201,7 @@ function SoundObject:play()
     else
         SendNUIMessage({ action = "resumeSound", soundId = self.soundId })
         if self.global and not self.isReplicated then
-            TriggerServerEvent('ak47_bridge:server:ResumeSound', self.soundId)
+            TriggerServerEvent('ak47_lib:server:ResumeSound', self.soundId)
         end
     end
     return self
@@ -211,7 +211,7 @@ function SoundObject:pause()
     self.isPlaying = false
     SendNUIMessage({ action = "pauseSound", soundId = self.soundId })
     if self.global and not self.isReplicated then
-        TriggerServerEvent('ak47_bridge:server:PauseSound', self.soundId)
+        TriggerServerEvent('ak47_lib:server:PauseSound', self.soundId)
     end
     return self
 end
@@ -222,7 +222,7 @@ function SoundObject:destroy()
     activeSounds[self.soundId] = nil
     SendNUIMessage({ action = "stopSound", soundId = self.soundId })
     if self.global and not self.isReplicated then
-        TriggerServerEvent('ak47_bridge:server:StopSound', self.soundId)
+        TriggerServerEvent('ak47_lib:server:StopSound', self.soundId)
     end
     return nil
 end
@@ -241,7 +241,7 @@ function SoundObject:setRate(rate)
         SendNUIMessage({ action = "updateRate", soundId = self.soundId, rate = rate })
     end
     if self.global and not self.isReplicated then
-        TriggerServerEvent('ak47_bridge:server:SyncState', self.soundId, 'rate', rate)
+        TriggerServerEvent('ak47_lib:server:SyncState', self.soundId, 'rate', rate)
     end
     return self
 end
@@ -265,7 +265,7 @@ function SoundObject:updateCoords(coords)
         })
     end
     if self.global and not self.isReplicated then
-        TriggerServerEvent('ak47_bridge:server:UpdateSoundCoords', self.soundId, coords)
+        TriggerServerEvent('ak47_lib:server:UpdateSoundCoords', self.soundId, coords)
     end
     return self
 end
@@ -372,18 +372,18 @@ Interface.CreateSound = function(data)
     return publicWrapper
 end
 
-RegisterNetEvent('ak47_bridge:client:PlaySound', function(data)
+RegisterNetEvent('ak47_lib:client:PlaySound', function(data)
     if activeSounds[data.soundId] then return end
     data.replicated = true 
     Interface.CreateSound(data)
 end)
-RegisterNetEvent('ak47_bridge:client:PauseSound', function(soundId) if activeSounds[soundId] then activeSounds[soundId]:pause() end end)
-RegisterNetEvent('ak47_bridge:client:ResumeSound', function(soundId) if activeSounds[soundId] then activeSounds[soundId]:play() end end)
-RegisterNetEvent('ak47_bridge:client:StopSound', function(soundId) if activeSounds[soundId] then activeSounds[soundId]:destroy() end end)
-RegisterNetEvent('ak47_bridge:client:UpdateSoundCoords', function(soundId, coords) if activeSounds[soundId] then activeSounds[soundId]:updateCoords(coords) end end)
-RegisterNetEvent('ak47_bridge:client:SyncState', function(soundId, key, value) if activeSounds[soundId] and key == 'rate' then activeSounds[soundId]:setRate(value) end end)
+RegisterNetEvent('ak47_lib:client:PauseSound', function(soundId) if activeSounds[soundId] then activeSounds[soundId]:pause() end end)
+RegisterNetEvent('ak47_lib:client:ResumeSound', function(soundId) if activeSounds[soundId] then activeSounds[soundId]:play() end end)
+RegisterNetEvent('ak47_lib:client:StopSound', function(soundId) if activeSounds[soundId] then activeSounds[soundId]:destroy() end end)
+RegisterNetEvent('ak47_lib:client:UpdateSoundCoords', function(soundId, coords) if activeSounds[soundId] then activeSounds[soundId]:updateCoords(coords) end end)
+RegisterNetEvent('ak47_lib:client:SyncState', function(soundId, key, value) if activeSounds[soundId] and key == 'rate' then activeSounds[soundId]:setRate(value) end end)
 exports('CreateSound', Interface.CreateSound)
-Bridge.CreateSound = Interface.CreateSound
+Lib47.CreateSound = Interface.CreateSound
 
 -- =========================================================================
 --                            GIZMO / DEBUGGER

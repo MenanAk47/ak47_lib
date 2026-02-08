@@ -11,29 +11,29 @@ QBCore = exports['qb-core']:GetCoreObject()
 --                                    CORE PLAYER
 -- ====================================================================================
 
-Bridge.GetPlayer = function(source)
+Lib47.GetPlayer = function(source)
     return QBCore.Functions.GetPlayer(source)
 end
 
-Bridge.GetSource = function(Player)
+Lib47.GetSource = function(Player)
     return Player.PlayerData.source
 end
 
-Bridge.GetSourceFromIdentifier = function(identifier)
+Lib47.GetSourceFromIdentifier = function(identifier)
     local Player = QBCore.Functions.GetPlayerByCitizenId(identifier)
     return Player and Player.PlayerData.source
 end
 
-Bridge.GetPlayerFromIdentifier = function(identifier)
+Lib47.GetPlayerFromIdentifier = function(identifier)
     return QBCore.Functions.GetPlayerByCitizenId(identifier)
 end
 
-Bridge.GetIdentifier = function(source)
-    local Player = Bridge.GetPlayer(source)
+Lib47.GetIdentifier = function(source)
+    local Player = Lib47.GetPlayer(source)
     return Player and Player.PlayerData.citizenid
 end
 
-Bridge.GetIdentifierByType = function(source, idtype)
+Lib47.GetIdentifierByType = function(source, idtype)
     for _, identifier in pairs(GetPlayerIdentifiers(source)) do
         if string.find(identifier, idtype) then
             return identifier
@@ -42,23 +42,23 @@ Bridge.GetIdentifierByType = function(source, idtype)
     return nil
 end
 
-Bridge.GetLicense = function(source)
-    return Bridge.GetIdentifierByType(source, 'license')
+Lib47.GetLicense = function(source)
+    return Lib47.GetIdentifierByType(source, 'license')
 end
 
 -- ====================================================================================
 --                                IDENTITY & METADATA
 -- ====================================================================================
 
-Bridge.GetName = function(source)
-    local Player = Bridge.GetPlayer(source)
+Lib47.GetName = function(source)
+    local Player = Lib47.GetPlayer(source)
     if Player then
         return Player.PlayerData.charinfo.firstname .. ' ' .. Player.PlayerData.charinfo.lastname
     end
     return ''
 end
 
-Bridge.GetNameFromIdentifier = function(identifier)
+Lib47.GetNameFromIdentifier = function(identifier)
     local result = MySQL.Sync.fetchAll('SELECT charinfo FROM players WHERE citizenid = ?', {identifier})
     if result and result[1] then
         local charinfo = json.decode(result[1].charinfo)
@@ -67,18 +67,18 @@ Bridge.GetNameFromIdentifier = function(identifier)
     return ''
 end
 
-Bridge.GetPhoneNumber = function(source)
-    local Player = Bridge.GetPlayer(source)
+Lib47.GetPhoneNumber = function(source)
+    local Player = Lib47.GetPlayer(source)
     return Player and Player.PlayerData.charinfo.phone
 end
 
-Bridge.GetPlayerMetaValue = function(source, type)
-    local Player = Bridge.GetPlayer(source)
+Lib47.GetPlayerMetaValue = function(source, type)
+    local Player = Lib47.GetPlayer(source)
     return Player and Player.PlayerData.metadata[type]
 end
 
-Bridge.SetPlayerMetaValue = function(source, type, val)
-    local Player = Bridge.GetPlayer(source)
+Lib47.SetPlayerMetaValue = function(source, type, val)
+    local Player = Lib47.GetPlayer(source)
     if Player then
         Player.Functions.SetMetaData(type, val)
     end
@@ -88,27 +88,27 @@ end
 --                                   JOB, GANG & ADMIN
 -- ====================================================================================
 
-Bridge.GetJob = function(source)
-    local Player = Bridge.GetPlayer(source)
+Lib47.GetJob = function(source)
+    local Player = Lib47.GetPlayer(source)
     return Player and Player.job
 end
 
-Bridge.SetJob = function(source, job, grade)
-    local Player = Bridge.GetPlayer(source)
+Lib47.SetJob = function(source, job, grade)
+    local Player = Lib47.GetPlayer(source)
     if Player then
         Player.Functions.SetJob(job, grade)
     end
 end
 
-Bridge.GetGang = function(source)
+Lib47.GetGang = function(source)
     return Integration.GetGang(source)
 end
 
-Bridge.SetGang = function(source, gang, grade)
+Lib47.SetGang = function(source, gang, grade)
     Integration.SetGang(source, gang, grade)
 end
 
-Bridge.IsAdmin = function(source)
+Lib47.IsAdmin = function(source)
     return IsPlayerAceAllowed(source, 'command')
 end
 
@@ -116,33 +116,33 @@ end
 --                                     ECONOMY
 -- ====================================================================================
 
-Bridge.GetMoney = function(source, account)
-    local Player = Bridge.GetPlayer(source)
+Lib47.GetMoney = function(source, account)
+    local Player = Lib47.GetPlayer(source)
     local type = account == 'money' and 'cash' or account
     return Player.Functions.GetMoney(type)
 end
 
-Bridge.AddMoney = function(source, account, amount)
-    local Player = Bridge.GetPlayer(source)
+Lib47.AddMoney = function(source, account, amount)
+    local Player = Lib47.GetPlayer(source)
     local type = account == 'money' and 'cash' or account
     Player.Functions.AddMoney(type, amount)
 end
 
-Bridge.RemoveMoney = function(source, account, amount)
-    local Player = Bridge.GetPlayer(source)
+Lib47.RemoveMoney = function(source, account, amount)
+    local Player = Lib47.GetPlayer(source)
     local type = account == 'money' and 'cash' or account
     Player.Functions.RemoveMoney(type, amount)
 end
 
-Bridge.AddSocietyMoney = function(job, money)
+Lib47.AddSocietyMoney = function(job, money)
     Integration.AddSocietyMoney(job, money)
 end
 
-Bridge.RemoveSocietyMoney = function(job, money)
+Lib47.RemoveSocietyMoney = function(job, money)
     Integration.RemoveSocietyMoney(job, money)
 end
 
-Bridge.GetSocietyMoney = function(job)
+Lib47.GetSocietyMoney = function(job)
     return Integration.GetSocietyMoney(job)
 end
 
@@ -150,15 +150,15 @@ end
 --                                    INVENTORY
 -- ====================================================================================
 
-Bridge.GetInventoryItems = function(inventoryId)
+Lib47.GetInventoryItems = function(inventoryId)
     return Integration.GetInventoryItems(inventoryId)
 end
 
-Bridge.GetItems = function()
+Lib47.GetItems = function()
     return QBCore.Shared.Items
 end
 
-Bridge.GetItemLabel = function(item)
+Lib47.GetItemLabel = function(item)
     if QBCore.Shared.Items[item] then
         return QBCore.Shared.Items[item].label
     else
@@ -167,8 +167,8 @@ Bridge.GetItemLabel = function(item)
     end
 end
 
-Bridge.GetInventoryItem = function(source, item)
-    local Player = Bridge.GetPlayer(source)
+Lib47.GetInventoryItem = function(source, item)
+    local Player = Lib47.GetPlayer(source)
     local count = 0
     for _, itemData in pairs(Player.PlayerData.items) do
         if itemData.name == item then
@@ -178,17 +178,17 @@ Bridge.GetInventoryItem = function(source, item)
     return count
 end
 
-Bridge.GetItemAmount = function(source, item)
-    return Bridge.GetInventoryItem(source, item)
+Lib47.GetItemAmount = function(source, item)
+    return Lib47.GetInventoryItem(source, item)
 end
 
-Bridge.HasEnoughItem = function(source, item, amount)
-    local count = Bridge.GetInventoryItem(source, item)
+Lib47.HasEnoughItem = function(source, item, amount)
+    local count = Lib47.GetInventoryItem(source, item)
     return count >= amount
 end
 
-Bridge.CanCarryItem = function(source, item, amount)
-    local Player = Bridge.GetPlayer(source)
+Lib47.CanCarryItem = function(source, item, amount)
+    local Player = Lib47.GetPlayer(source)
     local itemData = QBCore.Shared.Items[item]
     
     if not itemData then return false end
@@ -199,35 +199,35 @@ Bridge.CanCarryItem = function(source, item, amount)
     return (totalWeight + itemWeight) <= QBCore.Config.Player.MaxWeight
 end
 
-Bridge.AddItem = function(source, item, amount, slot, meta)
+Lib47.AddItem = function(source, item, amount, slot, meta)
     return Integration.AddItem(source, item, amount, slot, meta)
 end
 
-Bridge.RemoveItem = function(source, item, amount)
-    local Player = Bridge.GetPlayer(source)
+Lib47.RemoveItem = function(source, item, amount)
+    local Player = Lib47.GetPlayer(source)
     return Player.Functions.RemoveItem(item, amount)
 end
 
-Bridge.CreateUseableItem = QBCore.Functions.CreateUseableItem
+Lib47.CreateUseableItem = QBCore.Functions.CreateUseableItem
 
 -- ====================================================================================
 --                                    VEHICLES
 -- ====================================================================================
 
-Bridge.Vehicles = {}
+Lib47.Vehicles = {}
 
-Bridge.IsVehicleOwner = function(source, plate)
-    local citizenid = Bridge.GetIdentifier(source)
+Lib47.IsVehicleOwner = function(source, plate)
+    local citizenid = Lib47.GetIdentifier(source)
     local result = MySQL.Sync.fetchScalar('SELECT 1 FROM player_vehicles WHERE `citizenid` = ? AND `plate` = ?', {citizenid, plate})
     return result and result > 0
 end
 
-Bridge.GetVehicleOwner = function(plate)
+Lib47.GetVehicleOwner = function(plate)
     local result = MySQL.Sync.fetchAll('SELECT citizenid FROM player_vehicles WHERE `plate` = ?', {plate})
     return result and result[1] and result[1].citizenid
 end
 
-Bridge.GeneratePlate = function(format, prefix)
+Lib47.GeneratePlate = function(format, prefix)
     local pattern = format or "AAAA 11A"
     local plate = ""
     
@@ -251,20 +251,20 @@ Bridge.GeneratePlate = function(format, prefix)
     local result = MySQL.scalar.await('SELECT plate FROM player_vehicles WHERE plate = ?', { plate })
 
     if result then
-        return Bridge.GeneratePlate(format, prefix)
+        return Lib47.GeneratePlate(format, prefix)
     else
         return plate
     end
 end
 
-Bridge.GiveVehicle = function(source, model)
-    local citizenid = Bridge.GetIdentifier(source)
-    local plate = Bridge.GeneratePlate("AAAA 11A")
+Lib47.GiveVehicle = function(source, model)
+    local citizenid = Lib47.GetIdentifier(source)
+    local plate = Lib47.GeneratePlate("AAAA 11A")
     local hash = GetHashKey(model)
     
     MySQL.Async.execute('INSERT INTO player_vehicles (license, citizenid, vehicle, hash, mods, plate, state) VALUES (?, ?, ?, ?, ?, ?, ?)',
     {
-        Bridge.GetLicense(source),
+        Lib47.GetLicense(source),
         citizenid,
         model,
         hash,
@@ -281,7 +281,7 @@ end
 Citizen.CreateThread(function()
     if QBCore.Shared.Vehicles then
         for k, v in pairs(QBCore.Shared.Vehicles) do
-            Bridge.Vehicles[GetHashKey(v.model)] = v.name
+            Lib47.Vehicles[GetHashKey(v.model)] = v.name
         end
     end
 end)

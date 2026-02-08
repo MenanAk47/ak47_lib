@@ -291,11 +291,11 @@ function Interface.RemoveTextUi3d(id)
     Interface.HideTextUi3d(id, true)
 end
 
-Bridge.RegisterTextUi3d = Interface.RegisterTextUi3d
-Bridge.RemoveTextUi3d = Interface.RemoveTextUi3d
+Lib47.RegisterTextUi3d = Interface.RegisterTextUi3d
+Lib47.RemoveTextUi3d = Interface.RemoveTextUi3d
 
-Bridge.ShowTextUi3d = Interface.ShowTextUi3d
-Bridge.HideTextUi3d = Interface.HideTextUi3d
+Lib47.ShowTextUi3d = Interface.ShowTextUi3d
+Lib47.HideTextUi3d = Interface.HideTextUi3d
 
 AddEventHandler('onResourceStop', function(resourceName)
     if GetCurrentResourceName() == resourceName then

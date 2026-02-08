@@ -51,14 +51,16 @@ Interface.Notify = function(data)
         duration = Config.Defaults.Notify.duration 
     end
 
-    local styleName = Config.Defaults.Notify.style
-    local customStyle = nil
-    if type(data.style) == 'string' then
-        styleName = validStyles[data.style] or 'minimal'
-    elseif type(data.style) == 'table' then
-        customStyle = data.style
-        styleName = 'minimal'
-    end
+    local styleName = data.style
+    -- local customStyle = nil
+    -- if type(data.style) == 'string' then
+    --     styleName = validStyles[data.style] or 'minimal'
+    -- elseif type(data.style) == 'table' then
+    --     customStyle = data.style
+    --     styleName = 'minimal'
+    -- end
+
+    print(styleName)
 
     local sound = nil
     if data.sound then
