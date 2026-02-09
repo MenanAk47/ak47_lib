@@ -1,7 +1,12 @@
 local currentTasks = {}
+local checklistState = { visible = false, invoked = nil }
 
 Interface.ShowChecklist = function(tasks, title, position)
+    local invoked = GetInvokingResource()
     Interface.HideChecklist()
+
+    checklistState.invoked = invoked
+    checklistState.visible = true
 
     currentTasks = tasks or {}
     local title = title or Config.Defaults.Checklist.title
@@ -55,8 +60,15 @@ Interface.UpdateChecklist = function(index, isComplete, subIndex)
 end
 
 Interface.HideChecklist = function()
+    checklistState.visible = false
     SendNUIMessage({ action = 'updateChecklist', data = { visible = false } })
 end
+
+AddEventHandler('onResourceStop', function(resourceName)
+    if checklistState.visible and checklistState.invoked == resourceName then
+        Interface.HideChecklist()
+    end
+end)
 
 exports('ShowChecklist', Interface.ShowChecklist)
 exports('UpdateChecklist', Interface.UpdateChecklist)

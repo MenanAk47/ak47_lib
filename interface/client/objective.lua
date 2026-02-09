@@ -1,11 +1,14 @@
-local currentData = { title = "", text = "", visible = false }
+local currentData = { title = "", text = "", visible = false, invoked = nil }
 
 Interface.ShowObjective = function(text, title, position)
+    local invoked = GetInvokingResource()
     Interface.HideObjective()
 
+    currentData.invoked = invoked
     currentData.text = text
     currentData.title = title or Config.Defaults.Objective.title
     currentData.visible = true
+
     local pos = position or Config.Defaults.Objective.position
     local hour = GetClockHours()
     local isNight = Config.Defaults.Objective.nightEffect and (hour >= 21 or hour < 6)
@@ -30,6 +33,12 @@ Interface.HideObjective = function()
         data = { visible = false }
     })
 end
+
+AddEventHandler('onResourceStop', function( resourceName )
+    if currentData.visible and currentData.invoked == resourceName then
+        Interface.HideObjective()
+    end
+end)
 
 exports('ShowObjective', Interface.ShowObjective)
 exports('HideObjective', Interface.HideObjective)
