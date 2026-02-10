@@ -2,7 +2,7 @@ Lib47.ShowAlert = function(data)
     if Config.AlertDialog == 'default' then
         return Interface.ShowAlert(data)
     elseif Config.AlertDialog == 'ox' then
-        return lib.alertDialog(data)
+        return exports['ox_lib']:alertDialog(data)
     elseif Config.AlertDialog == 'custom' then
         -- your custom code below
 
@@ -13,7 +13,7 @@ Lib47.HideAlert = function()
     if Config.AlertDialog == 'default' then
         Interface.HideAlert()
     elseif Config.AlertDialog == 'ox' then
-        lib.closeAlertDialog()
+        exports['ox_lib']:closeAlertDialog()
     elseif Config.AlertDialog == 'custom' then
         -- your custom code below
 

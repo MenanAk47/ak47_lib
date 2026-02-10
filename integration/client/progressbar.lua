@@ -4,7 +4,7 @@ Lib47.ShowProgress = function(progressData, onSuccess, onCancel)
     if Config.Progressbar == 'default' then
         return Interface.StartProgress(progressData, onSuccess, onCancel)
     elseif Config.Progressbar == 'ox' or Config.Progressbar == 'qbx' then
-        if lib.progressCircle({
+        if exports['ox_lib']:progressCircle({
             label = progressData.label,
             position = progressData.position,
             duration = progressData.duration,

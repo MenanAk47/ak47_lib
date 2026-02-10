@@ -2,9 +2,11 @@ function Callback.Register(name, cb)
     if registeredCallbacks[name] then 
         return print(("^1[ak47_lib] Duplicate Client Callback: %s^7"):format(name)) 
     end
-    registeredCallbacks[name] = true
 
-    RegisterNetEvent(getCallbackEvent(name), function(requestId, ...)
+    local invokingResource = GetInvokingResource()
+
+    RegisterNetEvent(getCallbackEvent(name))
+    local handler = AddEventHandler(getCallbackEvent(name), function(requestId, ...)
         local results = { pcall(cb, ...) }
         
         if not results[1] then
@@ -15,6 +17,11 @@ function Callback.Register(name, cb)
         table.remove(results, 1)
         TriggerServerEvent(getCallbackEvent(requestId), table.unpack(results))
     end)
+
+    registeredCallbacks[name] = {
+        resource = invokingResource,
+        handler = handler
+    }
 end
 
 function Callback.Await(name, _, ...)
@@ -47,5 +54,16 @@ function Callback.Await(name, _, ...)
     RemoveEventHandler(handler)
     return result and table.unpack(result) or nil
 end
+
+AddEventHandler('onResourceStop', function(resource)
+    for name, data in pairs(registeredCallbacks) do
+        if data.resource == resource then
+            if data.handler then
+                RemoveEventHandler(data.handler)
+            end
+            registeredCallbacks[name] = nil
+        end
+    end
+end)
 
 Lib47.Callback = Callback
