@@ -38,7 +38,6 @@ Config.Banking = 'auto'
 
 
 -- Default Config
-
 Config.Defaults = {
 	Notify = {
 		-- 'inform', 'success', 'warning', 'error'

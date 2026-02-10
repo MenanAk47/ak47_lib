@@ -2,7 +2,7 @@ fx_version 'adamant'
 game 'gta5'
 description 'Ak47 Lib'
 author 'MenanAk47'
-version '1.0.4'
+version '1.0.5'
 
 --ui_page 'web/index.html'
 ui_page 'http://localhost:5173'
@@ -15,11 +15,11 @@ files {
 shared_scripts {
     "config.lua",
     "store/**/shared/*.lua",
-    "callback/**/shared/*.lua",
+    "imports/**/shared/*.lua",
 }
 
 client_scripts {
-    "callback/**/client/*.lua",
+    "imports/**/client/*.lua",
     "framework/**/client/*.lua",
     "integration/client/*.lua",
     "interface/client/*.lua",
@@ -30,7 +30,7 @@ client_scripts {
 server_scripts {
     "@mysql-async/lib/MySQL.lua",
     
-    "callback/**/server/*.lua",
+    "imports/**/server/*.lua",
     "framework/**/server/*.lua",
     "integration/server/*.lua",
     "interface/server/*.lua",
