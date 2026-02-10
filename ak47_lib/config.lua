@@ -1,19 +1,13 @@
 Config = {}
 
--- 'esx', 'qb', 'qbx'
+ -- 'esx', 'qb', 'qbx'
 Config.Framework = 'auto'
 
--- 'default', ox', 'esx', 'qb', 'qbx', 'custom'
+ -- 'default', ox', 'esx', 'qb', 'qbx', 'custom'
 Config.Notify = 'default'
 
--- 'default', 'ox', 'esx', 'qb', 'qbx', 'custom'
+ -- 'default', 'ox', 'esx', 'qb', 'qbx', 'custom'
 Config.Progressbar = 'default'
-
--- 'default', 'ox'
-Config.InputDialog = 'default'
-
--- 'default', 'ox'
-Config.AlertDialog = 'default'
 
 -- 'ak47_garage', 'ak47_qb_garage', 'cd_garage', 'okokGarage' 
 -- 'jg-advancedgarages', 'loaf_garage', 'qb-garages', 'qbx_garages' 'custom'
@@ -72,32 +66,6 @@ Config.Defaults = {
 		position = 'center', 
 
 		nightEffect = true, -- less dark background at night time
-	},
-	InputDialog = {
-		colors = {
-			colorPrimary = "rgba(15, 15, 20, 0.85)", 
-            colorSecondary = "#FFD700" ,
-            colorText = "#ffffff",
-		},
-
-		-- 'left', 'right', 'top', 'bottom' (can be combined)
-		borders = {'left', 'right'},
-
-		-- "xs", "sm", "md", "lg", "xl"
-		size = 'sm'
-	},
-	AlertDialog = {
-		colors = {
-			colorPrimary = "rgba(15, 15, 20, 0.85)", 
-            colorSecondary = "#FFD700" ,
-            colorText = "#ffffff",
-		},
-
-		-- 'left', 'right', 'top', 'bottom' (can be combined)
-		borders = {'top'},
-
-		-- "xs", "sm", "md", "lg", "xl"
-		size = 'sm'
 	},
 
 	CallbackTimeout = 15 -- seconds

@@ -1,8 +1,7 @@
 local currentTasks = {}
 local checklistState = { visible = false, invoked = nil }
 
--- Updated to accept colors argument (table)
-Interface.ShowChecklist = function(tasks, title, position, colors)
+Interface.ShowChecklist = function(tasks, title, position)
     local invoked = GetInvokingResource()
     Interface.HideChecklist()
 
@@ -12,13 +11,6 @@ Interface.ShowChecklist = function(tasks, title, position, colors)
     currentTasks = tasks or {}
     local title = title or Config.Defaults.Checklist.title
     local pos = position or Config.Defaults.Checklist.position
-    
-    -- Ensure colors is a table or nil
-    local customColors = nil
-    if type(colors) == 'table' then
-        customColors = colors
-    end
-
     local hour = GetClockHours()
     local isNight = Config.Defaults.Checklist.nightEffect and (hour >= 21 or hour < 6)
     
@@ -30,8 +22,7 @@ Interface.ShowChecklist = function(tasks, title, position, colors)
             tasks = currentTasks,
             position = pos,
             visible = true,
-            isNight = isNight,
-            colors = customColors -- Pass colors to NUI
+            isNight = isNight
         }
     })
 end
@@ -86,15 +77,6 @@ exports('HideChecklist', Interface.HideChecklist)
 Lib47.ShowChecklist = Interface.ShowChecklist
 Lib47.UpdateChecklist = Interface.UpdateChecklist
 Lib47.HideChecklist = Interface.HideChecklist
-
---[[ 
-Example Usage with Colors:
-Interface.ShowChecklist(tasks, "My Title", "top", {
-    colorPrimary = "rgba(0, 0, 255, 0.8)",     -- Background
-    colorSecondery = "#00FF00",                -- Borders/Headers (Note spelling matches prompt)
-    colorText = "#FFFFFF"                      -- Content Text
-})
-]]
 
 --[[
 

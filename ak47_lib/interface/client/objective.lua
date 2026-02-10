@@ -1,7 +1,6 @@
 local currentData = { title = "", text = "", visible = false, invoked = nil }
 
--- Updated to accept colors argument (table)
-Interface.ShowObjective = function(text, title, position, colors)
+Interface.ShowObjective = function(text, title, position)
     local invoked = GetInvokingResource()
     Interface.HideObjective()
 
@@ -11,13 +10,6 @@ Interface.ShowObjective = function(text, title, position, colors)
     currentData.visible = true
 
     local pos = position or Config.Defaults.Objective.position
-    
-    -- Ensure colors is a table or nil
-    local customColors = nil
-    if type(colors) == 'table' then
-        customColors = colors
-    end
-
     local hour = GetClockHours()
     local isNight = Config.Defaults.Objective.nightEffect and (hour >= 21 or hour < 6)
 
@@ -29,8 +21,7 @@ Interface.ShowObjective = function(text, title, position, colors)
             title = currentData.title,
             position = pos,
             visible = true,
-            isNight = isNight,
-            colors = customColors -- Pass colors to NUI
+            isNight = isNight
         }
     })
 end
@@ -77,13 +68,7 @@ local text = {
     { "Cancel Creation <k>DEL<k>" } -- This renders as footer text
 }
 
-local colors = {
-    colorPrimary = "rgba(0, 0, 255, 0.8)",     -- Background
-    colorSecondery = "#00FF00",                -- Borders/Headers (Note spelling matches prompt)
-    colorText = "#FFFFFF"                      -- Content Text
-}
-
-Lib47.ShowObjective(text, "Editor Mode", "center", colors)
+Lib47.ShowObjective(text, "Editor Mode", "center")
 
 
 
