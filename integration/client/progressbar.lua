@@ -2,7 +2,7 @@ Lib47.ShowProgress = function(progressData, onSuccess, onCancel)
     local result = false
 
     if Config.Progressbar == 'default' then
-        return Interface.StartProgress(progressData, onSuccess, onCancel)
+        return Interface.ShowProgress(progressData, onSuccess, onCancel)
     elseif Config.Progressbar == 'ox' or Config.Progressbar == 'qbx' then
         if exports['ox_lib']:progressCircle({
             label = progressData.label,
@@ -98,6 +98,25 @@ Lib47.ShowProgress = function(progressData, onSuccess, onCancel)
     end
 
     return result
+end
+
+Lib47.CancelProgress = function()
+    if Config.Progressbar == 'default' then
+        return Interface.CancelProgress()
+
+    elseif Config.Progressbar == 'ox' or Config.Progressbar == 'qbx' then
+        exports['ox_lib']:cancelProgress()
+
+    elseif Config.Progressbar == 'esx' and Config.Framework == 'esx' then
+        ESX.CancelProgressbar()
+
+    elseif Config.Progressbar == 'qb' and Config.Framework == 'qb' then
+        TriggerEvent('progressbar:client:cancel')
+
+    elseif Config.Progressbar == 'custom' then
+        -- your custom code below
+
+    end
 end
 
 -- Don't change below

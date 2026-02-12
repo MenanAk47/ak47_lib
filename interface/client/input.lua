@@ -73,7 +73,7 @@ AddEventHandler('onResourceStop', function(resourceName)
     end
 end)
 
-
+--[[
 RegisterCommand('testinput', function()
     Citizen.CreateThread(function()
         local input = Interface.ShowInput('Employee Registration', {
@@ -132,3 +132,4 @@ RegisterCommand('testinput', function()
         end
     end)
 end)
+]]

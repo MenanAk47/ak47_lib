@@ -17,7 +17,7 @@ local function CalculateLastStand(target)
         end
 
         if Config.Framework == 'qb' or Config.Framework == 'qbx' then
-            return PlayerData.metadata.inlaststand
+            return Lib47.PlayerData.metadata.inlaststand
         end
     end
 
@@ -50,7 +50,7 @@ local function CalculateIsDead(target)
         end
 
         if Config.Framework == 'qb' or Config.Framework == 'qbx' then
-            return PlayerData.metadata.isdead
+            return Lib47.PlayerData.metadata.isdead
         end
     end
 
