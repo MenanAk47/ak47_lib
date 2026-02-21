@@ -1,4 +1,4 @@
-Keys = {
+Lib47.Keys = {
     [0] = { name = "INPUT_NEXT_CAMERA", keyboard = "V", controller = "BACK"},
     [1] = { name = "INPUT_LOOK_LR", keyboard = "MOUSE RIGHT", controller = "RIGHT STICK"},
     [2] = { name = "INPUT_LOOK_UD", keyboard = "MOUSE DOWN", controller = "RIGHT STICK"},

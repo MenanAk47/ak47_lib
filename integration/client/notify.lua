@@ -4,6 +4,7 @@ Lib47.Notify = function(msg, type, duration)
             type = type,
             description = msg,
             duration = duration,
+            sound = true,
         })
     elseif Config.Notify == 'ox' then
         exports['ox_lib']:notify({

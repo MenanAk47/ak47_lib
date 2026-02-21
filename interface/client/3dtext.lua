@@ -12,8 +12,12 @@ local holdState = {
     ownerId = nil
 }
 
+local GlobalInteractions = {} 
 local ActiveInteractions = {}
+
 local GlobalThreadActive = false
+local CullingThreadActive = false
+local CULLING_DISTANCE = 30.0
 
 local function GenerateID(data)
     local x = math.floor(data.coords.x * 100) / 100
@@ -22,12 +26,15 @@ local function GenerateID(data)
     return string.format("%s_%s_%s", x, y, z)
 end
 
-local function DrawInteract(id, interact, plyCoords, camCoords, camForward, dist)
+local function DrawInteract(id, interact, plyCoords, camCoords, camForward, dist, isPaused)
     local data = interact.data
-    local callback = interact.callback
     local coords = data.coords
     
     local onScreen, screenX, screenY = GetScreenCoordFromWorldCoord(coords.x, coords.y, coords.z)
+
+    if isPaused then
+        onScreen = false
+    end
 
     if onScreen then
         interact.offScreen = false
@@ -46,46 +53,58 @@ local function DrawInteract(id, interact, plyCoords, camCoords, camForward, dist
         end
 
         local options = data.options or {}
+        local validOptions = {}
+        local nuiOptions = {}
 
-        -- [[ INPUT SAFETY CHECK START ]] --
-        -- If we are about to show the interaction, ensure the user isn't already holding the button
+        for i, opt in ipairs(options) do
+            if opt.isVisible and opt.isVisible() then
+                table.insert(validOptions, { index = i, opt = opt })
+            end
+        end
+
         if mode == "full" then
             if not interact.keysReleased then
                 local isHoldingAny = false
-                for _, opt in ipairs(options) do
-                    if opt.control and IsControlPressed(0, opt.control) then
+                for _, v in ipairs(validOptions) do
+                    local opt = v.opt
+                    if opt.key and IsControlPressed(0, opt.key) then
                         isHoldingAny = true
                         break
                     end
                 end
 
                 if isHoldingAny then
-                    -- User is holding a key from previous interaction/gameplay
-                    -- Force mode to mini so it doesn't pop up or trigger
                     mode = "mini"
                 else
-                    -- User is 'clean', allow interaction
                     interact.keysReleased = true
                 end
             end
         else
-            -- Reset safety if we look away or walk away
             interact.keysReleased = false
         end
-        -- [[ INPUT SAFETY CHECK END ]] --
 
         local triggeredOption = nil 
 
         if mode == "full" then
-            for i, opt in ipairs(options) do
+            for _, v in ipairs(validOptions) do
+                local i = v.index
+                local opt = v.opt
+                
                 opt.progress = 0 
                 opt.activeBump = false 
 
-                if opt.control then
+                local canInteract = true
+                if type(opt.canInteract) == "function" then
+                    canInteract = opt.canInteract()
+                elseif opt.canInteract ~= nil then
+                    canInteract = opt.canInteract
+                end
+
+                if opt.key and canInteract then
                     if opt.hold and opt.hold > 0 then
                         local holdTimeMs = opt.hold * 1000
                         
-                        if IsControlPressed(0, opt.control) then
+                        if IsControlPressed(0, opt.key) then
                             if holdState.ownerId == nil or holdState.ownerId == id then
                                 if holdState.completed and holdState.keyIndex == i then
                                     opt.progress = 1.0
@@ -111,11 +130,10 @@ local function DrawInteract(id, interact, plyCoords, camCoords, camForward, dist
                                             holdState.active = false 
                                             holdState.completed = true 
                                             
-                                            -- Previous Fix: Wait for bump before callback
                                             CreateThread(function()
                                                 Wait(250) 
-                                                if callback then
-                                                    callback(opt)
+                                                if opt.action then
+                                                    opt.action()
                                                 end
                                             end)
                                         end
@@ -131,18 +149,44 @@ local function DrawInteract(id, interact, plyCoords, camCoords, camForward, dist
                             end
                         end
                     else
-                        if IsControlJustReleased(0, opt.control) then
+                        if IsControlJustReleased(0, opt.key) then
                             triggeredOption = opt
                             opt.activeBump = true 
                         end
                     end
                 end
+
+                local keyName = opt.keyName
+                if not keyName and Lib47.Keys and Lib47.Keys[opt.key] then
+                    keyName = Lib47.Keys[opt.key].keyboard
+                end
+
+                table.insert(nuiOptions, {
+                    label = opt.label,
+                    key = keyName,
+                    progress = opt.progress,
+                    activeBump = opt.activeBump,
+                    disabled = not canInteract
+                })
             end
         else
             if holdState.ownerId == id then
                 holdState.active = false
                 holdState.completed = false
                 holdState.ownerId = nil
+            end
+
+            for _, v in ipairs(validOptions) do
+                local opt = v.opt
+                local keyName = opt.keyName
+                if not keyName and Lib47.Keys and Lib47.Keys[opt.key] then
+                    keyName = Lib47.Keys[opt.key].keyboard
+                end
+                
+                table.insert(nuiOptions, {
+                    label = opt.label,
+                    key = keyName
+                })
             end
         end
 
@@ -151,17 +195,20 @@ local function DrawInteract(id, interact, plyCoords, camCoords, camForward, dist
             id = id,
             x = screenX,
             y = screenY,
-            options = options,
+            options = nuiOptions,
             mode = mode,
             arc = data.arc or false,
             scale = data.scale or 1.0
         })
 
-        if triggeredOption and callback then
-            callback(triggeredOption)
-        end
         if triggeredOption then
             triggeredOption.activeBump = false
+            if triggeredOption.action then
+                CreateThread(function()
+                    Wait(100)
+                    triggeredOption.action()
+                end)
+            end
         end
     else
         if not interact.offScreen then
@@ -177,11 +224,61 @@ local function DrawInteract(id, interact, plyCoords, camCoords, camForward, dist
     end
 end
 
-local function InteractionsLoop()
+-- === NEW: SLOW CULLING LOOP === --
+local function CullingLoop()
+    CullingThreadActive = true
+    while true do
+        local count = 0
+        local ped = PlayerPedId()
+        local plyCoords = GetEntityCoords(ped)
+
+        for id, interact in pairs(GlobalInteractions) do
+            count = count + 1
+            local dist = #(plyCoords - interact.data.coords)
+            
+            if dist <= CULLING_DISTANCE then
+                if not ActiveInteractions[id] then
+                    ActiveInteractions[id] = interact
+                    if not GlobalThreadActive then
+                        CreateThread(InteractionsLoop)
+                    end
+                end
+            else
+                if ActiveInteractions[id] then
+                    ActiveInteractions[id] = nil
+                    
+                    if not interact.offScreen then
+                        SendNUIMessage({ action = "hide", id = id })
+                        interact.offScreen = true
+                    end
+
+                    if holdState.ownerId == id then
+                        holdState.active = false
+                        holdState.completed = false
+                        holdState.ownerId = nil
+                    end
+
+                    if not interact.static then
+                        GlobalInteractions[id] = nil
+                    end
+                end
+            end
+        end
+
+        if count == 0 then
+            CullingThreadActive = false
+            break
+        end
+        Wait(1000)
+    end
+end
+
+-- === FAST LOOP === --
+function InteractionsLoop()
     GlobalThreadActive = true
     while true do
         local count = 0
-        local itemsToRemove = {} -- 1. Create a list for deletions
+        local itemsToRemove = {} 
         
         local ped = PlayerPedId()
         local plyCoords = GetEntityCoords(ped)
@@ -198,6 +295,8 @@ local function InteractionsLoop()
             math_sin(radX)
         )
 
+        local isPaused = IsPauseMenuActive()
+
         if next(ActiveInteractions) then
             for id, interact in pairs(ActiveInteractions) do
                 count = count + 1
@@ -209,10 +308,14 @@ local function InteractionsLoop()
                 end
 
                 if dist <= maxDist then
-                    DrawInteract(id, interact, plyCoords, camCoords, camForward, dist)
+                    DrawInteract(id, interact, plyCoords, camCoords, camForward, dist, isPaused)
                 else
                     if interact.static then
-                        Interface.HideTextUi3d(id)
+                        if not interact.offScreen then
+                            SendNUIMessage({ action = "hide", id = id })
+                            interact.offScreen = true
+                        end
+                        interact.keysReleased = false
                     else
                         table.insert(itemsToRemove, id)
                     end
@@ -221,7 +324,7 @@ local function InteractionsLoop()
         end
 
         for _, id in ipairs(itemsToRemove) do
-            Interface.HideTextUi3d(id)
+            Interface.HideTextUi3d(id, true)
         end
 
         if count == 0 then
@@ -233,19 +336,17 @@ local function InteractionsLoop()
     end
 end
 
-Interface.ShowTextUi3d = function(data, callback, static)
+Interface.ShowTextUi3d = function(data, static)
     local invoked = GetInvokingResource()
     local id = GenerateID(data)
 
-    if ActiveInteractions[id] then
-        ActiveInteractions[id].data = data
-        ActiveInteractions[id].callback = callback
-        ActiveInteractions[id].static = static
-        ActiveInteractions[id].invoked = invoked
+    if GlobalInteractions[id] then
+        GlobalInteractions[id].data = data
+        GlobalInteractions[id].static = static
+        GlobalInteractions[id].invoked = invoked
     else
-        ActiveInteractions[id] = {
+        GlobalInteractions[id] = {
             data = data,
-            callback = callback,
             static = static,
             invoked = invoked,
             offScreen = true,
@@ -253,23 +354,35 @@ Interface.ShowTextUi3d = function(data, callback, static)
         }
     end
 
-    if not GlobalThreadActive then
-        CreateThread(InteractionsLoop)
+    local dist = #(GetEntityCoords(PlayerPedId()) - data.coords)
+    if dist <= CULLING_DISTANCE then
+        ActiveInteractions[id] = GlobalInteractions[id]
+        if not GlobalThreadActive then
+            CreateThread(InteractionsLoop)
+        end
+    end
+
+    if not CullingThreadActive then
+        CreateThread(CullingLoop)
     end
 
     return id
 end
 
 Interface.HideTextUi3d = function(id, force)
-    if id and ActiveInteractions[id] then
-        if ActiveInteractions[id].static and not force then
-            if not ActiveInteractions[id].offScreen then
+    if id and GlobalInteractions[id] then
+        local interact = GlobalInteractions[id]
+        
+        if interact.static and not force then
+            if not interact.offScreen then
                 SendNUIMessage({ action = "hide", id = id })
-                ActiveInteractions[id].offScreen = true
+                interact.offScreen = true
             end
-            ActiveInteractions[id].keysReleased = false
+            interact.keysReleased = false
         else
+            GlobalInteractions[id] = nil
             ActiveInteractions[id] = nil
+            SendNUIMessage({ action = "hide", id = id })
         end 
         
         if holdState.ownerId == id then
@@ -277,14 +390,11 @@ Interface.HideTextUi3d = function(id, force)
             holdState.completed = false
             holdState.ownerId = nil
         end
-
-        Wait(10)
-        SendNUIMessage({ action = "hide", id = id })
     end
 end
 
-function Interface.RegisterTextUi3d(data, callback)
-    return Interface.ShowTextUi3d(data, callback, true)
+function Interface.RegisterTextUi3d(data)
+    return Interface.ShowTextUi3d(data, true)
 end
 
 function Interface.RemoveTextUi3d(id)
@@ -293,19 +403,44 @@ end
 
 Lib47.RegisterTextUi3d = Interface.RegisterTextUi3d
 Lib47.RemoveTextUi3d = Interface.RemoveTextUi3d
-
 Lib47.ShowTextUi3d = Interface.ShowTextUi3d
 Lib47.HideTextUi3d = Interface.HideTextUi3d
 
 AddEventHandler('onResourceStop', function(resourceName)
     if GetCurrentResourceName() == resourceName then
+        GlobalInteractions = {}
         ActiveInteractions = {}
         SendNUIMessage({ action = "hideAll" })
     else
-        for i, v in pairs(ActiveInteractions) do
+        for i, v in pairs(GlobalInteractions) do
             if v.invoked == resourceName then
                 Interface.RemoveTextUi3d(i, true)
             end
         end
     end
 end)
+
+--[[
+local intId = Interface.RegisterTextUi3d({
+    coords = vector3(target.x, target.y, target.z),
+    distance = 6.0,
+    maxDistance = 10.0,
+    scale = 0.9,
+    options = {
+        { 
+            key = 38,
+            keyName = 'E',
+            label = 'Shipment',
+            isVisible = function() -- if not defined then default is true
+                return true
+            end,
+            canInteract = function()  -- if not defined then default is true
+                return true
+            end,
+            action = function()
+                -- if visible and canInteract and control IsControlJustReleased
+            end
+        },
+    }
+}
+]]

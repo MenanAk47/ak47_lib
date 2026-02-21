@@ -348,20 +348,21 @@ RegisterCommand('pbar_wrapper_test', function()
         label = "Wrapper Test",
         is3d = true,
         coords = pCoords + vector3(2.0, 2.0, 0.0),
-        manual = true
+        manual = true,
+        type = 'segments'
     })
     
     -- 2. Show
-    bar.show()
+    bar:show()
     
     -- 3. Update Loop
     CreateThread(function()
         local val = 0
         while val < 100 do
             val = val + 1
-            bar.update(val)
+            bar:update(val)
             Wait(50)
         end
-        bar.destroy()
+        bar:destroy()
     end)
 end)
