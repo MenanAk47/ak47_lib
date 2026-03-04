@@ -97,51 +97,59 @@ local function DrawInteract(id, interact, plyCoords, camCoords, camForward, dist
                     if opt.hold and opt.hold > 0 then
                         local holdTimeMs = opt.hold * 1000
                         
-                        if IsControlPressed(0, opt.key) then
-                            if holdState.ownerId == nil or holdState.ownerId == id then
-                                if holdState.completed and holdState.keyIndex == i then
+                        if holdState.ownerId == id and holdState.keyIndex == i then
+                            -- We are currently tracking this specific option
+                            if holdState.completed then
+                                if IsControlPressed(0, opt.key) then
                                     opt.progress = 1.0
                                 else
-                                    if not holdState.active then
-                                        holdState.active = true
-                                        holdState.keyIndex = i
-                                        holdState.ownerId = id
-                                        holdState.startTime = GetGameTimer()
-                                        holdState.duration = holdTimeMs
-                                        holdState.completed = false
-                                    end
+                                    holdState.completed = false
+                                    holdState.ownerId = nil
+                                    opt.progress = 0
+                                end
+                            elseif holdState.active then
+                                if IsControlPressed(0, opt.key) then
+                                    local elapsed = GetGameTimer() - holdState.startTime
+                                    local progress = elapsed / holdState.duration
+                                    if progress >= 1.0 then progress = 1.0 end
+                                    
+                                    opt.progress = progress
 
-                                    if holdState.active and holdState.keyIndex == i then
-                                        local elapsed = GetGameTimer() - holdState.startTime
-                                        local progress = elapsed / holdState.duration
-                                        if progress >= 1.0 then progress = 1.0 end
+                                    if progress >= 1.0 then
+                                        opt.activeBump = true 
+                                        holdState.active = false 
+                                        holdState.completed = true 
                                         
-                                        opt.progress = progress
-
-                                        if progress >= 1.0 then
-                                            opt.activeBump = true 
-                                            holdState.active = false 
-                                            holdState.completed = true 
-                                            
-                                            CreateThread(function()
-                                                Wait(250) 
-                                                if opt.action then
-                                                    opt.action()
-                                                end
-                                            end)
-                                        end
+                                        CreateThread(function()
+                                            Wait(250) 
+                                            if opt.action then
+                                                opt.action()
+                                            end
+                                        end)
                                     end
+                                else
+                                    holdState.active = false
+                                    holdState.ownerId = nil
+                                    opt.progress = 0
                                 end
                             end
                         else
-                            if (holdState.active or holdState.completed) and holdState.keyIndex == i and holdState.ownerId == id then
-                                holdState.active = false
-                                holdState.completed = false
-                                holdState.ownerId = nil
+                            if IsControlJustPressed(0, opt.key) then
+                                if holdState.ownerId == nil or holdState.ownerId == id then
+                                    holdState.active = true
+                                    holdState.keyIndex = i
+                                    holdState.ownerId = id
+                                    holdState.startTime = GetGameTimer()
+                                    holdState.duration = holdTimeMs
+                                    holdState.completed = false
+                                    opt.progress = 0
+                                end
+                            else
                                 opt.progress = 0
                             end
                         end
                     else
+                        -- Non-hold button logic
                         if IsControlJustReleased(0, opt.key) then
                             triggeredOption = opt
                             opt.activeBump = true 
@@ -155,11 +163,13 @@ local function DrawInteract(id, interact, plyCoords, camCoords, camForward, dist
                 end
 
                 table.insert(nuiOptions, {
+                    originalIndex = i,
                     label = opt.label,
                     key = keyName,
                     progress = opt.progress,
                     activeBump = opt.activeBump,
-                    disabled = not canInteract
+                    disabled = not (opt.canInteract == nil or (opt.canInteract and opt.canInteract())),
+                    hold = opt.hold
                 })
             end
         else
@@ -170,15 +180,21 @@ local function DrawInteract(id, interact, plyCoords, camCoords, camForward, dist
             end
 
             for _, v in ipairs(validOptions) do
+                local i = v.index
                 local opt = v.opt
+                opt.progress = 0
+
                 local keyName = opt.keyName
                 if not keyName and Lib47.Keys and Lib47.Keys[opt.key] then
                     keyName = Lib47.Keys[opt.key].keyboard
                 end
                 
                 table.insert(nuiOptions, {
+                    originalIndex = i,
                     label = opt.label,
-                    key = keyName
+                    key = keyName,
+                    hold = opt.hold,
+                    progress = 0
                 })
             end
         end
