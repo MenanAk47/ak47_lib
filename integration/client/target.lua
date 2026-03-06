@@ -147,7 +147,8 @@ end
 
 Lib47.AddBoxZone = function(name, center, length, width, options, targetoptions)
     local resource = GetInvokingResource()
-    if GetResourceState('ox_target') == 'started' then
+    if GetResourceState('ak47_target') == 'started' or GetResourceState('ox_target') == 'started' then
+        local targetScript = GetResourceState('ak47_target') == 'started' and 'ak47_target' or 'ox_target'
         local z = center.z
         if not options.minZ then options.minZ = -100 end
         if not options.maxZ then options.maxZ = 800 end
@@ -155,7 +156,7 @@ Lib47.AddBoxZone = function(name, center, length, width, options, targetoptions)
             z = z + math.abs(options.maxZ - options.minZ) / 2
             center = vec3(center.x, center.y, z)
         end
-        local id = exports.ox_target:addBoxZone({
+        local id = exports[targetScript]:addBoxZone({
             name = name,
             coords = center,
             size = vec3(width, length, (options.useZ or not options.maxZ) and center.z or math.abs(options.maxZ - options.minZ)),
@@ -178,14 +179,15 @@ end
 
 Lib47.AddPolyZone = function(name, points, options, targetoptions)
     local resource = GetInvokingResource()
-    if GetResourceState('ox_target') == 'started' then
+    if GetResourceState('ak47_target') == 'started' or GetResourceState('ox_target') == 'started' then
+        local targetScript = GetResourceState('ak47_target') == 'started' and 'ak47_target' or 'ox_target'
         local newPoints = table.create(#points, 0)
         local thickness = math.abs(options.maxZ - options.minZ)
         for i = 1, #points do
             local point = points[i]
             newPoints[i] = vec3(point.x, point.y, options.maxZ - (thickness / 2))
         end
-        local id = exports.ox_target:addPolyZone({
+        local id = exports[targetScript]:addPolyZone({
             name = name,
             points = newPoints,
             thickness = thickness,
@@ -207,8 +209,9 @@ end
 
 Lib47.AddCircleZone = function(name, center, radius, options, targetoptions)
     local resource = GetInvokingResource()
-    if GetResourceState('ox_target') == 'started' then
-        local id = exports.ox_target:addSphereZone({
+    if GetResourceState('ak47_target') == 'started' or GetResourceState('ox_target') == 'started' then
+        local targetScript = GetResourceState('ak47_target') == 'started' and 'ak47_target' or 'ox_target'
+        local id = exports[targetScript]:addSphereZone({
             name = name,
             coords = center,
             radius = radius,
@@ -229,8 +232,9 @@ Lib47.AddCircleZone = function(name, center, radius, options, targetoptions)
 end
 
 Lib47.RemoveZone = function(id)
-    if GetResourceState('ox_target') == 'started' then
-        exports.ox_target:removeZone(id, true)
+    if GetResourceState('ak47_target') == 'started' or GetResourceState('ox_target') == 'started' then
+        local targetScript = GetResourceState('ak47_target') == 'started' and 'ak47_target' or 'ox_target'
+        exports[targetScript]:removeZone(id, true)
     elseif GetResourceState('qb-target') == 'started' then
         exports['qb-target']:RemoveZone(id.name or id)
     elseif GetResourceState('qtarget') == 'started' then
@@ -242,13 +246,14 @@ Lib47.AddTargetBone = function(bones, options)
     local resource = GetInvokingResource()
     local labels = getLabels(options)
     
-    if GetResourceState('ox_target') == 'started' then
+    if GetResourceState('ak47_target') == 'started' or GetResourceState('ox_target') == 'started' then
+        local targetScript = GetResourceState('ak47_target') == 'started' and 'ak47_target' or 'ox_target'
         if type(bones) ~= 'table' then bones = { bones } end
         options = convert(options)
         for _, v in pairs(options) do
             v.bones = bones
         end
-        exports.ox_target:addGlobalVehicle(options)
+        exports[targetScript]:addGlobalVehicle(options)
         register(resource, 'globalVehicle', { labels = labels })
     elseif GetResourceState('qb-target') == 'started' then
         exports['qb-target']:AddTargetBone(bones, options)
@@ -263,15 +268,16 @@ Lib47.AddTargetEntity = function(entities, options)
     local resource = GetInvokingResource()
     local labels = getLabels(options)
 
-    if GetResourceState('ox_target') == 'started' then
+    if GetResourceState('ak47_target') == 'started' or GetResourceState('ox_target') == 'started' then
+        local targetScript = GetResourceState('ak47_target') == 'started' and 'ak47_target' or 'ox_target'
         if type(entities) ~= 'table' then entities = { entities } end
         options = convert(options)
         for i = 1, #entities do
             local entity = entities[i]
             if NetworkGetEntityIsNetworked(entity) then
-                exports.ox_target:addEntity(NetworkGetNetworkIdFromEntity(entity), options)
+                exports[targetScript]:addEntity(NetworkGetNetworkIdFromEntity(entity), options)
             else
-                exports.ox_target:addLocalEntity(entity, options)
+                exports[targetScript]:addLocalEntity(entity, options)
             end
         end
         register(resource, 'entity', { entities = entities, labels = labels })
@@ -285,14 +291,15 @@ Lib47.AddTargetEntity = function(entities, options)
 end
 
 Lib47.RemoveTargetEntity = function(entities, labels)
-    if GetResourceState('ox_target') == 'started' then
+    if GetResourceState('ak47_target') == 'started' or GetResourceState('ox_target') == 'started' then
+        local targetScript = GetResourceState('ak47_target') == 'started' and 'ak47_target' or 'ox_target'
         if type(entities) ~= 'table' then entities = { entities } end
         for i = 1, #entities do
             local entity = entities[i]
             if NetworkGetEntityIsNetworked(entity) then
-                exports.ox_target:removeEntity(NetworkGetNetworkIdFromEntity(entity), labels)
+                exports[targetScript]:removeEntity(NetworkGetNetworkIdFromEntity(entity), labels)
             else
-                exports.ox_target:removeLocalEntity(entity, labels)
+                exports[targetScript]:removeLocalEntity(entity, labels)
             end
         end
     elseif GetResourceState('qb-target') == 'started' then
@@ -306,8 +313,9 @@ Lib47.AddTargetModel = function(models, options)
     local resource = GetInvokingResource()
     local labels = getLabels(options)
 
-    if GetResourceState('ox_target') == 'started' then
-        exports.ox_target:addModel(models, convert(options))
+    if GetResourceState('ak47_target') == 'started' or GetResourceState('ox_target') == 'started' then
+        local targetScript = GetResourceState('ak47_target') == 'started' and 'ak47_target' or 'ox_target'
+        exports[targetScript]:addModel(models, convert(options))
         register(resource, 'model', { models = models, labels = labels })
     elseif GetResourceState('qb-target') == 'started' then
         exports['qb-target']:AddTargetModel(models, options)
@@ -319,8 +327,9 @@ Lib47.AddTargetModel = function(models, options)
 end
 
 Lib47.RemoveTargetModel = function(models, labels)
-    if GetResourceState('ox_target') == 'started' then
-        exports.ox_target:removeModel(models, labels)
+    if GetResourceState('ak47_target') == 'started' or GetResourceState('ox_target') == 'started' then
+        local targetScript = GetResourceState('ak47_target') == 'started' and 'ak47_target' or 'ox_target'
+        exports[targetScript]:removeModel(models, labels)
     elseif GetResourceState('qb-target') == 'started' then
         return exports['qb-target']:RemoveTargetModel(models, labels)
     elseif GetResourceState('qtarget') == 'started' then
@@ -332,8 +341,9 @@ Lib47.AddGlobalPed = function(options)
     local resource = GetInvokingResource()
     local labels = getLabels(options)
 
-    if GetResourceState('ox_target') == 'started' then
-        exports.ox_target:addGlobalPed(convert(options))
+    if GetResourceState('ak47_target') == 'started' or GetResourceState('ox_target') == 'started' then
+        local targetScript = GetResourceState('ak47_target') == 'started' and 'ak47_target' or 'ox_target'
+        exports[targetScript]:addGlobalPed(convert(options))
         register(resource, 'globalPed', { labels = labels })
     elseif GetResourceState('qb-target') == 'started' then
         exports['qb-target']:AddGlobalPed(options)
@@ -345,8 +355,9 @@ Lib47.AddGlobalPed = function(options)
 end
 
 Lib47.RemoveGlobalPed = function(labels)
-    if GetResourceState('ox_target') == 'started' then
-        exports.ox_target:removeGlobalPed(labels)
+    if GetResourceState('ak47_target') == 'started' or GetResourceState('ox_target') == 'started' then
+        local targetScript = GetResourceState('ak47_target') == 'started' and 'ak47_target' or 'ox_target'
+        exports[targetScript]:removeGlobalPed(labels)
     elseif GetResourceState('qb-target') == 'started' then
         return exports['qb-target']:RemoveGlobalPed(labels)
     elseif GetResourceState('qtarget') == 'started' then
@@ -358,8 +369,9 @@ Lib47.AddGlobalVehicle = function(options)
     local resource = GetInvokingResource()
     local labels = getLabels(options)
 
-    if GetResourceState('ox_target') == 'started' then
-        exports.ox_target:addGlobalVehicle(convert(options))
+    if GetResourceState('ak47_target') == 'started' or GetResourceState('ox_target') == 'started' then
+        local targetScript = GetResourceState('ak47_target') == 'started' and 'ak47_target' or 'ox_target'
+        exports[targetScript]:addGlobalVehicle(convert(options))
         register(resource, 'globalVehicle', { labels = labels })
     elseif GetResourceState('qb-target') == 'started' then
         exports['qb-target']:AddGlobalVehicle(options)
@@ -371,8 +383,9 @@ Lib47.AddGlobalVehicle = function(options)
 end
 
 Lib47.RemoveGlobalVehicle = function(labels)
-    if GetResourceState('ox_target') == 'started' then
-        exports.ox_target:removeGlobalVehicle(labels)
+    if GetResourceState('ak47_target') == 'started' or GetResourceState('ox_target') == 'started' then
+        local targetScript = GetResourceState('ak47_target') == 'started' and 'ak47_target' or 'ox_target'
+        exports[targetScript]:removeGlobalVehicle(labels)
     elseif GetResourceState('qb-target') == 'started' then
         return exports['qb-target']:RemoveGlobalVehicle(labels)
     elseif GetResourceState('qtarget') == 'started' then
@@ -384,8 +397,9 @@ Lib47.AddGlobalObject = function(options)
     local resource = GetInvokingResource()
     local labels = getLabels(options)
 
-    if GetResourceState('ox_target') == 'started' then
-        exports.ox_target:addGlobalObject(convert(options))
+    if GetResourceState('ak47_target') == 'started' or GetResourceState('ox_target') == 'started' then
+        local targetScript = GetResourceState('ak47_target') == 'started' and 'ak47_target' or 'ox_target'
+        exports[targetScript]:addGlobalObject(convert(options))
         register(resource, 'globalObject', { labels = labels })
     elseif GetResourceState('qb-target') == 'started' then
         exports['qb-target']:AddGlobalObject(options)
@@ -397,8 +411,9 @@ Lib47.AddGlobalObject = function(options)
 end
 
 Lib47.RemoveGlobalObject = function(labels)
-    if GetResourceState('ox_target') == 'started' then
-        exports.ox_target:removeGlobalObject(labels)
+    if GetResourceState('ak47_target') == 'started' or GetResourceState('ox_target') == 'started' then
+        local targetScript = GetResourceState('ak47_target') == 'started' and 'ak47_target' or 'ox_target'
+        exports[targetScript]:removeGlobalObject(labels)
     elseif GetResourceState('qb-target') == 'started' then
         return exports['qb-target']:RemoveGlobalObject(labels)
     elseif GetResourceState('qtarget') == 'started' then
@@ -410,8 +425,9 @@ Lib47.AddGlobalPlayer = function(options)
     local resource = GetInvokingResource()
     local labels = getLabels(options)
 
-    if GetResourceState('ox_target') == 'started' then
-        exports.ox_target:addGlobalPlayer(convert(options))
+    if GetResourceState('ak47_target') == 'started' or GetResourceState('ox_target') == 'started' then
+        local targetScript = GetResourceState('ak47_target') == 'started' and 'ak47_target' or 'ox_target'
+        exports[targetScript]:addGlobalPlayer(convert(options))
         register(resource, 'globalPlayer', { labels = labels })
     elseif GetResourceState('qb-target') == 'started' then
         exports['qb-target']:AddGlobalPlayer(options)
@@ -423,8 +439,9 @@ Lib47.AddGlobalPlayer = function(options)
 end
 
 Lib47.RemoveGlobalPlayer = function(labels)
-    if GetResourceState('ox_target') == 'started' then
-        exports.ox_target:removeGlobalPlayer(labels)
+    if GetResourceState('ak47_target') == 'started' or GetResourceState('ox_target') == 'started' then
+        local targetScript = GetResourceState('ak47_target') == 'started' and 'ak47_target' or 'ox_target'
+        exports[targetScript]:removeGlobalPlayer(labels)
     elseif GetResourceState('qb-target') == 'started' then
         return exports['qb-target']:RemoveGlobalPlayer(labels)
     elseif GetResourceState('qtarget') == 'started' then
