@@ -52,7 +52,12 @@ function Callback.Await(name, _, ...)
 
     local result = Citizen.Await(p)
     RemoveEventHandler(handler)
-    return result and table.unpack(result) or nil
+    
+    if result then
+        return table.unpack(result)
+    end
+    
+    return nil
 end
 
 AddEventHandler('onResourceStop', function(resource)
