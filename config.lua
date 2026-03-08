@@ -6,6 +6,9 @@ Config.Framework = 'auto'
 -- 'default', ox', 'esx', 'qb', 'qbx', 'custom'
 Config.Notify = 'default'
 
+-- 'default', ox', 
+Config.ContextMenu = 'default'
+
 -- 'default', 'ox', 'esx', 'qb', 'qbx', 'custom'
 Config.Progressbar = 'default'
 
@@ -97,6 +100,29 @@ Config.Defaults = {
 
 		-- "xs", "sm", "md", "lg", "xl"
 		size = 'sm'
+	},
+
+	ContextMenu = {
+		title = 'Menu',
+
+		-- 'top-left', 'top-right', 'bottom-left', 'bottom-right'
+		position = 'top-right', 
+
+		-- 'left', 'right', 'top', 'bottom' (can be combined)
+		borders = {'left'},
+
+		-- Default colors matching your solid background design
+		colors = {
+			colorPrimary = "rgba(18, 18, 22, 0.9)", 
+			colorSecondary = "#FFD700",
+			colorText = "#ffffff",
+		},
+
+		-- "xs", "sm", "md", "lg", "xl"
+		size = 'sm',
+
+		-- Can the user close the menu with ESC by default?
+		canClose = true
 	},
 
 	CallbackTimeout = 15 -- seconds
