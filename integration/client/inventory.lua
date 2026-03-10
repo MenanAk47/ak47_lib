@@ -181,6 +181,40 @@ Lib47.GetItemImageLink = function(name, format)
     return Lib47.GetInventoryImageLink() .. name .. (format or '.png')
 end
 
+Lib47.RemoveItemQuality = function(item, amount)
+    if Config.Inventory == 'ak47_inventory' or Config.Inventory == 'ak47_qb_inventory' then
+        TriggerServerEvent('ak47_inventory:removequality', item, amount, true)
+
+    elseif Config.Inventory == 'ox_inventory' then
+        -- unknown
+
+    elseif Config.Inventory == 'qb-inventory' then
+        -- unknown
+
+    elseif Config.Inventory == 'cheeza_inventory' then
+        -- unknown
+
+    elseif Config.Inventory == 'core_inventory' then
+        -- unknown
+
+    elseif Config.Inventory == 'codem-inventory' then
+        -- unknown
+
+    elseif Config.Inventory == 'qs-inventory' then
+        -- unknown
+
+    elseif Config.Inventory == 'qb-inventory-old' then
+        -- unknown
+
+    elseif Config.Inventory == 'ps-inventory' then
+        -- unknown
+
+    elseif Config.Inventory == 'lj-inventory' then
+        -- unknown
+
+    end
+end
+
 RegisterInventoryEvents = function()
     if Config.Inventory == 'ak47_inventory' or Config.Inventory == 'ak47_qb_inventory' then
         RegisterNetEvent('ak47_inventory:onRemoveItem', function(item, amount, slot, has)

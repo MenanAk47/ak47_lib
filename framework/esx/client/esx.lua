@@ -74,3 +74,11 @@ Lib47.GetJob = function()
     return job
 end
 
+Lib47.AddStress = function(amount)
+    TriggerEvent('esx_status:add', 'stress', amount * 10000)
+end
+
+Lib47.RemoveStress = function(amount)
+    TriggerEvent('esx_status:remove', 'stress', amount * 10000)
+end
+

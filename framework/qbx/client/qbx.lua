@@ -57,3 +57,11 @@ Lib47.GetJob = function()
     if not Lib47.PlayerData or not Lib47.PlayerData.job then return nil end
     return Lib47.PlayerData.job
 end
+
+Lib47.AddStress = function(amount)
+    TriggerServerEvent('hud:server:GainStress', amount)
+end
+
+Lib47.RemoveStress = function(amount)
+    TriggerServerEvent('hud:server:RelieveStress', amount)
+end

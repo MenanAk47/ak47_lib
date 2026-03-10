@@ -261,7 +261,12 @@ RegisterNUICallback('contextAction', function(data, cb)
 
     local args = injectArgs(option, option.args)
 
-    if option.onSelect then option.onSelect(args) end
+    if option.onSelect then
+        CreateThread(function()
+            option.onSelect(args) 
+        end)
+    end
+    
     if option.event then TriggerEvent(option.event, args) end
     if option.serverEvent then TriggerServerEvent(option.serverEvent, args) end
 
