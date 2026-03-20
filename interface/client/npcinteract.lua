@@ -114,7 +114,7 @@ Interface.ShowNpcInteract = function(id, focusIndex)
     SetupPlayerPosition(npcConfig.entity)
     SetupNpcCamera(npcConfig.entity)
 
-    local colors = npcConfig.colors or Config.Defaults.NpcInteract
+    local colors = npcConfig.colors or Config.Defaults.NpcInteract.colors
 
     SetNuiFocus(true, true)
     SendNUIMessage({
