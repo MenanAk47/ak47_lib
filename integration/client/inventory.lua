@@ -162,6 +162,9 @@ Lib47.GetInventoryImageLink = function()
     elseif Config.Inventory == 'qs-inventory' then
         return "nui://qs-inventory/html/images/"
 
+    elseif Config.Inventory == 'tgiann-inventory' then
+        return "nui://inventory_images/images/"
+
     elseif Config.Inventory == 'cheeza_inventory' then
         return "nui://cheeza_inventory/html/images/" -- not sure
 
