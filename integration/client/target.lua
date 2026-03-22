@@ -149,17 +149,26 @@ Lib47.AddBoxZone = function(name, center, length, width, options, targetoptions)
     local resource = GetInvokingResource()
     if GetResourceState('ak47_target') == 'started' or GetResourceState('ox_target') == 'started' then
         local targetScript = GetResourceState('ak47_target') == 'started' and 'ak47_target' or 'ox_target'
-        local z = center.z
-        if not options.minZ then options.minZ = -100 end
-        if not options.maxZ then options.maxZ = 800 end
-        if not options.useZ then
-            z = z + math.abs(options.maxZ - options.minZ) / 2
-            center = vec3(center.x, center.y, z)
+        local height = 2.0
+
+        if options.minZ and options.maxZ then
+            height = math.abs(options.maxZ - options.minZ)
+            centerZ = (options.maxZ + options.minZ) / 2.0
+        elseif options.minZ then
+            height = math.abs((center.z + 2.0) - options.minZ)
+            centerZ = options.minZ + (height / 2.0)
+        elseif options.maxZ then
+            height = math.abs(options.maxZ - (center.z - 2.0))
+            centerZ = options.maxZ - (height / 2.0)
+        else
+            height = 900.0
+            centerZ = center.z
         end
+
         local id = exports[targetScript]:addBoxZone({
             name = name,
-            coords = center,
-            size = vec3(width, length, (options.useZ or not options.maxZ) and center.z or math.abs(options.maxZ - options.minZ)),
+            coords = vec3(center.x, center.y, centerZ),
+            size = vec3(width, length, height),
             debug = options.debugPoly,
             rotation = options.heading,
             options = convert(targetoptions),
