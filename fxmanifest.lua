@@ -2,7 +2,7 @@ fx_version 'adamant'
 game 'gta5'
 description 'Ak47 Lib'
 author 'MenanAk47'
-version '1.5.5'
+version '1.5.6'
 
 ui_page 'web/index.html'
 --ui_page 'http://localhost:5173'
@@ -23,6 +23,7 @@ client_scripts {
     "framework/**/client/*.lua",
     "integration/client/*.lua",
     "interface/client/*.lua",
+    "wrapper/**/client/*.lua",
     "data/*.lua",
 
     "client/*.lua",
@@ -35,6 +36,7 @@ server_scripts {
     "framework/**/server/*.lua",
     "integration/server/*.lua",
     "interface/server/*.lua",
+    "wrapper/**/server/*.lua",
 
     "server/*.lua",
 }
@@ -48,3 +50,13 @@ lua54 'yes'
 provides {
     'ak47_bridge'
 }
+
+if GetResourceState('ex_extended') == 'missing' then
+    provide 'ex_extended'
+end
+if GetResourceState('qb-core') == 'missing' then
+    provide 'qb-core'
+end
+if GetResourceState('qbx_core') == 'missing' then
+    provide 'qbx_core'
+end

@@ -37,7 +37,7 @@ Config.FuelScript = 'auto'
 -- 'origen_inventory', 'tgiann-inventory', 'custom'
 Config.Inventory = 'auto'
 
--- 'qb-banking', 'okokBanking', 'Renewed-Banking'
+-- 'ak47_banking', 'qb-banking', 'okokBanking', 'Renewed-Banking'
 Config.Banking = 'auto'
 
 

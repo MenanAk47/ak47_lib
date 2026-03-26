@@ -165,16 +165,16 @@ Lib47.RemoveMoney = function(source, account, amount)
 	xPlayer.removeAccountMoney(account, amount)
 end
 
-Lib47.AddSocietyMoney = function(job, money)
-	Integration.AddSocietyMoney(job, money)
+Lib47.AddSocietyMoney = function(job, money, reason, ignoreBankingExport)
+    Integration.AddSocietyMoney(job, money, reason, ignoreBankingExport)
 end
 
-Lib47.RemoveSocietyMoney = function(job, money)
-	Integration.RemoveSocietyMoney(job, money)
+Lib47.RemoveSocietyMoney = function(job, money, reason, ignoreBankingExport)
+    Integration.RemoveSocietyMoney(job, money, reason, ignoreBankingExport)
 end
 
-Lib47.GetSocietyMoney = function(job)
-	return Integration.GetSocietyMoney(job)
+Lib47.GetSocietyMoney = function(job, ignoreBankingExport)
+    return Integration.GetSocietyMoney(job, ignoreBankingExport)
 end
 
 -- ====================================================================================
