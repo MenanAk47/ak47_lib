@@ -50,12 +50,17 @@ end
 --                                IDENTITY & METADATA
 -- ====================================================================================
 
-Lib47.GetName = function(source)
+Lib47.GetName = function(source) -- will be removed soon
+    return Lib47.GetCharacterName(source)
+end
+
+Lib47.GetCharacterName = function(source)
     local Player = Lib47.GetPlayer(source)
-    if Player then
+    if Player and Player.PlayerData and Player.PlayerData.charinfo and Player.PlayerData.charinfo.firstname then
         return Player.PlayerData.charinfo.firstname .. ' ' .. Player.PlayerData.charinfo.lastname
     end
-    return ''
+    local identifier = Lib47.GetIdentifier(source)
+    return Lib47.GetNameFromIdentifier(identifier)
 end
 
 Lib47.GetNameFromIdentifier = function(identifier)
@@ -72,16 +77,24 @@ Lib47.GetPhoneNumber = function(source)
     return Player and Player.PlayerData.charinfo.phone
 end
 
-Lib47.GetPlayerMetaValue = function(source, type)
+Lib47.GetMetaData = function(source, key)
     local Player = Lib47.GetPlayer(source)
-    return Player and Player.PlayerData.metadata[type]
+    return Player and Player.PlayerData.metadata[key]
 end
 
-Lib47.SetPlayerMetaValue = function(source, type, val)
+Lib47.SetMetaData = function(source, key, value)
     local Player = Lib47.GetPlayer(source)
     if Player then
-        Player.Functions.SetMetaData(type, val)
+        Player.Functions.SetMetaData(key, value)
     end
+end
+
+Lib47.GetPlayerMetaValue = function(source, type) -- will be removed soon
+    return Lib47.GetMetaData(source, type)
+end
+
+Lib47.SetPlayerMetaValue = function(source, type, val) -- will be removed soon
+    Lib47.SetMetaData(source, type, val)
 end
 
 -- ====================================================================================
@@ -90,7 +103,7 @@ end
 
 Lib47.GetJob = function(source)
     local Player = Lib47.GetPlayer(source)
-    return Player and Player.job
+    return Player and Player.PlayerData.job
 end
 
 Lib47.SetJob = function(source, job, grade)
@@ -148,6 +161,67 @@ end
 
 Lib47.GetSocietyMoney = function(job)
     return Integration.GetSocietyMoney(job)
+end
+
+-- ====================================================================================
+--                                OFFLINE DATA MANAGEMENT
+-- ====================================================================================
+
+Lib47.GetAllOfflinePlayers = function()
+    local playersData = {}
+    local results = MySQL.Sync.fetchAll('SELECT citizenid, charinfo, money, job FROM players', {})
+    
+    if results then
+        for _, p in ipairs(results) do
+            table.insert(playersData, {
+                citizenid = p.citizenid,
+                charinfo = json.decode(p.charinfo or '{}'),
+                money = json.decode(p.money or '{}'),
+                job = json.decode(p.job or '{}')
+            })
+        end
+    end
+    return playersData
+end
+
+Lib47.GetJobs = function()
+    return QBCore.Shared.Jobs
+end
+
+Lib47.GetOfflineMoney = function(identifier, account)
+    local type = account == 'money' and 'cash' or account
+    local result = MySQL.Sync.fetchAll('SELECT money FROM players WHERE citizenid = ?', {identifier})
+    if result and result[1] then
+        local money = json.decode(result[1].money)
+        return money and money[type] or 0
+    end
+    return 0
+end
+
+Lib47.AddOfflineMoney = function(identifier, account, amount)
+    local type = account == 'money' and 'cash' or account
+    MySQL.Async.execute('UPDATE players SET money = JSON_SET(money, ?, JSON_EXTRACT(money, ?) + ?) WHERE citizenid = ?', 
+    {"$."..type, "$."..type, amount, identifier})
+end
+
+Lib47.RemoveOfflineMoney = function(identifier, account, amount)
+    local type = account == 'money' and 'cash' or account
+    MySQL.Async.execute('UPDATE players SET money = JSON_SET(money, ?, JSON_EXTRACT(money, ?) - ?) WHERE citizenid = ?', 
+    {"$."..type, "$."..type, amount, identifier})
+end
+
+Lib47.GetOfflineMetaData = function(identifier, key)
+    local result = MySQL.Sync.fetchAll('SELECT metadata FROM players WHERE citizenid = ?', {identifier})
+    if result and result[1] then
+        local metadata = json.decode(result[1].metadata)
+        return metadata and metadata[key]
+    end
+    return nil
+end
+
+Lib47.SetOfflineMetaData = function(identifier, key, value)
+    MySQL.Async.execute('UPDATE players SET metadata = JSON_SET(metadata, ?, ?) WHERE citizenid = ?', 
+    {"$."..key, value, identifier})
 end
 
 -- ====================================================================================

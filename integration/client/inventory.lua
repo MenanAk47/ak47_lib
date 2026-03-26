@@ -172,7 +172,7 @@ Lib47.GetInventoryImageLink = function()
         return "nui://core_inventory/html/images/" -- not sure
 
     elseif Config.Inventory == 'codem-inventory' then
-        return "nui://codem-inventory/html/images/" -- not sure
+        return "nui://codem-inventory/html/itemimages/"
     end
 end
 

@@ -17,8 +17,8 @@ end)
 
 RegisterNetEvent('QBCore:Client:OnJobUpdate', function(JobInfo)
     Lib47.PlayerData.job = JobInfo
-    TriggerEvent('ak47_lib:OnJobUpdate', job)
-    TriggerEvent('ak47_bridge:OnJobUpdate', job) -- will be removed soon
+    TriggerEvent('ak47_lib:OnJobUpdate', JobInfo)
+    TriggerEvent('ak47_bridge:OnJobUpdate', JobInfo) -- will be removed soon
 end)
 
 RegisterNetEvent('QBCore:Player:SetPlayerData', function(val)
@@ -64,4 +64,15 @@ end
 
 Lib47.RemoveStress = function(amount)
     TriggerServerEvent('hud:server:RelieveStress', amount)
+end
+
+Lib47.GetIdentifier = function()
+    return Lib47.PlayerData and Lib47.PlayerData.citizenid
+end
+
+Lib47.GetCharacterName = function()
+    if Lib47.PlayerData and Lib47.PlayerData.charinfo then
+        return Lib47.PlayerData.charinfo.firstname .. ' ' .. Lib47.PlayerData.charinfo.lastname
+    end
+    return GetPlayerName(PlayerId())
 end

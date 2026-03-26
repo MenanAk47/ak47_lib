@@ -13,8 +13,8 @@ ESX = exports['es_extended']:getSharedObject()
 RegisterNetEvent('esx:playerLoaded', function(xPlayer)
     Lib47.PlayerData = xPlayer
     Lib47.PlayerLoaded = true
-    TriggerEvent('ak47_lib:OnPlayerLoaded', PlayerData)
-    TriggerEvent('ak47_bridge:OnPlayerLoaded', PlayerData) -- will be removed soon
+    TriggerEvent('ak47_lib:OnPlayerLoaded', Lib47.PlayerData)
+    TriggerEvent('ak47_bridge:OnPlayerLoaded', Lib47.PlayerData) -- will be removed soon
 end)
 
 RegisterNetEvent('esx:setJob', function(job)
@@ -81,5 +81,16 @@ end
 
 Lib47.RemoveStress = function(amount)
     TriggerEvent('esx_status:remove', 'stress', amount * 10000)
+end
+
+Lib47.GetIdentifier = function()
+    return Lib47.PlayerData and Lib47.PlayerData.identifier
+end
+
+Lib47.GetCharacterName = function()
+    if Lib47.PlayerData and Lib47.PlayerData.firstName and Lib47.PlayerData.lastName then
+        return Lib47.PlayerData.firstName .. ' ' .. Lib47.PlayerData.lastName
+    end
+    return GetPlayerName(PlayerId())
 end
 
