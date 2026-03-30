@@ -1,10 +1,19 @@
 if Config.Framework == 'auto' and GetResourceState('es_extended') == 'missing' then return end
 if Config.Framework ~= 'auto' and Config.Framework ~= 'esx' then return end
 Config.Framework = 'esx'
+Lib47.Framework = 'esx'
 
 print(string.format("^2['FRAMEWORK']: %s^0", Config.Framework))
 
 ESX = exports['es_extended']:getSharedObject()
+
+-- ====================================================================================
+--                                     CORE
+-- ====================================================================================
+
+Lib47.GetCoreConfig = function(key)
+    return ESX.GetConfig and ESX.GetConfig(key) or {}
+end
 
 -- ====================================================================================
 --                                     EVENTS

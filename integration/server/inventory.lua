@@ -124,6 +124,48 @@ Integration.AddItem = function(source, item, amount, slot, meta)
     end
 end
 
+Integration.RemoveItem = function(source, item, amount, slot, meta)
+    if Config.Inventory == 'ak47_inventory' then
+        return exports['ak47_inventory']:RemoveItem(source, item, amount, slot, meta)
+
+    elseif Config.Inventory == 'ak47_qb_inventory' then
+        return exports['ak47_qb_inventory']:RemoveItem(source, item, amount, slot, meta)
+
+    elseif Config.Inventory == 'ox_inventory' then
+        return exports['ox_inventory']:RemoveItem(source, item, amount, meta, slot)
+
+    elseif Config.Inventory == 'qs-inventory' then
+        return exports['qs-inventory']:RemoveItem(source, item, amount, slot, meta)
+
+    elseif Config.Inventory == 'ps-inventory' then
+        return exports['ps-inventory']:RemoveItem(source, item, amount, slot, meta)
+
+    elseif Config.Inventory == 'lj-inventory' then
+        return exports['lj-inventory']:RemoveItem(source, item, amount, slot, meta)
+
+    elseif Config.Inventory == 'qb-inventory' or Config.Inventory == 'qb-inventory-old' then
+        return exports['qb-inventory']:RemoveItem(source, item, amount, slot, meta)
+
+    elseif Config.Inventory == 'codem-inventory' then
+        return exports['codem-inventory']:RemoveItem(source, item, amount, slot, meta)
+
+    elseif Config.Inventory == 'tgiann-inventory' then
+        return exports['tgiann-inventory']:RemoveItem(source, item, amount, slot, meta)
+
+    elseif Config.Inventory == 'origen_inventory' then
+        return exports['origen_inventory']:RemoveItem(source, item, amount, slot, meta)
+
+
+    -- add your inventory support above this code
+    elseif Config.Framework == 'esx' then
+        local xPlayer = Lib47.GetPlayer(source)
+        return xPlayer.removeInventoryItem(item, amount)
+    elseif Config.Framework == 'qb' then
+        local Player = Lib47.GetPlayer(source)
+        return Player.Functions.RemoveItem(item, amount, slot, meta)
+    end
+end
+
 Integration.GetInventoryItems = function(inventoryId)
     if Config.Inventory == 'ak47_inventory' then
         return exports['ak47_inventory']:GetInventoryItems(inventoryId)

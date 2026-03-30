@@ -1,8 +1,21 @@
 if Config.Framework == 'auto' and GetResourceState('qbx_core') == 'missing' then return end
 if Config.Framework ~= 'auto' and Config.Framework ~= 'qbx' then return end
 Config.Framework = 'qbx'
+Lib47.Framework = 'qbx'
 
 print(string.format("^2['FRAMEWORK']: %s^0", Config.Framework))
+
+-- ====================================================================================
+--                                     CORE
+-- ====================================================================================
+
+Lib47.GetCoreConfig = function()
+    local success, coreObject = pcall(function() return exports['qb-core']:GetCoreObject() end)
+    if success and coreObject and coreObject.Config then
+        return coreObject.Config
+    end
+    return {}
+end
 
 -- ====================================================================================
 --                                    CORE PLAYER
@@ -266,8 +279,8 @@ Lib47.AddItem = function(source, item, amount, slot, meta)
     return exports.ox_inventory:AddItem(source, item, amount, meta, slot)
 end
 
-Lib47.RemoveItem = function(source, item, amount)
-    return exports.ox_inventory:RemoveItem(source, item, amount)
+Lib47.RemoveItem = function(source, item, amount, slot, meta)
+    return exports.ox_inventory:RemoveItem(source, item, amount, meta, slot)
 end
 
 Lib47.CreateUseableItem = function(item, cb)

@@ -1,10 +1,19 @@
 if Config.Framework == 'auto' and GetResourceState('qb-core') == 'missing' then return end
 if Config.Framework ~= 'auto' and Config.Framework ~= 'qb' then return end
 Config.Framework = 'qb'
+Lib47.Framework = 'qb'
 
 print(string.format("^2['FRAMEWORK']: %s^0", Config.Framework))
 
 QBCore = exports['qb-core']:GetCoreObject()
+
+-- ====================================================================================
+--                                     CORE
+-- ====================================================================================
+
+Lib47.GetCoreConfig = function()
+    return QBCore.Config or {}
+end
 
 -- ====================================================================================
 --                                     EVENTS

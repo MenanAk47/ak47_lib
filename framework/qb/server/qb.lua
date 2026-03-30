@@ -2,10 +2,19 @@ if Config.Framework == 'auto' and GetResourceState('qbx_core') ~= 'missing' then
 if Config.Framework == 'auto' and GetResourceState('qb-core') == 'missing' then return end
 if Config.Framework ~= 'auto' and Config.Framework ~= 'qb' then return end
 Config.Framework = 'qb'
+Lib47.Framework = 'qb'
 
 print(string.format("^2['FRAMEWORK']: %s^0", Config.Framework))
 
 QBCore = exports['qb-core']:GetCoreObject()
+
+-- ====================================================================================
+--                                     CORE
+-- ====================================================================================
+
+Lib47.GetCoreConfig = function()
+    return QBCore.Config or {}
+end
 
 -- ====================================================================================
 --                                    CORE PLAYER
@@ -281,8 +290,7 @@ Lib47.AddItem = function(source, item, amount, slot, meta)
 end
 
 Lib47.RemoveItem = function(source, item, amount)
-    local Player = Lib47.GetPlayer(source)
-    return Player.Functions.RemoveItem(item, amount)
+    return Integration.RemoveItem(source, item, amount, slot, meta)
 end
 
 Lib47.CreateUseableItem = QBCore.Functions.CreateUseableItem
