@@ -1,7 +1,7 @@
 if Config.Inventory == 'auto' then
     local scripts = {
-        'ak47_inventory',
         'ak47_qb_inventory',
+        'ak47_inventory',
         'ox_inventory',
         'qs-inventory',
         'qb-inventory',
