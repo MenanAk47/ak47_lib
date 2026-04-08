@@ -389,88 +389,32 @@ Lib47.CreateSound = Interface.CreateSound
 --                            GIZMO / DEBUGGER
 -- =========================================================================
 
--- Visuals & Input Loop
-local function StartGizmoLoop()
-    Citizen.CreateThread(function()
-        while isGizmoOpen do
-            -- 1. Input Handling
-            if not isGizmoFocused then
-                DisableControlAction(0, 19, true) -- Left Alt
-                if IsDisabledControlJustReleased(0, 19) then
-                    isGizmoFocused = true
-                    SetNuiFocus(true, true)
-                    SendNUIMessage({ action = "regainFocus" })
-                end
-            end
-            
-            -- 2. Visuals (Markers)
-            if currentGizmoData and currentGizmoData.coords then
-                -- Draw Max Distance Sphere (Type 28)
-                DrawMarker(28, 
-                    currentGizmoData.coords.x, currentGizmoData.coords.y, currentGizmoData.coords.z, 
-                    0.0, 0.0, 0.0, 
-                    0.0, 0.0, 0.0, 
-                    currentGizmoData.maxDistance, currentGizmoData.maxDistance, currentGizmoData.maxDistance, 
-                    66, 135, 245, 100, -- Blueish
-                    false, false, 2, nil, nil, false
-                )
-            end
-
-            Wait(0)
-        end
-        
-        -- Cleanup when loop ends
-        if gizmoEntity and DoesEntityExist(gizmoEntity) then 
-            DeleteEntity(gizmoEntity) 
-            gizmoEntity = nil
-        end
-    end)
-end
-
 RegisterCommand('soundgizmo', function()
-    isGizmoOpen = not isGizmoOpen
-    isGizmoFocused = isGizmoOpen
-    
-    SetNuiFocus(isGizmoOpen, isGizmoOpen)
-
     local playerPed = PlayerPedId()
     local pCoords = GetEntityCoords(playerPed)
     local pRot = GetEntityRotation(playerPed, 2)
     
-    -- Calculate Forward Offset (2.0 meters in front)
     local forward = RotationToDirection(pRot)
     local spawnCoords = pCoords + (forward * 1.5)
+    local spawnRot = vector3(0.0, 0.0, pRot.z + 180.0
+)    
+    -- 2. Start the Independent Placer Module
+    Lib47.Gizmo.Start({
+        coords = spawnCoords,
+        rot = spawnRot,
+        model = `prop_speaker_05`
+    }, function(data)
+        if data.event == 'closed' then
+            SendNUIMessage({ action = "toggleSoundGizmo", show = false })
+        end
+    end)
 
-    -- Calculate Rotation to face the player (Player Rotation + 180 degrees on Z)
-    -- We keep X and Y 0 to keep it upright initially
-    local spawnRot = vector3(0.0, 0.0, pRot.z + 180.0)
-
-    SendNUIMessage({
-        action = "toggleGizmo",
-        show = isGizmoOpen,
-        playerCoords = { x = pCoords.x, y = pCoords.y, z = pCoords.z }, -- Backup/Reference
-        spawnCoords = { x = spawnCoords.x, y = spawnCoords.y, z = spawnCoords.z },
-        spawnRot = { x = spawnRot.x, y = spawnRot.y, z = spawnRot.z }
-    })
-    
-    if isGizmoOpen then
-        -- Initialize data with the new spawn coordinates
-        currentGizmoData.coords = spawnCoords
-        StartAudioLoop() 
-        StartGizmoLoop()
-    end
+    -- 3. Ensure the spatial audio loop is running
+    StartAudioLoop() 
 end)
 
-RegisterNUICallback('closeGizmo', function(data, cb)
-    isGizmoOpen = false
-    isGizmoFocused = false
-    SetNuiFocus(false, false)
-    cb('ok')
-end)
-
-RegisterNUICallback('releaseFocus', function(data, cb)
-    isGizmoFocused = false
-    SetNuiFocus(false, false)
+RegisterNUICallback('closeSoundGizmo', function(data, cb)
+    Lib47.Gizmo.Stop() -- Tell the generic module to shut down
     cb('ok')
 end)
 
@@ -484,8 +428,6 @@ RegisterNUICallback('previewSound', function(data, cb)
     end
 
     local current = activeSounds[sId]
-    
-    -- If URL changed, we must recreate the sound
     if current and current.url ~= data.url then
         current:destroy()
         current = nil
@@ -494,14 +436,7 @@ RegisterNUICallback('previewSound', function(data, cb)
     local coords = vector3(data.x, data.y, data.z)
     local rot = vector3(data.rotX or 0, data.rotY or 0, data.rotZ or 0)
 
-    -- Update Gizmo Visuals Data
-    currentGizmoData.coords = coords
-    currentGizmoData.rot = rot
-    currentGizmoData.maxDistance = data.maxDistance
-    EnsureGizmoEntity(coords, rot)
-
     if current then
-        -- Update existing sound completely
         current:updateSettings({
             coords = coords,
             rot = rot,
@@ -515,17 +450,12 @@ RegisterNUICallback('previewSound', function(data, cb)
             volumeFadeStarts = data.volumeFadeStarts,
             volumeFadeMultiplier = data.volumeFadeMultiplier
         })
-        -- FIX: Force volume update (Some players don't update volume via generic settings update)
         current:setVolume(data.volume)
         
-        -- Handle Play/Pause State
         if data.action == 'play' and not current.isPlaying then
             current:play()
-        elseif data.action == 'update' and current.isPlaying then
-             -- Do nothing, let it keep playing
         end
     else
-        -- Create new sound
         local direction = RotationToDirection(rot)
         local sound = Interface.CreateSound({
             soundId = sId,
@@ -546,15 +476,7 @@ RegisterNUICallback('previewSound', function(data, cb)
             }
         })
         sound.orientation = direction 
-        
-        -- FIX: Only auto-play if the action is explicitly 'play'
-        -- This prevents the sound from auto-starting when just updating config/url
-        if data.action == 'play' then
-            sound:play()
-        else
-            -- Ensure it is created but paused/ready
-            -- Note: Interface.CreateSound does not auto-play unless replicated=true
-        end
+        if data.action == 'play' then sound:play() end
     end
     cb('ok')
 end)

@@ -19,7 +19,7 @@ if Config.Inventory == 'auto' then
                 if Config.Inventory == 'qb-inventory' then
                     RegisterNetEvent('ak47_lib:closeqbinventory', function()
                         local source = source
-                        exports['qb-inventory']:CloseInventory(source, GetIdentifier(source))
+                        exports['qb-inventory']:CloseInventory(source, Lib47.GetIdentifier(source))
                     end)
 
                     RegisterNetEvent('ak47_lib:openqbinventory', function(target)

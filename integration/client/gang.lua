@@ -58,3 +58,44 @@ Lib47.GetGangList = function()
 
     return {}
 end
+
+Lib47.GetGang = function()
+    local gangData = nil
+
+    if GetResourceState('ak47_gangs') == 'started' or GetResourceState('ak47_gangs') == 'uninitialized' then
+        gangData = exports['ak47_gangs']:GetPlayerGang()
+    elseif GetResourceState('ak47_qb_gangs') == 'started' or GetResourceState('ak47_qb_gangs') == 'uninitialized' then
+        gangData = exports['ak47_qb_gangs']:GetPlayerGang()
+    elseif GetResourceState('ak47_territories') == 'started' or GetResourceState('ak47_territories') == 'uninitialized' then
+        gangData = exports['ak47_territories']:GetPlayerGang()
+    elseif GetResourceState('ak47_qb_territories') == 'started' or GetResourceState('ak47_qb_territories') == 'uninitialized' then
+        gangData = exports['ak47_qb_territories']:GetPlayerGang()
+    end
+
+    if gangData then
+        return {
+            name = gangData.tag,
+            label = gangData.label,
+            isboss = gangData.access and gangData.access.boss,
+            grade = {
+                level = gangData.rankid,
+                name = gangData.ranklable or gangData.ranklabel
+            }
+        }
+    end
+
+    if Config.Framework == 'qb' or Config.Framework == 'qbx' then
+        local Player = Lib47.GetPlayer(source)
+        return Player and Player.PlayerData.gang
+    end
+
+    return {
+        name = "none",
+        label = "No Gang",
+        isboss = false,
+        grade = {
+            level = 0,
+            name = "None"
+        }
+    }
+end

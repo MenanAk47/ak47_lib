@@ -277,28 +277,14 @@ end
 
 Lib47.AddOfflineMoney = function(identifier, account, amount)
     local type = account == 'cash' and 'money' or account
-    MySQL.Async.fetchAll('SELECT accounts FROM users WHERE identifier = ?', {identifier}, function(result)
-        if result and result[1] and result[1].accounts then
-            local accounts = json.decode(result[1].accounts)
-            if accounts and type(accounts) == "table" then
-                accounts[type] = (accounts[type] or 0) + amount
-                MySQL.Async.execute('UPDATE users SET accounts = ? WHERE identifier = ?', {json.encode(accounts), identifier})
-            end
-        end
-    end)
+    MySQL.Async.execute('UPDATE users SET accounts = JSON_SET(accounts, ?, COALESCE(JSON_EXTRACT(accounts, ?), 0) + ?) WHERE identifier = ?', 
+    {"$."..type, "$."..type, amount, identifier})
 end
 
 Lib47.RemoveOfflineMoney = function(identifier, account, amount)
     local type = account == 'cash' and 'money' or account
-    MySQL.Async.fetchAll('SELECT accounts FROM users WHERE identifier = ?', {identifier}, function(result)
-        if result and result[1] and result[1].accounts then
-            local accounts = json.decode(result[1].accounts)
-            if accounts and type(accounts) == "table" then
-                accounts[type] = (accounts[type] or 0) - amount
-                MySQL.Async.execute('UPDATE users SET accounts = ? WHERE identifier = ?', {json.encode(accounts), identifier})
-            end
-        end
-    end)
+    MySQL.Async.execute('UPDATE users SET accounts = JSON_SET(accounts, ?, COALESCE(JSON_EXTRACT(accounts, ?), 0) - ?) WHERE identifier = ?', 
+    {"$."..type, "$."..type, amount, identifier})
 end
 
 Lib47.GetOfflineMetaData = function(identifier, key)

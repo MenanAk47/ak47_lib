@@ -51,11 +51,11 @@ Integration.GetGang = function(source)
     if gangData then
         return {
             name = gangData.tag,
-            label = gangData.name,
+            label = gangData.label,
             isboss = gangData.access and gangData.access.boss,
             grade = {
                 level = gangData.rankid,
-                name = gangData.ranklabel
+                name = gangData.ranklable or gangData.ranklabel
             }
         }
     end
