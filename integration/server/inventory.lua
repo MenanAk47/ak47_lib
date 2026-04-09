@@ -180,17 +180,14 @@ Integration.GetInventoryItems = function(inventoryId)
         local inventory = exports['qs-inventory']:GetInventory(inventoryId)
         return inventory and inventory.items or {}
 
-    elseif Config.Inventory == 'ps-inventory' then
-        local inventory = exports['qb-inventory']:GetInventory(inventoryId)
-        return inventory and inventory.items or {}
-
-    elseif Config.Inventory == 'lj-inventory' then
-        local inventory = exports['lj-inventory']:GetInventory(inventoryId)
-        return inventory and inventory.items or {}
-
-    elseif Config.Inventory == 'qb-inventory' or Config.Inventory == 'qb-inventory-old' then
-        local inventory = exports['qb-inventory']:GetInventory(inventoryId)
-        return inventory and inventory.items or {}
+    elseif Config.Inventory == 'qb-inventory' then
+        if tonumber(inventoryId) then
+            local Player = Lib47.GetPlayer(tonumber(inventoryId))
+            return Player and Player.PlayerData.items or {}
+        else
+            local inventory = exports['qb-inventory']:GetInventory(inventoryId)
+            return inventory and inventory.items or {}
+        end
 
     elseif Config.Inventory == 'codem-inventory' then
         if Lib47.GetPlayer(inventoryId) then
