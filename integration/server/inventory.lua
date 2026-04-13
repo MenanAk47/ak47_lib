@@ -82,87 +82,101 @@ Integration.GetItems = function()
     end
 end
 
-Integration.AddItem = function(source, item, amount, slot, meta)
+Integration.AddItem = function(inventoryId, item, amount, slot, meta)
     if Config.Inventory == 'ak47_inventory' then
-        return exports['ak47_inventory']:AddItem(source, item, amount, slot, meta)
+        return exports['ak47_inventory']:AddItem(inventoryId, item, amount, slot, meta)
 
     elseif Config.Inventory == 'ak47_qb_inventory' then
-        return exports['ak47_qb_inventory']:AddItem(source, item, amount, slot, meta)
+        return exports['ak47_qb_inventory']:AddItem(inventoryId, item, amount, slot, meta)
 
     elseif Config.Inventory == 'ox_inventory' then
-        return exports['ox_inventory']:AddItem(source, item, amount, meta, slot)
+        return exports['ox_inventory']:AddItem(inventoryId, item, amount, meta, slot)
 
     elseif Config.Inventory == 'qs-inventory' then
-        return exports['qs-inventory']:AddItem(source, item, amount, slot, meta)
+        return exports['qs-inventory']:AddItem(inventoryId, item, amount, slot, meta)
 
     elseif Config.Inventory == 'ps-inventory' then
-        return exports['ps-inventory']:AddItem(source, item, amount, slot, meta)
+        return exports['ps-inventory']:AddItem(inventoryId, item, amount, slot, meta)
 
     elseif Config.Inventory == 'lj-inventory' then
-        return exports['lj-inventory']:AddItem(source, item, amount, slot, meta)
+        return exports['lj-inventory']:AddItem(inventoryId, item, amount, slot, meta)
 
     elseif Config.Inventory == 'qb-inventory' or Config.Inventory == 'qb-inventory-old' then
-        return exports['qb-inventory']:AddItem(source, item, amount, slot, meta)
+        return exports['qb-inventory']:AddItem(inventoryId, item, amount, slot, meta)
 
     elseif Config.Inventory == 'codem-inventory' then
-        return exports['codem-inventory']:AddItem(source, item, amount, slot, meta)
+        return exports['codem-inventory']:AddItem(inventoryId, item, amount, slot, meta)
 
     elseif Config.Inventory == 'tgiann-inventory' then
-        return exports['tgiann-inventory']:AddItem(source, item, amount, slot, meta)
+        return exports['tgiann-inventory']:AddItem(inventoryId, item, amount, slot, meta)
 
     elseif Config.Inventory == 'origen_inventory' then
-        return exports['origen_inventory']:AddItem(source, item, amount, slot, meta)
-
+        return exports['origen_inventory']:AddItem(inventoryId, item, amount, slot, meta)
 
     -- add your inventory support above this code
-    elseif Config.Framework == 'esx' then
-        local xPlayer = Lib47.GetPlayer(source)
-        return xPlayer.addInventoryItem(item, amount)
-    elseif Config.Framework == 'qb' then
-        local Player = Lib47.GetPlayer(source)
-        return Player.Functions.AddItem(item, amount, slot, meta)
+    elseif type(inventoryId) == 'number' and Lib47.GetPlayer(inventoryId) then
+    
+        if Config.Framework == 'esx' then
+            local xPlayer = Lib47.GetPlayer(inventoryId)
+            return xPlayer.addInventoryItem(item, amount)
+        elseif Config.Framework == 'qb' then
+            local Player = Lib47.GetPlayer(inventoryId)
+            return Player.Functions.AddItem(item, amount, slot, meta)
+        end
+    else
+        print('^1No supported inventory found for Integration.AddItem.^0')
+        print('^3Please open a ticket in the Discord and submit a request with your inventory documentation link.^0')
+        return false
+
     end
 end
 
-Integration.RemoveItem = function(source, item, amount, slot, meta)
+Integration.RemoveItem = function(inventoryId, item, amount, slot, meta)
     if Config.Inventory == 'ak47_inventory' then
-        return exports['ak47_inventory']:RemoveItem(source, item, amount, slot, meta)
+        return exports['ak47_inventory']:RemoveItem(inventoryId, item, amount, slot, meta)
 
     elseif Config.Inventory == 'ak47_qb_inventory' then
-        return exports['ak47_qb_inventory']:RemoveItem(source, item, amount, slot, meta)
+        return exports['ak47_qb_inventory']:RemoveItem(inventoryId, item, amount, slot, meta)
 
     elseif Config.Inventory == 'ox_inventory' then
-        return exports['ox_inventory']:RemoveItem(source, item, amount, meta, slot)
+        return exports['ox_inventory']:RemoveItem(inventoryId, item, amount, meta, slot)
 
     elseif Config.Inventory == 'qs-inventory' then
-        return exports['qs-inventory']:RemoveItem(source, item, amount, slot, meta)
+        return exports['qs-inventory']:RemoveItem(inventoryId, item, amount, slot, meta)
 
     elseif Config.Inventory == 'ps-inventory' then
-        return exports['ps-inventory']:RemoveItem(source, item, amount, slot, meta)
+        return exports['ps-inventory']:RemoveItem(inventoryId, item, amount, slot, meta)
 
     elseif Config.Inventory == 'lj-inventory' then
-        return exports['lj-inventory']:RemoveItem(source, item, amount, slot, meta)
+        return exports['lj-inventory']:RemoveItem(inventoryId, item, amount, slot, meta)
 
     elseif Config.Inventory == 'qb-inventory' or Config.Inventory == 'qb-inventory-old' then
-        return exports['qb-inventory']:RemoveItem(source, item, amount, slot, meta)
+        return exports['qb-inventory']:RemoveItem(inventoryId, item, amount, slot, meta)
 
     elseif Config.Inventory == 'codem-inventory' then
-        return exports['codem-inventory']:RemoveItem(source, item, amount, slot, meta)
+        return exports['codem-inventory']:RemoveItem(inventoryId, item, amount, slot, meta)
 
     elseif Config.Inventory == 'tgiann-inventory' then
-        return exports['tgiann-inventory']:RemoveItem(source, item, amount, slot, meta)
+        return exports['tgiann-inventory']:RemoveItem(inventoryId, item, amount, slot, meta)
 
     elseif Config.Inventory == 'origen_inventory' then
-        return exports['origen_inventory']:RemoveItem(source, item, amount, slot, meta)
-
+        return exports['origen_inventory']:RemoveItem(inventoryId, item, amount, slot, meta)
 
     -- add your inventory support above this code
-    elseif Config.Framework == 'esx' then
-        local xPlayer = Lib47.GetPlayer(source)
-        return xPlayer.removeInventoryItem(item, amount)
-    elseif Config.Framework == 'qb' then
-        local Player = Lib47.GetPlayer(source)
-        return Player.Functions.RemoveItem(item, amount, slot, meta)
+    elseif type(inventoryId) == 'number' and Lib47.GetPlayer(inventoryId) then
+    
+        if Config.Framework == 'esx' then
+            local xPlayer = Lib47.GetPlayer(inventoryId)
+            return xPlayer.removeInventoryItem(item, amount)
+        elseif Config.Framework == 'qb' then
+            local Player = Lib47.GetPlayer(inventoryId)
+            return Player.Functions.RemoveItem(item, amount, slot, meta)
+        end
+    else
+        print('^1No supported inventory found for Integration.RemoveItem.^0')
+        print('^3Please open a ticket in the Discord and submit a request with your inventory documentation link.^0')
+        return false
+
     end
 end
 
@@ -178,7 +192,7 @@ Integration.GetInventoryItems = function(inventoryId)
 
     elseif Config.Inventory == 'qs-inventory' then
         local inventory = exports['qs-inventory']:GetInventory(inventoryId)
-        return inventory and inventory.items or {}
+        return inventory or {}
 
     elseif Config.Inventory == 'qb-inventory' then
         if tonumber(inventoryId) then
@@ -210,12 +224,20 @@ Integration.GetInventoryItems = function(inventoryId)
 
 
     -- add your inventory support above this code
-    elseif Config.Framework == 'esx' then
-        local xPlayer = Lib47.GetPlayer(source)
-        return xPlayer.getInventory()
+    elseif type(inventoryId) == 'number' and Lib47.GetPlayer(inventoryId) then
+    
+        if Config.Framework == 'esx' then
+            local xPlayer = Lib47.GetPlayer(inventoryId)
+            return xPlayer.getInventory()
 
-    elseif Config.Framework == 'qb' then
-        local Player = Lib47.GetPlayer(source)
-        return Player.PlayerData.items
+        elseif Config.Framework == 'qb' then
+            local Player = Lib47.GetPlayer(inventoryId)
+            return Player.PlayerData.items
+        end
+    else
+        print('^1No supported inventory found for Integration.GetInventoryItems.^0')
+        print('^3Please open a ticket in the Discord and submit a request with your inventory documentation link.^0')
+        return {}
+
     end
 end
