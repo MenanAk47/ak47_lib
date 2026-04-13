@@ -274,15 +274,7 @@ Lib47.HasEnoughItem = function(source, item, amount)
 end
 
 Lib47.CanCarryItem = function(source, item, amount)
-    local Player = Lib47.GetPlayer(source)
-    local itemData = QBCore.Shared.Items[item]
-
-    if not itemData then return false end
-
-    local totalWeight = QBCore.Player.GetTotalWeight(Player.PlayerData.items)
-    local itemWeight = itemData.weight * amount
-
-    return (totalWeight + itemWeight) <= QBCore.Config.Player.MaxWeight
+    return Integration.CanCarryItem(source, item, amount)
 end
 
 Lib47.AddItem = function(source, item, amount, slot, meta)

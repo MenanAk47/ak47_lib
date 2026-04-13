@@ -237,15 +237,14 @@ end
 
 -- ====================================================================================
 --                                INVENTORY
---                          (Strictly Ox Inventory)
 -- ====================================================================================
 
 Lib47.GetInventoryItems = function(inventoryId)
-    return exports.ox_inventory:GetInventoryItems(inventoryId)
+    return Integration.GetInventoryItems(inventoryId)
 end
 
 Lib47.GetItems = function()
-    return exports.ox_inventory:Items()
+    return Integration.GetItems()
 end
 
 Lib47.GetItemLabel = function(item)
@@ -258,8 +257,14 @@ Lib47.GetItemLabel = function(item)
 end
 
 Lib47.GetInventoryItem = function(source, item)
-    local itemData = exports.ox_inventory:GetItem(source, item, nil, false)
-    return itemData and itemData.count or 0
+    local Player = Lib47.GetPlayer(source)
+    local count = 0
+    for _, itemData in pairs(Player.PlayerData.items) do
+        if itemData.name == item then
+            count = count + (itemData.amount or itemData.count or 0)
+        end
+    end
+    return count
 end
 
 Lib47.GetItemAmount = function(source, item)
@@ -272,15 +277,15 @@ Lib47.HasEnoughItem = function(source, item, amount)
 end
 
 Lib47.CanCarryItem = function(source, item, amount)
-    return exports.ox_inventory:CanCarryItem(source, item, amount)
+    return Integration.CanCarryItem(source, item, amount)
 end
 
 Lib47.AddItem = function(source, item, amount, slot, meta)
-    return exports.ox_inventory:AddItem(source, item, amount, meta, slot)
+    return Integration.AddItem(source, item, amount, slot, meta)
 end
 
-Lib47.RemoveItem = function(source, item, amount, slot, meta)
-    return exports.ox_inventory:RemoveItem(source, item, amount, meta, slot)
+Lib47.RemoveItem = function(source, item, amount)
+    return Integration.RemoveItem(source, item, amount, slot, meta)
 end
 
 Lib47.CreateUseableItem = function(item, cb)

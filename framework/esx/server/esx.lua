@@ -348,12 +348,7 @@ Lib47.HasEnoughItem = function(source, item, amount)
 end
 
 Lib47.CanCarryItem = function(source, item, amount)
-	local xPlayer = Lib47.GetPlayer(source)
-	if xPlayer.canCarryItem then
-		return xPlayer.canCarryItem(item, amount)
-	else
-		return true
-	end
+	return Integration.CanCarryItem(source, item, amount)
 end
 
 Lib47.AddItem = function(source, item, amount, slot, meta)

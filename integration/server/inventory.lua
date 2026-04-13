@@ -241,3 +241,64 @@ Integration.GetInventoryItems = function(inventoryId)
 
     end
 end
+
+Integration.CanCarryItem = function(inventoryId, item, amount)
+    if Config.Inventory == 'ak47_inventory' then
+        return exports['ak47_inventory']:CanAddItem(inventoryId, item, amount)
+
+    elseif Config.Inventory == 'ak47_qb_inventory' then
+        return exports['ak47_qb_inventory']:CanAddItem(inventoryId, item, amount)
+
+    elseif Config.Inventory == 'ox_inventory' then
+        return exports['ox_inventory']:CanCarryItem(inventoryId, item, amount)
+
+    elseif Config.Inventory == 'qs-inventory' then
+        return exports['qs-inventory']:CanCarryItem(inventoryId, item, amount)
+
+    -- elseif Config.Inventory == 'codem-inventory' then
+    --     return exports['codem-inventory']:CanCarryItem(inventoryId, item, amount) -- not found in the documentation
+
+    elseif Config.Inventory == 'tgiann-inventory' then
+        return exports['tgiann-inventory']:CanCarryItem(inventoryId, item, amount)
+
+    elseif Config.Inventory == 'origen_inventory' then
+        return exports['origen_inventory']:canCarryItem(inventoryId, item, amount)
+
+    -- add your inventory support above this code
+    elseif Config.Framework == 'esx' then
+        local xPlayer = Lib47.GetPlayer(inventoryId)
+        if xPlayer and xPlayer.canCarryItem then
+            return xPlayer.canCarryItem(item, amount)
+        end
+        return true
+        
+    elseif Config.Framework == 'qb' then
+        local Player = Lib47.GetPlayer(inventoryId)
+        if not Player then return false end
+
+        local itemData = Lib47.GetItems()[item]
+        if not itemData then return false end
+
+        local itemWeight = (itemData.weight or 0) * amount
+        local totalWeight = 0
+
+        for i, v in pairs(Player.PlayerData.items) do
+            if v.weight then
+                local slotAmount = v.amount or v.count or 1
+                totalWeight = totalWeight + (v.weight * slotAmount)
+            end
+        end
+
+        local maxWeight = 120000 
+        local coreConfig = Lib47.GetCoreConfig()
+        if coreConfig and coreConfig.Player and coreConfig.Player.MaxWeight then
+            maxWeight = coreConfig.Player.MaxWeight
+        end
+
+        return (totalWeight + itemWeight) <= maxWeight
+    else
+        print('^1No supported inventory found for Integration.CanCarryItem.^0')
+        print('^3Please open a ticket in the Discord and submit a request with your inventory documentation link.^0')
+        return false
+    end
+end
