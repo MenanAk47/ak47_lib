@@ -10,6 +10,8 @@ if Config.Inventory == 'auto' then
         'codem-inventory',
         'origen_inventory',
         'tgiann-inventory',
+        'core_inventory',
+        'jaksam_inventory',
     }
     CreateThread(function()
         for _, script in pairs(scripts) do
@@ -24,8 +26,37 @@ if Config.Inventory == 'auto' then
 end
 
 Lib47.SetInventoryBusy = function(state)
-    LocalPlayer.state:set('invBusy', state, true)
-    LocalPlayer.state:set('inv_busy', state, true)
+    if Config.Inventory == 'ak47_inventory' then
+        exports['ak47_inventory']:SetInventoryBusy(state)
+
+    elseif Config.Inventory == 'ak47_qb_inventory' then
+        exports['ak47_qb_inventory']:SetInventoryBusy(state)
+        LocalPlayer.state:set('invBusy', state, true)
+
+    elseif Config.Inventory == 'ox_inventory' then
+        LocalPlayer.state:set('invBusy', state, true)
+
+    elseif Config.Inventory == 'qb-inventory' or Config.Inventory == 'qb-inventory-old' then
+        LocalPlayer.state:set('inv_busy', state, true)
+
+    elseif Config.Inventory == 'qs-inventory' then
+        exports['qs-inventory']:setInventoryDisabled(state)
+
+    elseif Config.Inventory == 'core_inventory' then
+        if state then
+            exports['core_inventory']:lockInventory()
+        else
+            exports['core_inventory']:unlockInventory()
+        end
+
+    elseif Config.Inventory == 'tgiann-inventory' then
+        exports['tgiann-inventory']:SetInventoryActive(not state)
+
+    else
+        -- Fallback to default state bags
+        LocalPlayer.state:set('invBusy', state, true)
+        LocalPlayer.state:set('inv_busy', state, true)
+    end
 end
 
 Lib47.OpenSearchInventory = function(targetServerId)
@@ -166,13 +197,19 @@ Lib47.GetInventoryImageLink = function()
         return "nui://inventory_images/images/"
 
     elseif Config.Inventory == 'cheeza_inventory' then
-        return "nui://cheeza_inventory/html/images/" -- not sure
+        return "nui://cheeza_inventory/html/images/"
 
     elseif Config.Inventory == 'core_inventory' then
-        return "nui://core_inventory/html/images/" -- not sure
+        return "nui://core_inventory/html/images/"
 
     elseif Config.Inventory == 'codem-inventory' then
         return "nui://codem-inventory/html/itemimages/"
+        
+    elseif Config.Inventory == 'origen_inventory' then
+        return "nui://origen_inventory/html/images/"
+        
+    elseif Config.Inventory == 'jaksam_inventory' then
+        return "nui://jaksam_inventory/_images/"
     end
 end
 

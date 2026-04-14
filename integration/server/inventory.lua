@@ -10,6 +10,8 @@ if Config.Inventory == 'auto' then
         'codem-inventory',
         'origen_inventory',
         'tgiann-inventory',
+        'core_inventory',
+        'jaksam_inventory',
     }
     CreateThread(function()
         for _, script in pairs(scripts) do
@@ -54,15 +56,6 @@ Integration.GetItems = function()
 
     elseif Config.Inventory == 'qs-inventory' then
         return exports['qs-inventory']:GetItemList()
-
-    -- elseif Config.Inventory == 'ps-inventory' then
-    --     return exports['ps-inventory']:Items()
-
-    -- elseif Config.Inventory == 'lj-inventory' then
-    --     return exports['lj-inventory']:Items()
-
-    -- elseif Config.Inventory == 'qb-inventory' or Config.Inventory == 'qb-inventory-old' then
-    --     return exports['qb-inventory']:Items()
 
     elseif Config.Inventory == 'codem-inventory' then
         return exports['codem-inventory']:GetItemList()
@@ -113,6 +106,12 @@ Integration.AddItem = function(inventoryId, item, amount, slot, meta)
     elseif Config.Inventory == 'origen_inventory' then
         return exports['origen_inventory']:AddItem(inventoryId, item, amount, slot, meta)
 
+    elseif Config.Inventory == 'core_inventory' then
+        return exports['core_inventory']:addItem(inventoryId, item, amount, meta)
+
+    elseif Config.Inventory == 'jaksam_inventory' then
+        return exports['jaksam_inventory']:addItem(inventoryId, item, amount, meta)
+
     -- add your inventory support above this code
     elseif type(inventoryId) == 'number' and Lib47.GetPlayer(inventoryId) then
     
@@ -161,6 +160,12 @@ Integration.RemoveItem = function(inventoryId, item, amount, slot, meta)
 
     elseif Config.Inventory == 'origen_inventory' then
         return exports['origen_inventory']:RemoveItem(inventoryId, item, amount, slot, meta)
+
+    elseif Config.Inventory == 'core_inventory' then
+        return exports['core_inventory']:removeItem(inventoryId, item, amount)
+
+    elseif Config.Inventory == 'jaksam_inventory' then
+        return exports['jaksam_inventory']:removeItem(inventoryId, item, amount)
 
     -- add your inventory support above this code
     elseif type(inventoryId) == 'number' and Lib47.GetPlayer(inventoryId) then
@@ -255,14 +260,20 @@ Integration.CanCarryItem = function(inventoryId, item, amount)
     elseif Config.Inventory == 'qs-inventory' then
         return exports['qs-inventory']:CanCarryItem(inventoryId, item, amount)
 
-    -- elseif Config.Inventory == 'codem-inventory' then
-    --     return exports['codem-inventory']:CanCarryItem(inventoryId, item, amount) -- not found in the documentation
+    elseif Config.Inventory == 'codem-inventory' then
+        return true -- unknown
 
     elseif Config.Inventory == 'tgiann-inventory' then
         return exports['tgiann-inventory']:CanCarryItem(inventoryId, item, amount)
 
     elseif Config.Inventory == 'origen_inventory' then
         return exports['origen_inventory']:canCarryItem(inventoryId, item, amount)
+
+    elseif Config.Inventory == 'core_inventory' then
+        return true -- unknown
+        
+    elseif Config.Inventory == 'jaksam_inventory' then
+        return exports['jaksam_inventory']:canCarryItem(inventoryId, item, amount)
 
     -- add your inventory support above this code
     elseif Config.Framework == 'esx' then
