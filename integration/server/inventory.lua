@@ -1,3 +1,6 @@
+Lib47.Items = {}
+Lib47.ItemsByHash = {}
+
 if Config.Inventory == 'auto' then
     local scripts = {
         'ak47_qb_inventory',
@@ -38,11 +41,34 @@ if Config.Inventory == 'auto' then
                 end
 
                 print(string.format("^2['INVENTORY']: %s^0", Config.Inventory))
+
+                FetchInvItems()
                 return
             end
         end
+        
+    end)
+else
+    CreateThread(function()
+        Wait(2000)
+        FetchInvItems()
     end)
 end
+
+FetchInvItems = function()
+    Lib47.Items = Integration.GetItems()
+    for i, v in pairs(Lib47.Items) do
+        local name = v.name or i
+        name = name:lower()
+        local nameHash = GetHashKey(name)
+        Lib47.ItemsByHash[nameHash] = v
+        Lib47.ItemsByHash[nameHash].name = name
+    end
+end
+
+Lib47.Callback.Register('ak47_lib:callback:getitems', function( source )
+    return Lib47.Items
+end)
 
 Integration.GetItems = function()
     if Config.Inventory == 'ak47_inventory' then
@@ -210,7 +236,7 @@ Integration.GetInventoryItems = function(inventoryId)
 
     elseif Config.Inventory == 'codem-inventory' then
         if Lib47.GetPlayer(inventoryId) then
-            local inventory = exports['codem-inventory']:GetInventory(inventoryId, inventoryId)
+            local inventory = exports['codem-inventory']:GetInventory(Lib47.GetIdentifier(inventoryId), inventoryId)
             return inventory and inventory.items or {}
         else
             return exports['codem-inventory']:GetStashItems(inventoryId)
@@ -312,4 +338,8 @@ Integration.CanCarryItem = function(inventoryId, item, amount)
         print('^3Please open a ticket in the Discord and submit a request with your inventory documentation link.^0')
         return false
     end
+end
+
+Lib47.GetWeaponNameFromHash = function( hash )
+    return Lib47.ItemsByHash[hash] and Lib47.ItemsByHash[hash].name
 end

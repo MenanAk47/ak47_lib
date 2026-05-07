@@ -85,8 +85,8 @@ Lib47.GetGang = function()
     end
 
     if Config.Framework == 'qb' or Config.Framework == 'qbx' then
-        local Player = Lib47.GetPlayer(source)
-        return Player and Player.PlayerData.gang
+        local PlayerData = Lib47.GetPlayerData()
+        return PlayerData and PlayerData.gang
     end
 
     return {

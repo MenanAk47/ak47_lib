@@ -1,3 +1,6 @@
+Lib47.Items = {}
+Lib47.ItemsByHash = {}
+
 if Config.Inventory == 'auto' then
     local scripts = {
         'ak47_qb_inventory',
@@ -19,10 +22,61 @@ if Config.Inventory == 'auto' then
                 Config.Inventory = script
                 print(string.format("^2['INVENTORY']: %s^0", Config.Inventory))
                 RegisterInventoryEvents()
+                Wait(2000)
+                FetchInvItems()
                 return
             end
         end
     end)
+else
+    CreateThread(function()
+        Wait(2000)
+        FetchInvItems()
+    end)
+end
+
+FetchInvItems = function()
+    local items = Integration.GetItems()
+    Lib47.Items = items or Lib47.Callback.Await('ak47_lib:callback:getitems')
+
+    for i, v in pairs(Lib47.Items) do
+        local name = v.name or i
+        name = name:lower()
+        local nameHash = GetHashKey(name)
+        Lib47.ItemsByHash[nameHash] = v
+        Lib47.ItemsByHash[nameHash].name = name
+    end
+end
+
+Integration.GetItems = function()
+    if Config.Inventory == 'ak47_inventory' then
+        return exports['ak47_inventory']:Items()
+
+    elseif Config.Inventory == 'ak47_qb_inventory' then
+        return exports['ak47_qb_inventory']:Items()
+
+    elseif Config.Inventory == 'ox_inventory' then
+        return exports['ox_inventory']:Items()
+
+    elseif Config.Inventory == 'qs-inventory' then
+        return exports['qs-inventory']:GetItemList()
+
+    elseif Config.Inventory == 'codem-inventory' then
+        return exports['codem-inventory']:GetItemList()
+
+    elseif Config.Inventory == 'tgiann-inventory' then
+        return exports['tgiann-inventory']:Items()
+
+    elseif Config.Inventory == 'origen_inventory' then
+        return exports['origen_inventory']:Items()
+
+
+    -- add your inventory support above this code
+    elseif Config.Framework == 'esx' then
+        return nil
+    elseif Config.Framework == 'qb' then
+        return QBCore.Shared.Items
+    end
 end
 
 Lib47.SetInventoryBusy = function(state)
@@ -218,7 +272,7 @@ Lib47.GetItemImageLink = function(name, format)
         print("^1Image link requested but no item name was provided!^0")
         return 
     end
-    return Lib47.GetInventoryImageLink() .. name .. (format or '.png')
+    return Lib47.GetInventoryImageLink() .. name:lower() .. (format or '.png')
 end
 
 Lib47.RemoveItemQuality = function(item, amount)
@@ -253,6 +307,10 @@ Lib47.RemoveItemQuality = function(item, amount)
         -- unknown
 
     end
+end
+
+Lib47.GetWeaponNameFromHash = function( hash )
+    return Lib47.ItemsByHash[hash] and Lib47.ItemsByHash[hash].name
 end
 
 RegisterInventoryEvents = function()
