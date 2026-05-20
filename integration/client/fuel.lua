@@ -16,6 +16,23 @@ if Config.FuelScript == 'auto' then
     end)
 end
 
+Lib47.GetVehicleFuel = function(vehicle)
+    if Config.FuelScript == 'LegacyFuel' then
+        exports['LegacyFuel']:GetFuel(vehicle)
+    elseif Config.FuelScript == 'ox_fuel' then
+        return Entity(vehicle).state.fuel
+    elseif Config.FuelScript == 'ps-fuel' then
+        return exports['ps-fuel']:GetFuel(vehicle)
+    elseif Config.FuelScript == 'rcore_fuel' then
+        return exports['rcore_fuel']:GetFuel(vehicle)
+    elseif Config.FuelScript == 'custom' then
+        -- your custom code below
+
+    else
+        return GetVehicleFuelLevel(vehicle)
+    end
+end
+
 Lib47.SetVehicleFuel = function(vehicle, amount)
     if Config.FuelScript == 'LegacyFuel' then
         exports['LegacyFuel']:SetFuel(vehicle, tonumber(amount) + 0.0)
@@ -28,5 +45,7 @@ Lib47.SetVehicleFuel = function(vehicle, amount)
     elseif Config.FuelScript == 'custom' then
         -- your custom code below
 
+    else
+        SetVehicleFuelLevel(vehicle, tonumber(amount))
     end
 end

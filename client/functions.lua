@@ -29,3 +29,19 @@ Functions.HasAnyItemRemoved = function(oldItems, newItems)
     end
 end
 
+Functions.FormatJobData = function( data )
+    local job = {}
+    
+    job.name = data.name
+    job.label = data.label
+    job.payment = data.grade_salary
+    
+    job.isboss = data.grade_name == 'boss'
+
+    job.grade = {}
+    job.grade.name = data.grade_label
+    job.grade.level = data.grade
+
+    return job
+end
+
