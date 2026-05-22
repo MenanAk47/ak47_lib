@@ -1,10 +1,13 @@
+local ConfigBackup = Config.Banking
+
+local scripts = {
+    'ak47_banking',
+    'qb-banking',
+    'okokBanking',
+    'Renewed-Banking',
+}
+
 if Config.Banking == 'auto' then
-    local scripts = {
-        'ak47_banking',
-        'qb-banking',
-        'okokBanking',
-        'Renewed-Banking',
-    }
     CreateThread(function()
         for _, script in pairs(scripts) do
             if GetResourceState(script) == 'started' then
@@ -16,6 +19,18 @@ if Config.Banking == 'auto' then
     end)
 end
 
+AddEventHandler('onResourceStart', function(resourceName)
+    if ConfigBackup == 'auto' then
+        for _, script in pairs(scripts) do
+            if script == resourceName and Config.Banking ~= script then
+                Config.Banking = script
+                print(string.format("^2['BANKING']: %s^0", Config.Banking))
+                return
+            end
+        end
+    end
+end)
+
 Integration.AddSocietyMoney = function(job, amount, reason, ignoreBankingExport)
     if Config.Framework == 'esx' and GetResourceState('esx_addonaccount') == 'started' then
         TriggerEvent('esx_addonaccount:getSharedAccount', 'society_'..job, function(account)
@@ -26,7 +41,7 @@ Integration.AddSocietyMoney = function(job, amount, reason, ignoreBankingExport)
         return true
     elseif Config.Framework == 'qb' and GetResourceState('qb-management') == 'started' then
         local success, result = pcall(function()
-            return exports['qb-management']:AddMoney(job, amount )
+            return exports['qb-management']:AddMoney(job, amount)
         end)
 
         if success then
@@ -50,7 +65,7 @@ Integration.AddSocietyMoney = function(job, amount, reason, ignoreBankingExport)
         exports['Renewed-Banking']:addAccountMoney(job, amount)
         return true
     end
-    
+
     return false
 end
 
@@ -64,7 +79,7 @@ Integration.RemoveSocietyMoney = function(job, amount, reason, ignoreBankingExpo
         return true
     elseif Config.Framework == 'qb' and GetResourceState('qb-management') == 'started' then
         local success, result = pcall(function()
-            return exports['qb-management']:RemoveMoney(job, amount )
+            return exports['qb-management']:RemoveMoney(job, amount)
         end)
 
         if success then
@@ -88,7 +103,7 @@ Integration.RemoveSocietyMoney = function(job, amount, reason, ignoreBankingExpo
         exports['Renewed-Banking']:removeAccountMoney(job, amount)
         return true
     end
-    
+
     return false
 end
 
