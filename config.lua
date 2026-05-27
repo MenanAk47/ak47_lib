@@ -3,7 +3,7 @@ Config = {}
 -- 'esx', 'qb', 'qbx'
 Config.Framework = 'auto'
 
--- 'default', ox', 'esx', 'qb', 'qbx', 'custom'
+-- 'default', 'ak47_hud', ox', 'esx', 'qb', 'qbx', 'custom'
 Config.Notify = 'default'
 
 -- 'default', ox', 

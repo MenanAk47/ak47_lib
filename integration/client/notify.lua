@@ -5,7 +5,11 @@ Lib47.Notify = function(msg, type, duration)
             description = msg,
             duration = duration,
             sound = true,
+            position = GetResourceState('ak47_hud') == 'started' and 'center-right' or 'top-center'
         })
+    elseif Config.Notify == 'ak47_hud' then
+        exports['ak47_hud']:Notify(msg, type, duration)
+
     elseif Config.Notify == 'ox' then
         exports['ox_lib']:notify({
             type = type or 'info',
