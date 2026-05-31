@@ -3,6 +3,7 @@ if Config.FuelScript == 'auto' then
         'LegacyFuel',
         'ox_fuel',
         'ps-fuel',
+        'rcore_fuel_beta',
         'rcore_fuel',
     }
     CreateThread(function()
@@ -23,8 +24,8 @@ Lib47.GetVehicleFuel = function(vehicle)
         return Entity(vehicle).state.fuel
     elseif Config.FuelScript == 'ps-fuel' then
         return exports['ps-fuel']:GetFuel(vehicle)
-    elseif Config.FuelScript == 'rcore_fuel' then
-        return exports['rcore_fuel']:GetFuel(vehicle)
+    elseif Config.FuelScript == 'rcore_fuel' or Config.FuelScript == 'rcore_fuel_beta' then
+         return exports[Config.FuelScript]:GetFuel(vehicle)
     elseif Config.FuelScript == 'custom' then
         -- your custom code below
 
@@ -40,8 +41,8 @@ Lib47.SetVehicleFuel = function(vehicle, amount)
         Entity(vehicle).state.fuel = tonumber(amount)
     elseif Config.FuelScript == 'ps-fuel' then
         exports['ps-fuel']:SetFuel(vehicle, tonumber(amount) + 0.0)
-    elseif Config.FuelScript == 'rcore_fuel' then
-        exports['rcore_fuel']:SetFuel(vehicle, tonumber(amount) + 0.0)
+    elseif Config.FuelScript == 'rcore_fuel' or Config.FuelScript == 'rcore_fuel_beta' then
+        exports[Config.FuelScript]:SetFuel(vehicle, tonumber(amount) + 0.0)
     elseif Config.FuelScript == 'custom' then
         -- your custom code below
 
