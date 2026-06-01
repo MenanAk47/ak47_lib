@@ -27,6 +27,10 @@ RegisterNetEvent('esx:playerLoaded', function(xPlayer)
     TriggerEvent('ak47_bridge:OnPlayerLoaded', Lib47.PlayerData) -- will be removed soon
 end)
 
+RegisterNetEvent('esx:onPlayerLogout', function()
+    TriggerEvent('ak47_lib:OnPlayerUnload')
+end)
+
 RegisterNetEvent('esx:setJob', function(job)
     Lib47.PlayerData.job = Functions.FormatJobData(job)
     TriggerEvent('ak47_lib:OnJobUpdate', Lib47.PlayerData.job)

@@ -26,6 +26,10 @@ RegisterNetEvent('QBCore:Client:OnPlayerLoaded', function()
     TriggerEvent('ak47_bridge:OnPlayerLoaded', Lib47.PlayerData) -- will be removed soon
 end)
 
+RegisterNetEvent('QBCore:Client:OnPlayerUnload', function()
+    TriggerEvent('ak47_lib:OnPlayerUnload')
+end)
+
 RegisterNetEvent('QBCore:Client:OnJobUpdate', function(JobInfo)
     Lib47.PlayerData.job = JobInfo
     TriggerEvent('ak47_lib:OnJobUpdate', JobInfo)
