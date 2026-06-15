@@ -45,6 +45,19 @@ RegisterNetEvent('QBCore:Player:SetPlayerData', function(val)
     TriggerEvent('ak47_bridge:OnPlayerDataUpdate', Lib47.PlayerData) -- will be removed soon
 end)
 
+RegisterNetEvent('QBCore:Client:OnPlayerUpdated', function(key, val)
+    if (key == 'items' or key == 'all') and Lib47.PlayerData then
+        Functions.HasAnyItemRemoved(Lib47.PlayerData.items, val.items)
+    end
+    if key == 'all' then
+        Lib47.PlayerData = val
+    else
+        Lib47.PlayerData[key] = val
+    end
+    TriggerEvent('ak47_lib:OnPlayerDataUpdate', Lib47.PlayerData)
+    TriggerEvent('ak47_bridge:OnPlayerDataUpdate', Lib47.PlayerData) -- will be removed soon
+end)
+
 AddEventHandler('onResourceStart', function(resourceName)
     if resourceName == GetCurrentResourceName() then
         local data = QBCore.Functions.GetPlayerData()
