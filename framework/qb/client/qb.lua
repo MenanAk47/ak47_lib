@@ -46,16 +46,29 @@ RegisterNetEvent('QBCore:Player:SetPlayerData', function(val)
 end)
 
 RegisterNetEvent('QBCore:Client:OnPlayerUpdated', function(key, val)
-    if (key == 'items' or key == 'all') and Lib47.PlayerData then
-        Functions.HasAnyItemRemoved(Lib47.PlayerData.items, val.items)
+    local currentData = Lib47.PlayerData
+
+    if not currentData and key ~= 'all' then 
+        return 
     end
+
+    if key == 'all' or key == 'items' then
+        local newItems = (key == 'all') and val.items or val
+        if currentData and currentData.items then
+            Functions.HasAnyItemRemoved(currentData.items, newItems)
+        end
+    end
+
     if key == 'all' then
         Lib47.PlayerData = val
     else
-        Lib47.PlayerData[key] = val
+        currentData[key] = val
     end
-    TriggerEvent('ak47_lib:OnPlayerDataUpdate', Lib47.PlayerData)
-    TriggerEvent('ak47_bridge:OnPlayerDataUpdate', Lib47.PlayerData) -- will be removed soon
+
+    local updatedState = Lib47.PlayerData
+
+    TriggerEvent('ak47_lib:OnPlayerDataUpdate', updatedState)
+    TriggerEvent('ak47_bridge:OnPlayerDataUpdate', updatedState) -- will be removed soon
 end)
 
 AddEventHandler('onResourceStart', function(resourceName)
