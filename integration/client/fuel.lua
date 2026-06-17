@@ -19,7 +19,7 @@ end
 
 Lib47.GetVehicleFuel = function(vehicle)
     if Config.FuelScript == 'LegacyFuel' then
-        exports['LegacyFuel']:GetFuel(vehicle)
+        return exports['LegacyFuel']:GetFuel(vehicle)
     elseif Config.FuelScript == 'ox_fuel' then
         return Entity(vehicle).state.fuel
     elseif Config.FuelScript == 'ps-fuel' then
