@@ -253,6 +253,17 @@ Lib47.GetItemLabel = function(item)
     return item
 end
 
+Lib47.GetItemsByName = function( source, item )
+    local items = {}
+    local inventoryItems = Lib47.GetInventoryItems(source)
+    for _, item in pairs(inventoryItems) do
+        if item.name and item.name == item then
+            table.insert(items, item)
+        end
+    end
+    return items
+end
+
 Lib47.GetInventoryItem = function(source, item)
     local Player = Lib47.GetPlayer(source)
     local count = 0
@@ -281,7 +292,7 @@ Lib47.AddItem = function(source, item, amount, slot, meta)
     return Integration.AddItem(source, item, amount, slot, meta)
 end
 
-Lib47.RemoveItem = function(source, item, amount)
+Lib47.RemoveItem = function(source, item, amount, slot, meta)
     return Integration.RemoveItem(source, item, amount, slot, meta)
 end
 
