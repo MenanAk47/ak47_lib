@@ -69,6 +69,10 @@ RegisterNUICallback('cancelInput', function(_, cb)
     cb('ok')
 end)
 
+Interface.IsInputOpen = function()
+    return inputState.visible
+end
+
 exports('ShowInput', Interface.ShowInput)
 exports('HideInput', Interface.HideInput)
 
