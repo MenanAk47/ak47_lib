@@ -41,7 +41,8 @@ Interface.ShowInput = function(heading, rows, options)
     })
 
     local result = Citizen.Await(inputPromise)
-    
+
+    inputState.visible = false
     SetNuiFocus(false, false)
     Interface.UnlockContextNav()
     inputPromise = nil
