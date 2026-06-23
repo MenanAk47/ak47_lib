@@ -153,7 +153,7 @@ Interface.HideContext = function(runOnExit, keyPressed)
         end
     end
 
-    if not keyboardOnly then
+    if not keyboardOnly and not (Interface.IsInputOpen and Interface.IsInputOpen()) then
         SetNuiFocus(false, false)
     end
     

@@ -4,6 +4,9 @@ local inputState = { visible = false, invoked = nil }
 Interface.ShowInput = function(heading, rows, options)
     if inputPromise then return nil end
 
+    if Interface.HideNpcInteract then Interface.HideNpcInteract(false) end
+    if Interface.GetOpenMenu() then Interface.HideContext(false) end
+
     inputState.invoked = GetInvokingResource()
     inputState.visible = true
 
@@ -26,7 +29,8 @@ Interface.ShowInput = function(heading, rows, options)
     end
     
     inputPromise = promise.new()
-    
+
+    Interface.LockContextNav()
     SetNuiFocus(true, true)
     
     SendNUIMessage({
@@ -37,8 +41,10 @@ Interface.ShowInput = function(heading, rows, options)
     })
 
     local result = Citizen.Await(inputPromise)
-    
+
+    inputState.visible = false
     SetNuiFocus(false, false)
+    Interface.UnlockContextNav()
     inputPromise = nil
     
     return result
@@ -63,6 +69,10 @@ RegisterNUICallback('cancelInput', function(_, cb)
     end
     cb('ok')
 end)
+
+Interface.IsInputOpen = function()
+    return inputState.visible
+end
 
 exports('ShowInput', Interface.ShowInput)
 exports('HideInput', Interface.HideInput)
