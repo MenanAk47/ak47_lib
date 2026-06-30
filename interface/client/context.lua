@@ -5,6 +5,15 @@ local menuHistoryStack = {}
 local keyboardOnly = true
 local keyboardThreadActive = false
 local contextShowSeq = 0
+local contextNavLocked = false
+
+Interface.LockContextNav = function()
+    contextNavLocked = true
+end
+
+Interface.UnlockContextNav = function()
+    contextNavLocked = false
+end
 
 -- ==========================================
 -- DATA SANITIZER FOR NUI
