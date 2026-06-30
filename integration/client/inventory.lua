@@ -19,6 +19,9 @@ if Config.Inventory == 'auto' then
     CreateThread(function()
         for _, script in pairs(scripts) do
             if GetResourceState(script) == 'started' then
+                if script == 'ak47_qb_inventory' and Lib47.GetResourceVersion('ak47_qb_inventory') > 12.5 then
+                    script = 'ak47_inventory'
+                end
                 Config.Inventory = script
                 print(string.format("^2['INVENTORY']: %s^0", Config.Inventory))
                 RegisterInventoryEvents()
