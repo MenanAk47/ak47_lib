@@ -41,7 +41,7 @@ local function StartKeyboardThread(disableInput)
     keyboardThreadActive = true
 
     CreateThread(function()
-        while contextState.visible and keyboardOnly do
+        while contextState.visible and keyboardOnly and not contextNavLocked do
             Wait(0)
             
             if disableInput then
