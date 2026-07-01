@@ -5,6 +5,15 @@ local menuHistoryStack = {}
 local keyboardOnly = true
 local keyboardThreadActive = false
 local contextShowSeq = 0
+local contextNavLocked = false
+
+Interface.LockContextNav = function()
+    contextNavLocked = true
+end
+
+Interface.UnlockContextNav = function()
+    contextNavLocked = false
+end
 
 -- ==========================================
 -- DATA SANITIZER FOR NUI
@@ -32,7 +41,7 @@ local function StartKeyboardThread(disableInput)
     keyboardThreadActive = true
 
     CreateThread(function()
-        while contextState.visible and keyboardOnly do
+        while contextState.visible and keyboardOnly and not contextNavLocked do
             Wait(0)
             
             if disableInput then
