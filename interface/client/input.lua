@@ -32,7 +32,7 @@ Interface.ShowInput = function(heading, rows, options)
 
     Interface.LockContextNav()
     SetNuiFocus(true, true)
-    
+
     SendNUIMessage({
         action = 'OPEN_INPUT_DIALOG',
         heading = heading,
@@ -43,9 +43,9 @@ Interface.ShowInput = function(heading, rows, options)
     local result = Citizen.Await(inputPromise)
 
     inputState.visible = false
+    inputPromise = nil
     SetNuiFocus(false, false)
     Interface.UnlockContextNav()
-    inputPromise = nil
     
     return result
 end
