@@ -36,42 +36,85 @@ end
 -- ==========================================
 -- KEYBOARD THREAD (LUA NUI NAVIGATION)
 -- ==========================================
+
+-- Key states for hold-to-scroll functionality
+local keyStates = {
+    up = { control = 172, key = 'ArrowUp', nextRepeat = 0 },
+    down = { control = 173, key = 'ArrowDown', nextRepeat = 0 },
+    left = { control = 174, key = 'ArrowLeft', nextRepeat = 0 },
+    right = { control = 175, key = 'ArrowRight', nextRepeat = 0 }
+}
+
+-- Configuration for key repeat timing (in milliseconds)
+local REPEAT_DELAY = 500    -- Wait time before the hold action starts repeating
+local REPEAT_INTERVAL = 80  -- Speed of the scroll while the key is held
+
+local function ProcessKeyRepeat(keyData)
+    if IsDisabledControlJustPressed(0, keyData.control) then
+        SendNUIMessage({ action = 'CONTEXT_CONTROL', key = keyData.key })
+        keyData.nextRepeat = GetGameTimer() + REPEAT_DELAY
+    elseif IsDisabledControlPressed(0, keyData.control) then
+        local currentTime = GetGameTimer()
+        if currentTime >= keyData.nextRepeat then
+            SendNUIMessage({ action = 'CONTEXT_CONTROL', key = keyData.key })
+            keyData.nextRepeat = currentTime + REPEAT_INTERVAL
+        end
+    else
+        keyData.nextRepeat = 0
+    end
+end
+
 local function StartKeyboardThread(disableInput)
     if keyboardThreadActive then return end
     keyboardThreadActive = true
 
     CreateThread(function()
-        while contextState.visible and keyboardOnly and not contextNavLocked do
+        while contextState.visible and keyboardOnly do
             Wait(0)
             
-            if disableInput then
-                DisableAllControlActions(0)
-            end
-            
-            -- Directional Arrows
-            if IsDisabledControlJustPressed(0, 172) then SendNUIMessage({ action = 'CONTEXT_CONTROL', key = 'ArrowUp' }) end
-            if IsDisabledControlJustPressed(0, 173) then SendNUIMessage({ action = 'CONTEXT_CONTROL', key = 'ArrowDown' }) end
-            if IsDisabledControlJustPressed(0, 174) then SendNUIMessage({ action = 'CONTEXT_CONTROL', key = 'ArrowLeft' }) end
-            if IsDisabledControlJustPressed(0, 175) then SendNUIMessage({ action = 'CONTEXT_CONTROL', key = 'ArrowRight' }) end
-            
-            -- Control 18 is strictly INPUT_ENTER (Select)
-            if IsDisabledControlJustPressed(0, 191) then
-                SendNUIMessage({ action = 'CONTEXT_CONTROL', key = 'Enter' })
-            end
-            
-            -- Control 194 is INPUT_FRONTEND_RRIGHT (Backspace) -> Go Back
-            if IsDisabledControlJustPressed(0, 194) then
-                SendNUIMessage({ action = 'CONTEXT_CONTROL', key = 'Backspace' })
-            end
+            if not contextNavLocked then
+                if disableInput then
+                    DisableAllControlActions(0)
+                end
+                
+                -- Directional Arrows with Hold Support
+                ProcessKeyRepeat(keyStates.up)
+                ProcessKeyRepeat(keyStates.down)
+                ProcessKeyRepeat(keyStates.left)
+                ProcessKeyRepeat(keyStates.right)
+                
+                if IsDisabledControlJustPressed(0, 191) then
+                    SendNUIMessage({ action = 'CONTEXT_CONTROL', key = 'Enter' })
+                end
+                
+                if IsDisabledControlJustPressed(0, 194) then
+                    SendNUIMessage({ action = 'CONTEXT_CONTROL', key = 'Backspace' })
+                end
 
-            -- Control 200 is INPUT_FRONTEND_PAUSE_ALTERNATE (Escape) -> Force Close
-            if IsDisabledControlJustPressed(0, 200) then
-                SendNUIMessage({ action = 'CONTEXT_CONTROL', key = 'Escape' })
+                if IsDisabledControlJustPressed(0, 200) then
+                    SendNUIMessage({ action = 'CONTEXT_CONTROL', key = 'Escape' })
+                end
             end
         end
         keyboardThreadActive = false
     end)
 end
+
+-- ==========================================
+-- DYNAMIC SEARCH FOCUS CALLBACK
+-- ==========================================
+RegisterNUICallback('toggleSearchFocus', function(data, cb)
+    if data.state then
+        SetNuiFocus(true, true)
+        Interface.LockContextNav() -- Pause the lua arrow keys so typing doesn't double-fire
+    else
+        if keyboardOnly then
+            SetNuiFocus(false, false)
+        end
+        Interface.UnlockContextNav() -- Resume lua arrow keys
+    end
+    cb('ok')
+end)
 
 -- ==========================================
 -- CORE REGISTRATION
@@ -81,6 +124,9 @@ Interface.RegisterContext = function(data)
         print("^1[Lib47] RegisterContext failed: Missing menu ID.^7")
         return 
     end
+    
+    data.resource = GetInvokingResource() or GetCurrentResourceName()
+    
     registeredMenus[data.id] = data
 end
 
@@ -89,6 +135,8 @@ Interface.RegisterMenu = function(data, cb)
     
     data.isMenuType = true
     data.cb = cb 
+    
+    data.resource = GetInvokingResource() or GetCurrentResourceName()
     
     if data.options then
         for _, opt in ipairs(data.options) do
@@ -114,7 +162,7 @@ Interface.ShowContext = function(id, keyOnly, navOpts)
         return 
     end
 
-    contextState.invoked = GetInvokingResource()
+    -- REMOVED: contextState.invoked = GetInvokingResource()
     contextState.visible = true
     activeMenuId = id
     contextShowSeq = contextShowSeq + 1
@@ -151,6 +199,7 @@ Interface.ShowContext = function(id, keyOnly, navOpts)
         canClose = canClose,
         focusIndex = navOpts.focusIndex, 
         keyboardOnly = keyboardOnly,
+        searchable = menuConfig.searchable,
         options = SanitizeForNUI(menuConfig.options or {})
     }
 
@@ -347,8 +396,17 @@ RegisterNUICallback('contextBack', function(data, cb)
 end)
 
 AddEventHandler('onResourceStop', function(resourceName)
-    if contextState.visible and contextState.invoked == resourceName then
-        Interface.HideContext()
+    if contextState.visible and activeMenuId then
+        local activeMenu = registeredMenus[activeMenuId]
+        if activeMenu and activeMenu.resource == resourceName then
+            Interface.HideContext()
+        end
+    end
+
+    for id, menuData in pairs(registeredMenus) do
+        if menuData.resource == resourceName then
+            registeredMenus[id] = nil
+        end
     end
 end)
 
@@ -668,5 +726,4 @@ end)
 RegisterCommand('testoxmenu', function()
     Lib47.ShowMenu('some_menu_id')
 end)
-
 ]]
