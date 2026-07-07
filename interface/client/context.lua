@@ -210,12 +210,20 @@ Interface.ShowContext = function(id, keyOnly, navOpts)
 end
 
 Interface.HideContext = function(runOnExit, keyPressed, suspend)
+    local seqBefore = contextShowSeq
     if runOnExit and activeMenuId then
         local menu = registeredMenus[activeMenuId]
         if menu then
             if menu.onExit then menu.onExit() end
             if menu.onClose then menu.onClose(keyPressed) end
         end
+    end
+
+    if contextShowSeq ~= seqBefore then
+        if not contextState.visible then
+            SetNuiFocus(false, false)
+        end
+        return
     end
 
     if not keyboardOnly and not (Interface.IsInputOpen and Interface.IsInputOpen()) then
