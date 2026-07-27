@@ -54,6 +54,15 @@ Lib47.GetLicense = function( source )
 	return Lib47.GetIdentifierByType(source, 'license')
 end
 
+Lib47.GetPlayers = function()
+    local data = {}
+    local xPlayers = ESX.GetExtendedPlayers()
+    for _, xPlayer in ipairs(xPlayers) do
+        table.insert(players, tonumber(xPlayer.source))
+    end
+    return data
+end
+
 -- ====================================================================================
 --                                IDENTITY & METADATA
 -- ====================================================================================

@@ -56,6 +56,16 @@ Lib47.GetLicense = function(source)
     return Lib47.GetIdentifierByType(source, 'license')
 end
 
+Lib47.GetPlayers = function()
+    local data = {}
+    
+    for _, ply in ipairs(GetPlayers()) do
+        table.insert(data, tonumber(ply))
+    end
+    
+    return data
+end
+
 -- ====================================================================================
 --                                IDENTITY & METADATA
 -- ====================================================================================

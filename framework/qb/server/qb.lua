@@ -55,6 +55,15 @@ Lib47.GetLicense = function(source)
     return Lib47.GetIdentifierByType(source, 'license')
 end
 
+Lib47.GetPlayers = function()
+    local data = {}
+    local Players = QBCore.Functions.GetPlayers()
+    for _, ply in ipairs(Players) do
+        table.insert(players, tonumber(ply))
+    end
+    return data
+end
+
 -- ====================================================================================
 --                                IDENTITY & METADATA
 -- ====================================================================================
