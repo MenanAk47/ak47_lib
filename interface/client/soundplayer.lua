@@ -156,7 +156,7 @@ function StartAudioLoop()
                 if sound.isPlaying then
                     if sound.coords and sound.maxDistance then
                         if #(playerCoords - sound.coords) <= sound.maxDistance then
-                            sleep = 50
+                            sleep = 10
                         end
                     end
 
@@ -242,6 +242,7 @@ function SoundObject:play()
                 global = true,
                 rate = self.rate,
                 loop = self.loop,
+                startSeek = self.startSeek,
                 attachedData = attachedData
             })
         end

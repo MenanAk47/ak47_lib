@@ -6,7 +6,7 @@ RegisterNetEvent('ak47_lib:server:PlaySound', function(data)
     local soundId = data.soundId
     
     data.startTime = os.time()
-    data.pauseOffset = 0
+    data.pauseOffset = data.startSeek or 0
     data.isPaused = false
     data.ownerResource = GetInvokingResource() or "external"
     
