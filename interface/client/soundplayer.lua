@@ -99,7 +99,14 @@ CreateThread(function()
                     end
 
                     if not sound.coords or #(sound.coords - targetCoords) > 0.05 then
-                        sound:updateCoords(targetCoords)
+                        sound.coords = targetCoords
+                        sound.interiorId = GetInteriorFromEntity(entity)
+                        if sound.isInitialized then
+                            SendNUIMessage({ action = "updateSoundCoords", soundId = soundId, coords = { x = targetCoords.x, y = targetCoords.y, z = targetCoords.z }})
+                        end
+                        if sound.global and not sound.isReplicated and not attachedSounds[soundId] then
+                            TriggerServerEvent('ak47_lib:server:UpdateSoundCoords', soundId, { x = targetCoords.x, y = targetCoords.y, z = targetCoords.z })
+                        end
                     end
                 else
                     if not sound.isReplicated and sound.entityHadExisted then
