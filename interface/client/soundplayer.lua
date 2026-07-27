@@ -206,6 +206,8 @@ function SoundObject:play()
             orientation = orientation, 
             maxDistance = self.maxDistance,
             loop = self.loop,
+            interiorEffect = self.interiorEffect,
+            interiorId = self.interiorId,
             startSeek = self.startSeek or 0
         })
         StartAudioLoop()
