@@ -70,6 +70,7 @@ Interface.Notify = function(data)
         if type(data.sound) == 'boolean' then
             data.sound = './sounds/notify.mp3'
         end
+        sound = data.sound
     end
 
     local hour = GetClockHours()
@@ -99,11 +100,17 @@ Interface.Notify = function(data)
     })
 
     if data.sound then
-        local soundData = Interface.CreateSound({
-            url = data.sound,
-            volume = 0.2,
-        })
-        soundData:play()
+        if type(Interface.CreateSound) == 'function' then
+            local soundData = Interface.CreateSound({
+                url = data.sound,
+                volume = 0.2,
+            })
+            if soundData and soundData.play then
+                soundData:play()
+            end
+        else
+            PlaySoundFrontend(-1, "SELECT", "HUD_FRONTEND_DEFAULT_SOUNDSET", false)
+        end
     end
 end
 
