@@ -50,3 +50,6 @@ Lib47.SetVehicleFuel = function(vehicle, amount)
         SetVehicleFuelLevel(vehicle, tonumber(amount))
     end
 end
+
+exports('GetVehicleFuel', Lib47.GetVehicleFuel)
+exports('SetVehicleFuel', Lib47.SetVehicleFuel)

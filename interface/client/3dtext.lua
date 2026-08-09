@@ -415,6 +415,11 @@ Lib47.RemoveTextUi3d = Interface.RemoveTextUi3d
 Lib47.ShowTextUi3d = Interface.ShowTextUi3d
 Lib47.HideTextUi3d = Interface.HideTextUi3d
 
+exports('RegisterTextUi3d', Interface.RegisterTextUi3d)
+exports('RemoveTextUi3d', Interface.RemoveTextUi3d)
+exports('ShowTextUi3d', Interface.ShowTextUi3d)
+exports('HideTextUi3d', Interface.HideTextUi3d)
+
 AddEventHandler('onResourceStop', function(resourceName)
     if GetCurrentResourceName() == resourceName then
         GlobalInteractions = {}

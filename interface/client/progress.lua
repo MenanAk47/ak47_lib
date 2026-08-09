@@ -323,8 +323,7 @@ Interface.CancelProgress = function()
 end
 
 exports('CreateProgress', Interface.CreateProgress)
-exports('ShowProgress', Interface.ShowProgress)
-exports('CancelProgress', Interface.CancelProgress)
+-- exports moved to integration
 
 Lib47.CreateProgress = Interface.CreateProgress
 

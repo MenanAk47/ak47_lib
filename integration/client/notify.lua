@@ -30,3 +30,5 @@ end
 
 -- Don't change below
 RegisterNetEvent('ak47_lib:client:Notify', Lib47.Notify)
+
+exports('Notify', Lib47.Notify)

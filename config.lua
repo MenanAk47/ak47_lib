@@ -21,6 +21,9 @@ Config.InputDialog = 'default'
 -- 'default', 'ox'
 Config.AlertDialog = 'default'
 
+-- 'default', 'ox'
+Config.TextUI = 'default'
+
 -- 'ak47_garage', 'ak47_qb_garage', 'cd_garage', 'okokGarage' 
 -- 'jg-advancedgarages', 'loaf_garage', 'qb-garages', 'qbx_garages' 'custom'
 Config.Garage = 'auto'
@@ -158,6 +161,13 @@ Config.Defaults = {
 			colorSecondary = "#FFD700",
 			colorText = "#ffffff",
 		},
+	},
+
+	TextUI = {
+		-- 'top-left', 'top-right', 'top-center',
+		-- 'bottom-left', 'bottom-right', 'bottom-center',
+		-- 'center-left', 'center-right',
+		position = 'center-left', 
 	},
 
 	Minigame = {

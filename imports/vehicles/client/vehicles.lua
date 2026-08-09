@@ -225,3 +225,46 @@ Lib47.SetVehicleProperties = function(vehicle, props)
         if props.liveryRoof then SetVehicleRoofLivery(vehicle, props.liveryRoof) end
     end
 end
+
+Lib47.EnforceVehicleProperties = function(vehicle, props, timeout)
+    if not DoesEntityExist(vehicle) or not props then return end
+    local timeout = timeout or 30000
+    Lib47.SetVehicleProperties(vehicle, props)
+
+    Citizen.CreateThread(function()
+        local endTime = GetGameTimer() + timeout
+        
+        while GetGameTimer() < endTime do
+            Citizen.Wait(2000)
+            
+            if DoesEntityExist(vehicle) then
+                local currentProps = Lib47.GetVehicleProperties(vehicle)
+                local isDesynced = false
+                
+                if props.color1 ~= nil then
+                    if type(props.color1) == 'table' and type(currentProps.color1) == 'table' then
+                        if props.color1[1] ~= currentProps.color1[1] or props.color1[2] ~= currentProps.color1[2] or props.color1[3] ~= currentProps.color1[3] then
+                            isDesynced = true
+                        end
+                    elseif props.color1 ~= currentProps.color1 then
+                        isDesynced = true
+                    end
+                end
+                
+                if (props.modEngine and props.modEngine ~= currentProps.modEngine) or
+                   (props.modSpoilers and props.modSpoilers ~= currentProps.modSpoilers) or
+                   (props.modFrontBumper and props.modFrontBumper ~= currentProps.modFrontBumper) or
+                   (props.wheels and props.wheels ~= currentProps.wheels) or 
+                   (props.wheelColor and props.wheelColor ~= currentProps.wheelColor) then
+                    isDesynced = true
+                end
+                
+                if isDesynced then
+                    Lib47.SetVehicleProperties(vehicle, props)
+                end
+            else
+                break
+            end
+        end
+    end)
+end

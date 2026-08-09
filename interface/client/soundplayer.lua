@@ -410,7 +410,6 @@ end
 --                            INTERFACE / EXPORTS
 -- =========================================================================
 
-local Interface = {}
 Interface.CreateSound = function(data)
     local coords = data.coords
     if type(coords) == 'table' and coords.x then

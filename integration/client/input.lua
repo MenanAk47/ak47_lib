@@ -19,3 +19,6 @@ Lib47.HideInput = function()
 
     end
 end
+
+exports('ShowInput', Lib47.ShowInput)
+exports('HideInput', Lib47.HideInput)

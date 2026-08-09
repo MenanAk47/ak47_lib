@@ -63,8 +63,7 @@ RegisterNUICallback('alertCancel', function(_, cb)
     cb('ok')
 end)
 
-exports('ShowAlert', Interface.ShowAlert)
-exports('HideAlert', Interface.HideAlert)
+-- exports moved to integration
 
 AddEventHandler('onResourceStop', function(resourceName)
     if alertState.visible and alertState.invoked == resourceName then

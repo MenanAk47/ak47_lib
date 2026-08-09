@@ -481,4 +481,4 @@ Lib47.GetVehicleSchema = function()
         garage = "parking",
         pound = "pound"
     }
-end
+end

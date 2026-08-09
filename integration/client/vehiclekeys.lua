@@ -88,3 +88,6 @@ Lib47.Callback.Register('ak47_lib:callback:client:RemoveVehicleKey', function( p
     end
     return Lib47.RemoveVehicleKey(plate, vehicle, virtual)
 end)
+
+exports('GiveVehicleKey', Lib47.GiveVehicleKey)
+exports('RemoveVehicleKey', Lib47.RemoveVehicleKey)

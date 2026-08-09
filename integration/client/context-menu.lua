@@ -68,3 +68,9 @@ Lib47.HideMenu = function(onExit)
     end
 end
 
+exports('RegisterContext', Lib47.RegisterContext)
+exports('ShowContext', Lib47.ShowContext)
+exports('HideContext', Lib47.HideContext)
+exports('RegisterMenu', Lib47.RegisterMenu)
+exports('ShowMenu', Lib47.ShowMenu)
+exports('HideMenu', Lib47.HideMenu)

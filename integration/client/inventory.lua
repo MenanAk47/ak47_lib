@@ -335,3 +335,12 @@ RegisterInventoryEvents = function()
     -- other detections are based on framework data set
     -- check client/functions.lua
 end
+
+exports('SetInventoryBusy', Lib47.SetInventoryBusy)
+exports('OpenSearchInventory', Lib47.OpenSearchInventory)
+exports('OpenStash', Lib47.OpenStash)
+exports('CloseInventory', Lib47.CloseInventory)
+exports('GetInventoryImageLink', Lib47.GetInventoryImageLink)
+exports('GetItemImageLink', Lib47.GetItemImageLink)
+exports('RemoveItemQuality', Lib47.RemoveItemQuality)
+exports('GetWeaponNameFromHash', Lib47.GetWeaponNameFromHash)
