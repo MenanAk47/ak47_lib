@@ -471,3 +471,14 @@ end)
 Lib47.Callback.Register('ak47_lib:callback:getvehicles', function( source )
     return Lib47.GetFrameworkVehicles()
 end)
+
+Lib47.GetVehicleSchema = function()
+    return {
+        name = "owned_vehicles",
+        owner = "owner",
+        vehicle = "vehicle",
+        stored = "stored",
+        garage = "parking",
+        pound = "pound"
+    }
+end
