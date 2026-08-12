@@ -56,7 +56,6 @@ Lib47.ShowObjective = Interface.ShowObjective
 Lib47.HideObjective = Interface.HideObjective
 
 --[[
-
 local text = {
     {
         Title = "Zone Controls",
@@ -83,9 +82,10 @@ local colors = {
     colorText = "#FFFFFF"                      -- Content Text
 }
 
-Lib47.ShowObjective(text, "Editor Mode", "center", colors)
-
-
+CreateThread(function( ... )
+    Wait(2000)
+    Lib47.ShowObjective(text, "Editor Mode", "center", colors)
+end)
 
 local text2 = {
     Title = "Quick Menu",
@@ -105,5 +105,4 @@ Lib47.ShowObjective(text3, "Current Task", "top")
 
 local text4 = "Collect the evidence"
 Lib47.ShowObjective(text4, "Current Task", "top")
-
 ]]

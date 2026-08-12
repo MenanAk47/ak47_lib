@@ -5,7 +5,7 @@ author 'MenanAk47'
 version '1.8.2'
 
 ui_page 'web/index.html'
---ui_page 'http://localhost:5174'
+--ui_page 'http://localhost:5173'
 
 files {
     'web/index.html',

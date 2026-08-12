@@ -7,10 +7,14 @@ print(string.format("^2['FRAMEWORK']: %s^0", Config.Framework))
 
 ESX = exports['es_extended']:getSharedObject()
 Lib47.Vehicles = {}
+Lib47.VehiclesByHash = {}
 
 CreateThread(function()
     Wait(2000)
     Lib47.Vehicles = Lib47.Callback.Await('ak47_lib:callback:getvehicles')
+    for i, v in pairs(Lib47.Vehicles) do
+        Lib47.VehiclesByHash[GetHashKey(v.model)] = v
+    end
 end)
 
 -- ====================================================================================
@@ -126,6 +130,21 @@ Lib47.GetFrameworkVehicles = function()
 end
 
 Lib47.GetFrameworkVehicleByHash = function(hash)
-    return Lib47.Vehicles[hash]
+    return Lib47.VehiclesByHash[hash]
+end
+
+Lib47.GetFrameworkVehicleByModel = function(model)
+    return Lib47.Vehicles[model]
+end
+
+Lib47.GetVehicleSchema = function()
+    return {
+        name = "owned_vehicles",
+        owner = "owner",
+        vehicle = "vehicle",
+        stored = "stored",
+        garage = "parking",
+        pound = "pound"
+    }
 end
 

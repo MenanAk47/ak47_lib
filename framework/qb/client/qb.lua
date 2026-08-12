@@ -7,6 +7,7 @@ print(string.format("^2['FRAMEWORK']: %s^0", Config.Framework))
 
 QBCore = exports['qb-core']:GetCoreObject()
 Lib47.Vehicles = QBCore.Shared.Vehicles
+Lib47.VehiclesByHash = QBCore.Shared.VehicleHashes
 
 -- ====================================================================================
 --                                     CORE
@@ -132,5 +133,20 @@ Lib47.GetFrameworkVehicles = function()
 end
 
 Lib47.GetFrameworkVehicleByHash = function(hash)
-    return Lib47.Vehicles[hash]
+    return Lib47.VehiclesByHash[hash]
+end
+
+Lib47.GetFrameworkVehicleByModel = function(model)
+    return Lib47.Vehicles[model]
+end
+
+Lib47.GetVehicleSchema = function()
+    return {
+        name = "player_vehicles",
+        owner = "citizenid",
+        vehicle = "mods",
+        stored = "state",
+        garage = "garage",
+        pound = "depotprice"
+    }
 end

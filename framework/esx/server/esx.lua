@@ -461,7 +461,7 @@ Citizen.CreateThread(function()
 	local vehicles = MySQL.Sync.fetchAll('SELECT * FROM vehicles')
     if vehicles then
     	for i, v in pairs(vehicles) do
-        	Lib47.Vehicles[GetHashKey(v.model)] = v
+        	Lib47.Vehicles[v.model] = v
         end
     else
         print('^1Vehicle table not found!^0')
