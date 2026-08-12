@@ -418,17 +418,19 @@ if isClient then
             local coords = GetEntityCoords(PlayerPedId())
             local newNearby, newCount = getNearbyGridEntries(coords)
             
-            for i = 1, #nearbyZones do
-                local zone = nearbyZones[i]
-                local stillNearby = false
-                for j = 1, newCount do
-                    if newNearby[j] == zone then stillNearby = true break end
-                end
-                
-                if zone.insideZone and not stillNearby then
-                    zone.insideZone = false
-                    insideZones[zone.id] = nil
-                    if zone.onExit then exitingZones[#exitingZones + 1] = zone end
+            for id, zone in pairs(insideZones) do
+                if zone.insideZone then
+                    local stillNearby = false
+                    for j = 1, newCount do
+                        if newNearby[j] == zone then stillNearby = true break end
+                    end
+                    
+                    if not stillNearby then
+                        zone.insideZone = false
+                        insideZones[id] = nil
+                        if zone.debug then insideZones[id] = zone end
+                        if zone.onExit then exitingZones[#exitingZones + 1] = zone end
+                    end
                 end
             end
             

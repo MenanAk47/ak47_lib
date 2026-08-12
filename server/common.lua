@@ -43,34 +43,8 @@ Lib47.HasPermission = function(source, Admin, notify)
     return false
 end
 
-local function cleanForMsgpack(t, visited)
-    if type(t) ~= 'table' then
-        if type(t) == 'userdata' or type(t) == 'thread' then
-            return nil
-        end
-        return t
-    end
-    visited = visited or {}
-    if visited[t] then return nil end
-    visited[t] = true
-
-    local clean = {}
-    for k, v in pairs(t) do
-        local typeK = type(k)
-        local typeV = type(v)
-        if typeK ~= 'userdata' and typeK ~= 'thread' then
-            if typeV == 'table' then
-                clean[k] = cleanForMsgpack(v, visited)
-            elseif typeV ~= 'userdata' and typeV ~= 'thread' then
-                clean[k] = v
-            end
-        end
-    end
-    return clean
-end
-
 exports('GetLibObject', function()
-    return cleanForMsgpack(Lib47)
+    return Lib47
 end)
 
 -- backward compatibility with ak47_bridge
@@ -82,5 +56,5 @@ local function oldExport(exportName, func)
 end
 
 oldExport('GetBridge', function() 
-    return cleanForMsgpack(Lib47)
+    return Lib47
 end)
