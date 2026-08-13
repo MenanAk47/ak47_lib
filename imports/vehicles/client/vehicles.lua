@@ -24,9 +24,26 @@ Lib47.DeleteVehicle = function(vehicle)
     DeleteVehicle(vehicle)
 end
 
+Lib47.GetVehicleLabelFromModel = function(model)
+    local hash = type(model) == "string" and GetHashKey(model) or model
+
+    if not IsModelInCdimage(hash) or not IsModelAVehicle(hash) then
+        return "Invalid Vehicle Model"
+    end
+
+    local displayName = GetDisplayNameFromVehicleModel(hash)
+    local localizedName = GetLabelText(displayName)
+
+    if localizedName == "NULL" or localizedName == nil or localizedName == "" then
+        return displayName
+    end
+
+    return localizedName
+end
+
 Lib47.GetVehicleLabel = function(vehicle)
     if vehicle == nil or vehicle == 0 then return end
-    return GetLabelText(GetDisplayNameFromVehicleModel(GetEntityModel(vehicle)))
+    return Lib47.GetVehicleLabelByModel(GetEntityModel(vehicle))
 end
 
 Lib47.GetVehicleProperties = function(vehicle)
@@ -73,7 +90,7 @@ Lib47.GetVehicleProperties = function(vehicle)
             bodyHealth = Lib47.Math.Round(GetVehicleBodyHealth(vehicle), 0.1),
             engineHealth = Lib47.Math.Round(GetVehicleEngineHealth(vehicle), 0.1),
             tankHealth = Lib47.Math.Round(GetVehiclePetrolTankHealth(vehicle), 0.1),
-            fuelLevel = Lib47.Math.Round(GetVehicleFuelLevel(vehicle), 0.1),
+            fuelLevel = Lib47.Math.Round(Lib47.GetVehicleFuel(vehicle), 0.1),
             dirtLevel = Lib47.Math.Round(GetVehicleDirtLevel(vehicle), 0.1),
             oilLevel = Lib47.Math.Round(GetVehicleOilLevel(vehicle), 0.1),
             color1 = colorPrimary, color2 = colorSecondary, pearlescentColor = pearlescentColor,
@@ -123,7 +140,7 @@ Lib47.SetVehicleProperties = function(vehicle, props)
         if props.bodyHealth then SetVehicleBodyHealth(vehicle, props.bodyHealth + 0.0) end
         if props.engineHealth then SetVehicleEngineHealth(vehicle, props.engineHealth + 0.0) end
         if props.tankHealth then SetVehiclePetrolTankHealth(vehicle, props.tankHealth + 0.0) end
-        if props.fuelLevel then SetVehicleFuelLevel(vehicle, props.fuelLevel + 0.0) end
+        if props.fuelLevel then Lib47.SetVehicleFuel(vehicle, props.fuelLevel + 0.0) end
         if props.dirtLevel then SetVehicleDirtLevel(vehicle, props.dirtLevel + 0.0) end
         if props.oilLevel then SetVehicleOilLevel(vehicle, props.oilLevel + 0.0) end
         
