@@ -217,7 +217,7 @@ end
 -- BUILDER MODULES
 -- =============================================================================
 
-Lib47.Creation.Builders.PolyPoints = function(existingData, locales)
+Lib47.Creation.Builders.PolyPoints = function(existingData, locales, validateFn)
     local invokingResource = GetInvokingResource()
     local points = existingData and existingData.points or {}
     local plyPed = PlayerPedId()
@@ -310,6 +310,11 @@ Lib47.Creation.Builders.PolyPoints = function(existingData, locales)
         local rayHit = StartExpensiveSynchronousShapeTestLosProbe(pos.x, pos.y, pos.z, pos.x + (fwd.x * 100.0), pos.y + (fwd.y * 100.0), pos.z + (fwd.z * 100.0), 1, PlayerPedId(), 4)
         local retval, hit, endCoords, surfaceNormal, entityHit = GetShapeTestResult(rayHit)
         
+        local isValid = true
+        if endCoords and validateFn then
+            isValid = validateFn(endCoords)
+        end
+
         if polyZone then
             -- Height adjustment (Scroll Up/Down or Arrow Up/Down)
             -- Hold Shift (21) to adjust minZ (base height), default adjusts maxZ (top height)
@@ -336,27 +341,31 @@ Lib47.Creation.Builders.PolyPoints = function(existingData, locales)
 
         -- Add Point (Mouse 1)
         if IsDisabledControlJustPressed(0, 24) then
-            local endPos = {x = endCoords.x, y = endCoords.y}
-            table.insert(points, endPos)
-            
-            local currentMinZ = polyZone and polyZone.minZ or (endCoords.z - 2.0)
-            local currentMaxZ = polyZone and polyZone.maxZ or (endCoords.z + 10.0)
-            
-            if polyZone then
-                if currentMinZ > (endCoords.z - 2.0) then
-                    currentMinZ = endCoords.z - 2.0
+            if isValid then
+                local endPos = {x = endCoords.x, y = endCoords.y}
+                table.insert(points, endPos)
+                
+                local currentMinZ = polyZone and polyZone.minZ or (endCoords.z - 2.0)
+                local currentMaxZ = polyZone and polyZone.maxZ or (endCoords.z + 10.0)
+                
+                if polyZone then
+                    if currentMinZ > (endCoords.z - 2.0) then
+                        currentMinZ = endCoords.z - 2.0
+                    end
+                    polyZone:destroy()
                 end
-                polyZone:destroy()
-            end
-            
-            if PolyZone then
-                polyZone = PolyZone:Create(points, {
-                    name = "setup_poly_points",
-                    minZ = currentMinZ,
-                    maxZ = currentMaxZ,
-                    debugGrid = true,
-                    gridDivisions = 25
-                })
+                
+                if PolyZone then
+                    polyZone = PolyZone:Create(points, {
+                        name = "setup_poly_points",
+                        minZ = currentMinZ,
+                        maxZ = currentMaxZ,
+                        debugGrid = true,
+                        gridDivisions = 25
+                    })
+                end
+            else
+                Lib47.Notify(L(locales, 'error_overlap_zone') or "Cannot place point inside an existing polyzone!", "error")
             end
         end
 
@@ -407,7 +416,12 @@ Lib47.Creation.Builders.PolyPoints = function(existingData, locales)
         end
 
         if endCoords then
-            DrawLine(endCoords.x, endCoords.y, endCoords.z, endCoords.x, endCoords.y, endCoords.z + 10.0, 255, 0, 0, 255)
+            local r, g = 0, 255
+            if not isValid then
+                r, g = 255, 0
+            end
+            DrawLine(endCoords.x, endCoords.y, endCoords.z, endCoords.x, endCoords.y, endCoords.z + 10.0, r, g, 0, 255)
+            DrawMarker(28, endCoords.x, endCoords.y, endCoords.z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.2, 0.2, 0.2, r, g, 0, 200, false, false, 0, false, false, false, false)
         end
     end
 end
