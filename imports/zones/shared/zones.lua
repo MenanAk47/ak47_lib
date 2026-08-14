@@ -209,6 +209,7 @@ function CZone:contains(coords, updateDistance)
         return dist < self.radius
     else
         local poly = internalPolygons[self.id] or self.polygon
+        if not poly then return false end
         local result = glm.polygon.contains(poly, coords, self.thickness / 2)
         return result
     end
@@ -282,25 +283,28 @@ end
 -- ==========================================
 function Lib47.Zones.Poly(data)
     data.thickness = data.thickness or 4.0
-    local pointN = #data.points
+    local pointN = data.points and #data.points or 0
     local points = table.create(pointN, 0)
 
     for i = 1, pointN do points[i] = convertToVector(data.points[i]) end
 
-    local polygon = glm.polygon.new(points)
-
-    if (data.minZ and data.maxZ) or not polygon:isPlanar() then
-        local safeZ
-        if data.minZ and data.maxZ then
-            safeZ = data.minZ + (data.thickness / 2)
-        else
-            safeZ = getSafeZCoord(points)
-        end
-        for i = 1, pointN do points[i] = vec3(points[i].x, points[i].y, safeZ) end
+    local polygon = nil
+    if pointN >= 3 then
         polygon = glm.polygon.new(points)
+
+        if polygon and ((data.minZ and data.maxZ) or not polygon:isPlanar()) then
+            local safeZ
+            if data.minZ and data.maxZ then
+                safeZ = data.minZ + (data.thickness / 2)
+            else
+                safeZ = getSafeZCoord(points)
+            end
+            for i = 1, pointN do points[i] = vec3(points[i].x, points[i].y, safeZ) end
+            polygon = glm.polygon.new(points)
+        end
     end
 
-    data.coords = polygon:centroid()
+    data.coords = (polygon and polygon:centroid()) or (points[1] and vec3(points[1].x, points[1].y, data.minZ or points[1].z or 0.0)) or vec3(0, 0, 0)
     data.__type = 'poly'
     
     local maxRadius = 0
@@ -311,7 +315,9 @@ function Lib47.Zones.Poly(data)
     data.radius = maxRadius
 
     local zone = setZone(data)
-    internalPolygons[zone.id] = polygon
+    if polygon then
+        internalPolygons[zone.id] = polygon
+    end
     return zone
 end
 

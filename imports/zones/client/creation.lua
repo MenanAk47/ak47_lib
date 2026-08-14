@@ -226,7 +226,7 @@ Lib47.Creation.Builders.PolyPoints = function(existingData, locales, validateFn)
     local camRot = vector3(-35.0, 0.0, GetEntityHeading(plyPed))
     
     local polyZone
-    if #points > 0 and PolyZone then
+    if #points >= 3 and PolyZone then
         polyZone = PolyZone:Create(points, {
             name = "setup_poly_points",
             minZ = existingData.minZ,
@@ -355,7 +355,7 @@ Lib47.Creation.Builders.PolyPoints = function(existingData, locales, validateFn)
                     polyZone:destroy()
                 end
                 
-                if PolyZone then
+                if #points >= 3 and PolyZone then
                     polyZone = PolyZone:Create(points, {
                         name = "setup_poly_points",
                         minZ = currentMinZ,
@@ -363,6 +363,8 @@ Lib47.Creation.Builders.PolyPoints = function(existingData, locales, validateFn)
                         debugGrid = true,
                         gridDivisions = 25
                     })
+                else
+                    polyZone = nil
                 end
             else
                 Lib47.Notify(L(locales, 'error_overlap_zone') or "Cannot place point inside an existing polyzone!", "error")
@@ -378,7 +380,7 @@ Lib47.Creation.Builders.PolyPoints = function(existingData, locales, validateFn)
                 local currentMaxZ = polyZone and polyZone.maxZ or 10.0
                 
                 if polyZone then polyZone:destroy() end
-                if #points > 0 and PolyZone then
+                if #points >= 3 and PolyZone then
                     polyZone = PolyZone:Create(points, {
                         name = "setup_poly_points",
                         minZ = currentMinZ,
