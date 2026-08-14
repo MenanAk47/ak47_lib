@@ -199,8 +199,16 @@ function CZone:onPointInOut(fnPosition, cb)
     self.onExit = function() cb(false) end
 end
 
+function CZone:isPointInside(coords)
+    return self:contains(coords)
+end
+
 function CZone:contains(coords, updateDistance)
-    coords = convertToVector(coords or (isClient and GetEntityCoords(PlayerPedId()) or vec3(0,0,0)))
+    if not coords then
+        coords = isClient and GetEntityCoords(PlayerPedId()) or vec3(0,0,0)
+    elseif type(coords) ~= 'vector3' then
+        coords = convertToVector(coords)
+    end
     local dist = #(self.coords - coords)
     
     if updateDistance then self.distance = dist end
@@ -210,8 +218,7 @@ function CZone:contains(coords, updateDistance)
     else
         local poly = internalPolygons[self.id] or self.polygon
         if not poly then return false end
-        local result = glm.polygon.contains(poly, coords, self.thickness / 2)
-        return result
+        return glm.polygon.contains(poly, coords, self.thickness / 2)
     end
 end
 
@@ -251,6 +258,10 @@ local function setZone(data)
         return CZone.contains(internalZone, coords, updateDistance)
     end
     data.destroy = function(self)
+        local internalZone = Zones[self.id] or self
+        CZone.remove(internalZone)
+    end
+    data.remove = function(self)
         local internalZone = Zones[self.id] or self
         CZone.remove(internalZone)
     end
@@ -415,6 +426,10 @@ if isClient then
         end
     end
 
+    local function sortByDistance(a, b)
+        return a.distance < b.distance
+    end
+
     CreateThread(function()
         while true do
             local coords = GetEntityCoords(PlayerPedId())
@@ -460,13 +475,13 @@ if isClient then
             local enteringSize = #enteringZones
 
             if exitingSize > 0 then
-                table.sort(exitingZones, function(a, b) return a.distance < b.distance end)
+                table.sort(exitingZones, sortByDistance)
                 for i = exitingSize, 1, -1 do exitingZones[i]:onExit() end
                 for i = 1, exitingSize do exitingZones[i] = nil end
             end
 
             if enteringSize > 0 then
-                table.sort(enteringZones, function(a, b) return a.distance < b.distance end)
+                table.sort(enteringZones, sortByDistance)
                 for i = 1, enteringSize do enteringZones[i]:onEnter() end
                 for i = 1, enteringSize do enteringZones[i] = nil end
             end
@@ -484,12 +499,10 @@ if isClient then
                     drawDebug(zone)
                 end
             end
-            if next(insideZones) then
-                sleep = 0
-                for _, zone in pairs(insideZones) do
-                    if zone.inside and zone.insideZone then
-                        zone:inside()
-                    end
+            for _, zone in pairs(insideZones) do
+                if zone.inside and zone.insideZone then
+                    sleep = 0
+                    zone:inside()
                 end
             end
             Wait(sleep)
