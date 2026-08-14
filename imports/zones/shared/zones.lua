@@ -218,10 +218,6 @@ end
 function CZone:setDebug(enable, colour)
     if isServer then return end
 
-    if not enable and insideZones[self.id] then 
-        insideZones[self.id] = nil 
-    end
-
     self.debugColour = enable and {
         r = glm.tointeger(colour and colour.r or self.debugColour and self.debugColour.r or 255),
         g = glm.tointeger(colour and colour.g or self.debugColour and self.debugColour.g or 42),
@@ -434,7 +430,6 @@ if isClient then
                     if not stillNearby then
                         zone.insideZone = false
                         insideZones[id] = nil
-                        if zone.debug then insideZones[id] = zone end
                         if zone.onExit then exitingZones[#exitingZones + 1] = zone end
                     end
                 end
@@ -449,8 +444,8 @@ if isClient then
                 if contains then
                     if not zone.insideZone then
                         zone.insideZone = true
+                        insideZones[zone.id] = zone
                         if zone.onEnter then enteringZones[#enteringZones + 1] = zone end
-                        if zone.inside or zone.debug then insideZones[zone.id] = zone end
                     end
                 else
                     if zone.insideZone then
@@ -458,7 +453,6 @@ if isClient then
                         insideZones[zone.id] = nil
                         if zone.onExit then exitingZones[#exitingZones + 1] = zone end
                     end
-                    if zone.debug then insideZones[zone.id] = zone end
                 end
             end
 
