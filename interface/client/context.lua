@@ -425,10 +425,7 @@ end
 Interface.HideMenu = function(onExit)
     Interface.HideContext(onExit)
 end
-
 -- exports moved to integration
-exports('GetOpenMenu', Interface.GetOpenMenu)
-exports('SetMenuOptions', Interface.SetMenuOptions)
 
 
 --================== Example ====================

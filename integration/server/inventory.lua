@@ -3,6 +3,50 @@ Lib47.Items = {}
 Lib47.ItemsByHash = {}
 Lib47.Weapons = {}
 
+local function WaitForItems(callback)
+    CreateThread(function()
+        local stableTicks = 0
+        local previousCount = -1
+        local timeout = 0
+        local maxWaitTime = 40 -- 40 * 500ms = 20 seconds maximum wait time
+
+        print("^3['INVENTORY']: Waiting for inventory to finish initializing items...^0")
+
+        while timeout < maxWaitTime do
+            Wait(500)
+            
+            local items = Integration.GetItems()
+            local currentCount = 0
+
+            if items and type(items) == 'table' then
+                for _ in pairs(items) do
+                    currentCount = currentCount + 1
+                end
+            end
+
+            if currentCount > 0 then
+                if currentCount == previousCount then
+                    stableTicks = stableTicks + 1
+                    if stableTicks >= 4 then
+                        break
+                    end
+                else
+                    stableTicks = 0
+                    previousCount = currentCount
+                end
+            end
+
+            timeout = timeout + 1
+        end
+
+        if timeout >= maxWaitTime then
+            print("^1['INVENTORY']: Item loading wait timed out. Proceeding with fetched items anyway. Check your inventory script if items are missing.^0")
+        end
+
+        callback()
+    end)
+end
+
 if Config.Inventory == 'auto' then
     local scripts = {
         'ak47_qb_inventory',
@@ -48,17 +92,18 @@ if Config.Inventory == 'auto' then
 
                 print(string.format("^2['INVENTORY']: %s^0", Config.Inventory))
 
-                Wait(2000)
-                FetchInvItems()
+                WaitForItems(function()
+                    FetchInvItems()
+                end)
                 return
             end
         end
-        
     end)
 else
     CreateThread(function()
-        Wait(2000)
-        FetchInvItems()
+        WaitForItems(function()
+            FetchInvItems()
+        end)
     end)
 end
 
