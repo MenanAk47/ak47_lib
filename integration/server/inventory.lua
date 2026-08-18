@@ -48,6 +48,7 @@ if Config.Inventory == 'auto' then
 
                 print(string.format("^2['INVENTORY']: %s^0", Config.Inventory))
 
+                Wait(2000)
                 FetchInvItems()
                 return
             end
@@ -63,6 +64,8 @@ end
 
 FetchInvItems = function()
     Lib47.Items = Integration.GetItems()
+    local itemsCount, weaponsCount = 0, 0
+
     for i, v in pairs(Lib47.Items) do
         local name = v.name or i
         name = name:lower()
@@ -71,8 +74,15 @@ FetchInvItems = function()
         Lib47.ItemsByHash[nameHash].name = name
         if Lib47.IsItemTypeWeapon(name) then
             Lib47.Weapons[name] = v
+            weaponsCount = weaponsCount + 1
+        else
+            itemsCount = itemsCount + 1
         end
     end
+
+    print(string.format("^2['FRAMEWORK ITEMS']: x%s^0", itemsCount))
+    print(string.format("^2['FRAMEWORK WEAPONS']: x%s^0", weaponsCount))
+
     Lib47.ItemsReady = true
 end
 
