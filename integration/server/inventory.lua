@@ -1,3 +1,4 @@
+Lib47.ItemsReady = false
 Lib47.Items = {}
 Lib47.ItemsByHash = {}
 Lib47.Weapons = {}
@@ -72,6 +73,11 @@ FetchInvItems = function()
             Lib47.Weapons[name] = v
         end
     end
+    Lib47.ItemsReady = true
+end
+
+Lib47.IsItemsReady = function()
+    return Lib47.ItemsReady
 end
 
 Lib47.Callback.Register('ak47_lib:callback:getitems', function( source )

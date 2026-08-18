@@ -1,3 +1,4 @@
+Lib47.ItemsReady = false
 Lib47.Items = {}
 Lib47.Weapons = {}
 Lib47.ItemsByHash = {}
@@ -53,6 +54,12 @@ FetchInvItems = function()
             Lib47.Weapons[name] = v
         end
     end
+
+    Lib47.ItemsReady = true
+end
+
+Lib47.IsItemsReady = function()
+    return Lib47.ItemsReady
 end
 
 Integration.GetItems = function()
