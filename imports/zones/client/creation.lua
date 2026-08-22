@@ -25,7 +25,19 @@ local defaultLocales = {
     move_down = "Move Down",
     go_back = "Go Back",
     placement = "Placement",
-    setup_point = "Setup Point"
+    setup_point = "Setup Point",
+    box_controls = "Box Controls",
+    box_creation = "Box Zone Creation",
+    circle_controls = "Circle Controls",
+    circle_creation = "Circle Zone Creation",
+    adjust_length = "Length +/-",
+    adjust_width = "Width +/-",
+    adjust_radius = "Radius +/-",
+    change_prop = "Change Prop",
+    adjust_heading = "Rotate +/-",
+    adjust_center_z = "Center Height +/-",
+    adjust_height = "Total Height +/-",
+    micro_adjust = "Move Box",
 }
 
 local function L(locales, key)
@@ -217,7 +229,7 @@ end
 -- BUILDER MODULES
 -- =============================================================================
 
-Lib47.Creation.Builders.PolyPoints = function(existingData, locales, validateFn)
+Lib47.Creation.Builders.PolyZone = function(existingData, locales, validateFn)
     local invokingResource = GetInvokingResource()
     local points = existingData and existingData.points or {}
     local plyPed = PlayerPedId()
@@ -575,6 +587,7 @@ end
 
 Lib47.Creation.Builders.PlacePed = function(model, existingData, locales, validateFn)
     local invokingResource = GetInvokingResource()
+    local model = model or GetEntityModel(PlayerPedId())
     local hash = type(model) == 'string' and GetHashKey(model) or model
     RequestModel(hash)
     while not HasModelLoaded(hash) do Wait(0) end
@@ -653,7 +666,7 @@ Lib47.Creation.Builders.PlacePed = function(model, existingData, locales, valida
             Lib47.Creation.Cam.Destroy(camera)
             DeleteEntity(entity)
             Lib47.HideObjective()
-            return point and vector4(point.x, point.y, point.z, entityHeading) or nil
+            return point and vector3(point.x, point.y, point.z), entityHeading
         end
 
         -- Rotate (Scroll)
@@ -694,3 +707,554 @@ Lib47.Creation.Builders.PlacePed = function(model, existingData, locales, valida
         end
     end
 end
+
+Lib47.Creation.Builders.BoxZone = function(existingData, locales, validateFn)
+    local invokingResource = GetInvokingResource()
+    local plyPed = PlayerPedId()
+    local fwd, right, up, plyPos = GetEntityMatrix(plyPed)
+    local camPos = plyPos + (up * 2)
+    local camRot = vector3(-35.0, 0.0, GetEntityHeading(plyPed))
+
+    local camera = Lib47.Creation.Cam.Create("DEFAULT_SCRIPTED_CAMERA", camPos, camRot, true)
+
+    local boxPos = nil
+    local length = 2.0
+    local width = 2.0
+    local boxHeading = 0.0
+    local minZ = nil
+    local maxZ = nil
+
+    if existingData and (existingData.boxPos or existingData.coords or existingData.x) then
+        local rawPos = existingData.boxPos or existingData.coords or existingData
+        boxPos = vector3(rawPos.x, rawPos.y, rawPos.z)
+        length = existingData.length or (existingData.size and existingData.size.y) or 2.0
+        width = existingData.width or (existingData.size and existingData.size.x) or 2.0
+        boxHeading = existingData.boxHeading or existingData.heading or existingData.rotation or 0.0
+        minZ = existingData.minZ or (boxPos.z - 1.0)
+        maxZ = existingData.maxZ or (boxPos.z + 1.0)
+    end
+
+    local step = boxPos and 2 or 1
+
+    if step == 1 then
+        Lib47.ShowObjective({
+            {
+                Title = L(locales, 'placement'),
+                List = {
+                    L(locales, 'set_point') .. " <m>1<m>",
+                },
+            },
+            {
+                Title = L(locales, 'cam_controls'),
+                List = {
+                    "<m><m> <k>W<k> <k>A<k> <k>S<k> <k>D<k>",
+                    L(locales, 'move_up') .. " <k>Q<k>",
+                    L(locales, 'move_down') .. " <k>E<k>",
+                },
+            },
+            {
+                Title = L(locales, 'navigation'),
+                List = {
+                    L(locales, 'cancel') .. " <k>DEL<k>",
+                },
+            },
+        }, L(locales, 'box_creation'))
+    else
+        Lib47.ShowObjective({
+            {
+                Title = L(locales, 'box_controls'),
+                List = {
+                    L(locales, 'adjust_length') .. " <k>↑<k> <k>↓<k>",
+                    L(locales, 'adjust_width') .. " <k>←<k> <k>→<k>",
+                    L(locales, 'adjust_heading') .. " <m>3<m>",
+                    L(locales, 'adjust_center_z') .. " <k>SHIFT<k> + <m>3<m>",
+                    L(locales, 'adjust_height') .. " <k>PGUP<k> <k>PGDN<k>",
+                    L(locales, 'micro_adjust') .. " <k>SHIFT<k> + <k>↑<k><k>↓<k><k>←<k><k>→<k>",
+                },
+            },
+            {
+                Title = L(locales, 'cam_controls'),
+                List = {
+                    "<m><m> <k>W<k> <k>A<k> <k>S<k> <k>D<k>",
+                    L(locales, 'move_up') .. " <k>Q<k>",
+                    L(locales, 'move_down') .. " <k>E<k>",
+                },
+            },
+            {
+                Title = L(locales, 'navigation'),
+                List = {
+                    L(locales, 'next_step') .. " <k>ENTER<k>",
+                    L(locales, 'cancel') .. " <k>DEL<k>",
+                },
+            },
+        }, L(locales, 'box_creation'))
+    end
+
+    while true do
+        Wait(0)
+
+        if invokingResource and GetResourceState(invokingResource) ~= 'started' then
+            EnableAllControlActions(0)
+            Lib47.Creation.Cam.Destroy(camera)
+            Lib47.HideObjective()
+            return nil
+        end
+
+        -- Cancel (DEL)
+        if IsDisabledControlJustPressed(0, 178) then
+            EnableAllControlActions(0)
+            Lib47.Creation.Cam.Destroy(camera)
+            Lib47.HideObjective()
+            return nil
+        end
+
+        DisableAllControlActions(0)
+        camPos, camRot = Lib47.Creation.Cam.HandleFlyCam(camera)
+        local frameTime = GetFrameTime()
+        local isShift = IsDisabledControlPressed(0, 21)
+
+        if step == 1 then
+            local right, fwd, up, pos = GetCamMatrix(camera)
+            local rayHit = StartExpensiveSynchronousShapeTestLosProbe(pos.x, pos.y, pos.z, pos.x + (fwd.x * 100.0), pos.y + (fwd.y * 100.0), pos.z + (fwd.z * 100.0), 1, PlayerPedId(), 4)
+            local retval, hit, endCoords, surfaceNormal, entityHit = GetShapeTestResult(rayHit)
+
+            if hit ~= 0 then
+                local r, g = 0, 255
+                if validateFn and not validateFn(endCoords) then
+                    r, g = 255, 0
+                end
+                DrawLine(endCoords.x, endCoords.y, endCoords.z, endCoords.x, endCoords.y, endCoords.z + 1.5, r, g, 0, 255)
+                DrawMarker(28, endCoords.x, endCoords.y, endCoords.z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.4, 0.4, 0.4, r, g, 0, 200, false, false, 0, false, false, false, false)
+
+                if IsDisabledControlJustPressed(0, 24) or IsDisabledControlJustPressed(0, 191) then
+                    if not validateFn or validateFn(endCoords) then
+                        boxPos = vector3(endCoords.x, endCoords.y, endCoords.z)
+                        minZ = boxPos.z - 0.5
+                        maxZ = boxPos.z + 1.5
+                        step = 2
+
+                        Lib47.ShowObjective({
+                            {
+                                Title = L(locales, 'box_controls'),
+                                List = {
+                                    L(locales, 'adjust_length') .. " <k>↑<k> <k>↓<k>",
+                                    L(locales, 'adjust_width') .. " <k>←<k> <k>→<k>",
+                                    L(locales, 'adjust_heading') .. " <m>3<m>",
+                                    L(locales, 'adjust_center_z') .. " <k>SHIFT<k> + <m>3<m>",
+                                    L(locales, 'adjust_height') .. " <k>PGUP<k> <k>PGDN<k>",
+                                    L(locales, 'micro_adjust') .. " <k>SHIFT<k> + <k>↑<k><k>↓<k><k>←<k><k>→<k>",
+                                },
+                            },
+                            {
+                                Title = L(locales, 'cam_controls'),
+                                List = {
+                                    "<m><m> <k>W<k> <k>A<k> <k>S<k> <k>D<k>",
+                                    L(locales, 'move_up') .. " <k>Q<k>",
+                                    L(locales, 'move_down') .. " <k>E<k>",
+                                },
+                            },
+                            {
+                                Title = L(locales, 'navigation'),
+                                List = {
+                                    L(locales, 'next_step') .. " <k>ENTER<k>",
+                                    L(locales, 'cancel') .. " <k>DEL<k>",
+                                },
+                            },
+                        }, L(locales, 'box_creation'))
+                    end
+                end
+            end
+        else
+            -- Done (ENTER)
+            if IsDisabledControlJustPressed(0, 191) then
+                EnableAllControlActions(0)
+                Lib47.Creation.Cam.Destroy(camera)
+                Lib47.HideObjective()
+                return boxPos, length, width, boxHeading, minZ, maxZ
+            end
+
+            local rad = math.rad(boxHeading)
+            local fwdX = -math.sin(rad)
+            local fwdY = math.cos(rad)
+            local rgtX = fwdY
+            local rgtY = -fwdX
+
+            -- Length adjustment or forward/back nudge
+            if IsDisabledControlJustPressed(0, 172) then -- Arrow Up
+                if isShift then
+                    boxPos = vector3(boxPos.x + fwdX * 0.1, boxPos.y + fwdY * 0.1, boxPos.z)
+                else
+                    length = math.min(100.0, length + 0.2)
+                end
+            elseif IsDisabledControlJustPressed(0, 173) then -- Arrow Down
+                if isShift then
+                    boxPos = vector3(boxPos.x - fwdX * 0.1, boxPos.y - fwdY * 0.1, boxPos.z)
+                else
+                    length = math.max(0.2, length - 0.2)
+                end
+            end
+
+            -- Width adjustment or left/right nudge
+            if IsDisabledControlJustPressed(0, 175) then -- Arrow Right
+                if isShift then
+                    boxPos = vector3(boxPos.x + rgtX * 0.1, boxPos.y + rgtY * 0.1, boxPos.z)
+                else
+                    width = math.min(100.0, width + 0.2)
+                end
+            elseif IsDisabledControlJustPressed(0, 174) then -- Arrow Left
+                if isShift then
+                    boxPos = vector3(boxPos.x - rgtX * 0.1, boxPos.y - rgtY * 0.1, boxPos.z)
+                else
+                    width = math.max(0.2, width - 0.2)
+                end
+            end
+
+            -- Rotation (Scroll Up/Down) or Zone Center Height (Shift + Scroll Up/Down)
+            local isScrollUp = IsDisabledControlJustPressed(0, 181) or IsDisabledControlJustPressed(0, 241)
+            local isScrollDown = IsDisabledControlJustPressed(0, 180) or IsDisabledControlJustPressed(0, 242)
+
+            if isScrollUp then
+                if isShift then
+                    local zDelta = 0.1
+                    boxPos = vector3(boxPos.x, boxPos.y, boxPos.z + zDelta)
+                    minZ = (minZ or (boxPos.z - 0.5)) + zDelta
+                    maxZ = (maxZ or (boxPos.z + 1.5)) + zDelta
+                else
+                    boxHeading = (boxHeading + 5.0) % 360.0
+                end
+            elseif isScrollDown then
+                if isShift then
+                    local zDelta = 0.1
+                    boxPos = vector3(boxPos.x, boxPos.y, boxPos.z - zDelta)
+                    minZ = (minZ or (boxPos.z - 0.5)) - zDelta
+                    maxZ = (maxZ or (boxPos.z + 1.5)) - zDelta
+                else
+                    boxHeading = (boxHeading - 5.0) % 360.0
+                end
+            end
+
+            -- Zone Total Height Adjustment from Top & Bottom symmetrically (PageUp / PageDown)
+            local isPageUp = IsDisabledControlJustPressed(0, 10) or IsDisabledControlJustPressed(0, 208)
+            local isPageDown = IsDisabledControlJustPressed(0, 11) or IsDisabledControlJustPressed(0, 207)
+
+            if isPageUp then
+                local hDelta = isShift and 0.05 or 0.1
+                minZ = (minZ or (boxPos.z - 0.5)) - hDelta
+                maxZ = (maxZ or (boxPos.z + 1.5)) + hDelta
+            elseif isPageDown then
+                local hDelta = isShift and 0.05 or 0.1
+                local curMin = minZ or (boxPos.z - 0.5)
+                local curMax = maxZ or (boxPos.z + 1.5)
+                if (curMax - curMin) > (hDelta * 2 + 0.1) then
+                    minZ = curMin + hDelta
+                    maxZ = curMax - hDelta
+                end
+            end
+
+            -- Q/E continuous center height nudge if shift held
+            if isShift then
+                if IsDisabledControlPressed(0, 52) then -- Q
+                    local delta = 2.0 * frameTime
+                    boxPos = vector3(boxPos.x, boxPos.y, boxPos.z + delta)
+                    minZ = (minZ or (boxPos.z - 0.5)) + delta
+                    maxZ = (maxZ or (boxPos.z + 1.5)) + delta
+                elseif IsDisabledControlPressed(0, 51) then -- E
+                    local delta = 2.0 * frameTime
+                    boxPos = vector3(boxPos.x, boxPos.y, boxPos.z - delta)
+                    minZ = (minZ or (boxPos.z - 0.5)) - delta
+                    maxZ = (maxZ or (boxPos.z + 1.5)) - delta
+                end
+            end
+
+            -- Calculate 4 bottom & top corners
+            local halfL = length / 2
+            local halfW = width / 2
+            local cosH = math.cos(rad)
+            local sinH = math.sin(rad)
+
+            local function getCorner(ox, oy, z)
+                local rx = (ox * cosH) - (oy * sinH)
+                local ry = (ox * sinH) + (oy * cosH)
+                return vector3(boxPos.x + rx, boxPos.y + ry, z)
+            end
+
+            local drawMinZ = minZ or (boxPos.z - 0.5)
+            local drawMaxZ = maxZ or (boxPos.z + 1.5)
+
+            local b1 = getCorner(-halfW, -halfL, drawMinZ)
+            local b2 = getCorner(halfW, -halfL, drawMinZ)
+            local b3 = getCorner(halfW, halfL, drawMinZ)
+            local b4 = getCorner(-halfW, halfL, drawMinZ)
+
+            local t1 = getCorner(-halfW, -halfL, drawMaxZ)
+            local t2 = getCorner(halfW, -halfL, drawMaxZ)
+            local t3 = getCorner(halfW, halfL, drawMaxZ)
+            local t4 = getCorner(-halfW, halfL, drawMaxZ)
+
+            local r, g, b, a = 0, 255, 0, 100
+            if validateFn and not validateFn(boxPos) then
+                r, g, b = 255, 0, 0
+            end
+
+            -- Bottom frame
+            DrawLine(b1.x, b1.y, b1.z, b2.x, b2.y, b2.z, r, g, b, 255)
+            DrawLine(b2.x, b2.y, b2.z, b3.x, b3.y, b3.z, r, g, b, 255)
+            DrawLine(b3.x, b3.y, b3.z, b4.x, b4.y, b4.z, r, g, b, 255)
+            DrawLine(b4.x, b4.y, b4.z, b1.x, b1.y, b1.z, r, g, b, 255)
+
+            -- Top frame
+            DrawLine(t1.x, t1.y, t1.z, t2.x, t2.y, t2.z, r, g, b, 255)
+            DrawLine(t2.x, t2.y, t2.z, t3.x, t3.y, t3.z, r, g, b, 255)
+            DrawLine(t3.x, t3.y, t3.z, t4.x, t4.y, t4.z, r, g, b, 255)
+            DrawLine(t4.x, t4.y, t4.z, t1.x, t1.y, t1.z, r, g, b, 255)
+
+            -- Vertical corners
+            DrawLine(b1.x, b1.y, b1.z, t1.x, t1.y, t1.z, r, g, b, 255)
+            DrawLine(b2.x, b2.y, b2.z, t2.x, t2.y, t2.z, r, g, b, 255)
+            DrawLine(b3.x, b3.y, b3.z, t3.x, t3.y, t3.z, r, g, b, 255)
+            DrawLine(b4.x, b4.y, b4.z, t4.x, t4.y, t4.z, r, g, b, 255)
+
+            -- 4 Side Poly Faces (2-sided)
+            DrawPoly(b1.x, b1.y, b1.z, t1.x, t1.y, t1.z, t2.x, t2.y, t2.z, r, g, b, a)
+            DrawPoly(b1.x, b1.y, b1.z, t2.x, t2.y, t2.z, b2.x, b2.y, b2.z, r, g, b, a)
+            DrawPoly(t2.x, t2.y, t2.z, t1.x, t1.y, t1.z, b1.x, b1.y, b1.z, r, g, b, a)
+            DrawPoly(b2.x, b2.y, b2.z, t2.x, t2.y, t2.z, b1.x, b1.y, b1.z, r, g, b, a)
+
+            DrawPoly(b2.x, b2.y, b2.z, t2.x, t2.y, t2.z, t3.x, t3.y, t3.z, r, g, b, a)
+            DrawPoly(b2.x, b2.y, b2.z, t3.x, t3.y, t3.z, b3.x, b3.y, b3.z, r, g, b, a)
+            DrawPoly(t3.x, t3.y, t3.z, t2.x, t2.y, t2.z, b2.x, b2.y, b2.z, r, g, b, a)
+            DrawPoly(b3.x, b3.y, b3.z, t3.x, t3.y, t3.z, b2.x, b2.y, b2.z, r, g, b, a)
+
+            DrawPoly(b3.x, b3.y, b3.z, t3.x, t3.y, t3.z, t4.x, t4.y, t4.z, r, g, b, a)
+            DrawPoly(b3.x, b3.y, b3.z, t4.x, t4.y, t4.z, b4.x, b4.y, b4.z, r, g, b, a)
+            DrawPoly(t4.x, t4.y, t4.z, t3.x, t3.y, t3.z, b3.x, b3.y, b3.z, r, g, b, a)
+            DrawPoly(b4.x, b4.y, b4.z, t4.x, t4.y, t4.z, b3.x, b3.y, b3.z, r, g, b, a)
+
+            DrawPoly(b4.x, b4.y, b4.z, t4.x, t4.y, t4.z, t1.x, t1.y, t1.z, r, g, b, a)
+            DrawPoly(b4.x, b4.y, b4.z, t1.x, t1.y, t1.z, b1.x, b1.y, b1.z, r, g, b, a)
+            DrawPoly(t1.x, t1.y, t1.z, t4.x, t4.y, t4.z, b4.x, b4.y, b4.z, r, g, b, a)
+            DrawPoly(b1.x, b1.y, b1.z, t1.x, t1.y, t1.z, b4.x, b4.y, b4.z, r, g, b, a)
+
+            -- Top & Bottom Cap Faces
+            local topA = math.floor(a * 0.7)
+            DrawPoly(t1.x, t1.y, t1.z, t2.x, t2.y, t2.z, t3.x, t3.y, t3.z, r, g, b, topA)
+            DrawPoly(t1.x, t1.y, t1.z, t3.x, t3.y, t3.z, t4.x, t4.y, t4.z, r, g, b, topA)
+            DrawPoly(t3.x, t3.y, t3.z, t2.x, t2.y, t2.z, t1.x, t1.y, t1.z, r, g, b, topA)
+            DrawPoly(t4.x, t4.y, t4.z, t3.x, t3.y, t3.z, t1.x, t1.y, t1.z, r, g, b, topA)
+
+            DrawPoly(b1.x, b1.y, b1.z, b3.x, b3.y, b3.z, b2.x, b2.y, b2.z, r, g, b, topA)
+            DrawPoly(b1.x, b1.y, b1.z, b4.x, b4.y, b4.z, b3.x, b3.y, b3.z, r, g, b, topA)
+
+            -- Orientation axes (Forward = Red, Right = Green, Up = Blue)
+            DrawLine(boxPos.x, boxPos.y, boxPos.z, boxPos.x + (fwdX * (halfL + 0.5)), boxPos.y + (fwdY * (halfL + 0.5)), boxPos.z, 255, 0, 0, 255)
+            DrawLine(boxPos.x, boxPos.y, boxPos.z, boxPos.x + (rgtX * (halfW + 0.5)), boxPos.y + (rgtY * (halfW + 0.5)), boxPos.z, 0, 255, 0, 255)
+            DrawLine(boxPos.x, boxPos.y, boxPos.z, boxPos.x, boxPos.y, boxPos.z + 1.0, 0, 0, 255, 255)
+        end
+    end
+end
+
+Lib47.Creation.Builders.CircleZone = function(existingData, locales, validateFn, propList)
+    local invokingResource = GetInvokingResource()
+    local plyPed = PlayerPedId()
+    local fwd, right, up, plyPos = GetEntityMatrix(plyPed)
+    local camPos = plyPos + (up * 2)
+    local camRot = vector3(-35.0, 0.0, GetEntityHeading(plyPed))
+
+    local camera = Lib47.Creation.Cam.Create("DEFAULT_SCRIPTED_CAMERA", camPos, camRot, true)
+
+    local point = nil
+    local radius = 15.0
+    local propId = 1
+    local propEntity = nil
+
+    if existingData and (existingData.position or existingData.coords or existingData.x) then
+        local rawPos = existingData.position or existingData.coords or existingData
+        point = vector3(rawPos.x, rawPos.y, rawPos.z)
+        radius = existingData.radius or 15.0
+        if existingData.prop and propList then
+            for i, p in ipairs(propList) do
+                if p == existingData.prop then
+                    propId = i
+                    break
+                end
+            end
+        end
+    end
+
+    local step = point and 2 or 1
+
+    local function spawnPreviewProp(hash, coords)
+        if propEntity and DoesEntityExist(propEntity) then
+            DeleteObject(propEntity)
+            propEntity = nil
+        end
+        if hash then
+            Lib47.RequestModel(hash)
+            propEntity = CreateObject(hash, coords.x, coords.y, coords.z, false, false, false)
+            SetEntityCollision(propEntity, false, false)
+            SetEntityAlpha(propEntity, 200)
+            FreezeEntityPosition(propEntity, true)
+        end
+    end
+
+    local function getObjectiveControls()
+        if step == 1 then
+            local list = {
+                L(locales, 'set_point') .. " <m>1<m>",
+            }
+            if propList and #propList > 1 then
+                table.insert(list, L(locales, 'change_prop') .. " <m>3<m>")
+            end
+            return {
+                {
+                    Title = L(locales, 'placement'),
+                    List = list,
+                },
+                {
+                    Title = L(locales, 'cam_controls'),
+                    List = {
+                        "<m><m> <k>W<k> <k>A<k> <k>S<k> <k>D<k>",
+                        L(locales, 'move_up') .. " <k>Q<k>",
+                        L(locales, 'move_down') .. " <k>E<k>",
+                    },
+                },
+                {
+                    Title = L(locales, 'navigation'),
+                    List = {
+                        L(locales, 'cancel') .. " <k>DEL<k>",
+                    },
+                },
+            }
+        else
+            return {
+                {
+                    Title = L(locales, 'circle_controls'),
+                    List = {
+                        L(locales, 'adjust_radius') .. " <m>3<m> / <k>↑<k> <k>↓<k>",
+                        L(locales, 'precision') .. " <k>SHIFT<k>",
+                    },
+                },
+                {
+                    Title = L(locales, 'cam_controls'),
+                    List = {
+                        "<m><m> <k>W<k> <k>A<k> <k>S<k> <k>D<k>",
+                        L(locales, 'move_up') .. " <k>Q<k>",
+                        L(locales, 'move_down') .. " <k>E<k>",
+                    },
+                },
+                {
+                    Title = L(locales, 'navigation'),
+                    List = {
+                        L(locales, 'next_step') .. " <k>ENTER<k>",
+                        L(locales, 'cancel') .. " <k>DEL<k>",
+                    },
+                },
+            }
+        end
+    end
+
+    Lib47.ShowObjective(getObjectiveControls(), L(locales, 'circle_creation'))
+
+    while true do
+        Wait(0)
+
+        if invokingResource and GetResourceState(invokingResource) ~= 'started' then
+            EnableAllControlActions(0)
+            Lib47.Creation.Cam.Destroy(camera)
+            if propEntity and DoesEntityExist(propEntity) then DeleteObject(propEntity) end
+            Lib47.HideObjective()
+            return nil
+        end
+
+        -- Cancel (DEL)
+        if IsDisabledControlJustPressed(0, 178) then
+            EnableAllControlActions(0)
+            Lib47.Creation.Cam.Destroy(camera)
+            if propEntity and DoesEntityExist(propEntity) then DeleteObject(propEntity) end
+            Lib47.HideObjective()
+            return nil
+        end
+
+        DisableAllControlActions(0)
+        camPos, camRot = Lib47.Creation.Cam.HandleFlyCam(camera)
+        local isShift = IsDisabledControlPressed(0, 21)
+
+        if step == 1 then
+            local right, fwd, up, pos = GetCamMatrix(camera)
+            local rayHit = StartExpensiveSynchronousShapeTestLosProbe(pos.x, pos.y, pos.z, pos.x + (fwd.x * 100.0), pos.y + (fwd.y * 100.0), pos.z + (fwd.z * 100.0), 1, PlayerPedId(), 4)
+            local retval, hit, endCoords, surfaceNormal, entityHit = GetShapeTestResult(rayHit)
+
+            if hit ~= 0 then
+                local r, g = 0, 255
+                if validateFn and not validateFn(endCoords) then
+                    r, g = 255, 0
+                end
+
+                if propList and #propList > 0 then
+                    local hash = GetHashKey(propList[propId])
+                    if not propEntity or not DoesEntityExist(propEntity) then
+                        spawnPreviewProp(hash, endCoords)
+                    else
+                        SetEntityCoordsNoOffset(propEntity, endCoords.x, endCoords.y, endCoords.z)
+                    end
+
+                    -- Change prop
+                    if IsDisabledControlJustPressed(0, 181) or IsDisabledControlJustPressed(0, 241) or IsDisabledControlJustPressed(0, 175) then
+                        propId = (propId >= #propList) and 1 or (propId + 1)
+                        spawnPreviewProp(GetHashKey(propList[propId]), endCoords)
+                    elseif IsDisabledControlJustPressed(0, 180) or IsDisabledControlJustPressed(0, 242) or IsDisabledControlJustPressed(0, 174) then
+                        propId = (propId <= 1) and #propList or (propId - 1)
+                        spawnPreviewProp(GetHashKey(propList[propId]), endCoords)
+                    end
+                else
+                    DrawMarker(1, endCoords.x, endCoords.y, endCoords.z - 0.05, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.3, r, g, 0, 180, false, false, 0, false, false, false, false)
+                end
+
+                DrawLine(endCoords.x, endCoords.y, endCoords.z, endCoords.x, endCoords.y, endCoords.z + 1.5, r, g, 0, 255)
+
+                if IsDisabledControlJustPressed(0, 24) or IsDisabledControlJustPressed(0, 191) then
+                    if not validateFn or validateFn(endCoords) then
+                        point = vector3(endCoords.x, endCoords.y, endCoords.z)
+                        if propEntity and DoesEntityExist(propEntity) then
+                            DeleteObject(propEntity)
+                            propEntity = nil
+                        end
+                        step = 2
+                        Lib47.ShowObjective(getObjectiveControls(), L(locales, 'circle_creation'))
+                    end
+                end
+            end
+        else
+            -- Done (ENTER)
+            if IsDisabledControlJustPressed(0, 191) then
+                EnableAllControlActions(0)
+                Lib47.Creation.Cam.Destroy(camera)
+                Lib47.HideObjective()
+                return point, radius, propId, (propList and propList[propId] or nil)
+            end
+
+            -- Radius Adjustments
+            local isUp = IsDisabledControlJustPressed(0, 181) or IsDisabledControlJustPressed(0, 241) or IsDisabledControlJustPressed(0, 172)
+            local isDown = IsDisabledControlJustPressed(0, 180) or IsDisabledControlJustPressed(0, 242) or IsDisabledControlJustPressed(0, 173)
+
+            local delta = isShift and 0.5 or 2.0
+            if isUp then
+                radius = math.min(200.0, radius + delta)
+            elseif isDown then
+                radius = math.max(1.0, radius - delta)
+            end
+
+            local r, g, b = 0, 255, 0
+            if validateFn and not validateFn(point) then
+                r, g, b = 255, 0, 0
+            end
+
+            -- Draw sphere / circle marker
+            DrawMarker(28, point.x, point.y, point.z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, radius * 2.0, radius * 2.0, radius * 2.0, r, g, b, 70, false, false, 2, false, nil, nil, false)
+            DrawMarker(1, point.x, point.y, point.z - 0.2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, radius * 2.0, radius * 2.0, 0.4, r, g, b, 140, false, false, 2, false, nil, nil, false)
+            DrawLine(point.x, point.y, point.z, point.x, point.y, point.z + 2.0, r, g, b, 255)
+        end
+    end
+end
+
+Lib47.Creation.Builders.PolyZone = Lib47.Creation.Builders.PolyPoints

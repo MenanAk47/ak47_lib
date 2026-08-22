@@ -30,9 +30,9 @@ Lib47.ShowTextUi = function(data)
     end
 end
 
-Lib47.HideTextUi = function()
+Lib47.HideTextUi = function(key)
     if Config.TextUI == 'default' then
-        Interface.HideTextUi()
+        Interface.HideTextUi(key)
     elseif Config.TextUI == 'ox' then
         exports['ox_lib']:hideTextUI()
     elseif Config.TextUI == 'custom' then

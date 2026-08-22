@@ -83,9 +83,9 @@ Config.Defaults = {
 	},
 	InputDialog = {
 		colors = {
-			colorPrimary = "rgba(15, 15, 20, 0.85)", 
-            colorSecondary = "#FFD700" ,
-            colorText = "#ffffff",
+			colorPrimary = "rgba(18, 18, 22, 0.9)", 
+		    colorSecondary = "#ffffff",
+		    colorText = "#ffffff",
 		},
 
 		-- 'left', 'right', 'top', 'bottom' (can be combined)
@@ -96,9 +96,9 @@ Config.Defaults = {
 	},
 	AlertDialog = {
 		colors = {
-			colorPrimary = "rgba(15, 15, 20, 0.85)", 
-            colorSecondary = "#FFD700" ,
-            colorText = "#ffffff",
+			colorPrimary = "rgba(18, 18, 22, 0.9)", 
+		    colorSecondary = "#ffffff",
+		    colorText = "#ffffff",
 		},
 
 		-- 'left', 'right', 'top', 'bottom' (can be combined)
@@ -120,8 +120,8 @@ Config.Defaults = {
 		-- Default colors matching your solid background design
 		colors = {
 			colorPrimary = "rgba(18, 18, 22, 0.9)", 
-			colorSecondary = "#FFD700",
-			colorText = "#ffffff",
+		    colorSecondary = "#ffffff",
+		    colorText = "#ffffff",
 		},
 
 		-- "xs", "sm", "md", "lg", "xl"
@@ -143,8 +143,8 @@ Config.Defaults = {
 		-- Default colors matching your solid background design
 		colors = {
 			colorPrimary = "rgba(18, 18, 22, 0.9)", 
-			colorSecondary = "#FFD700",
-			colorText = "#ffffff",
+		    colorSecondary = "#ffffff",
+		    colorText = "#ffffff",
 		},
 
 		-- "xs", "sm", "md", "lg", "xl"
@@ -158,8 +158,8 @@ Config.Defaults = {
 		-- Default colors matching your solid background design
 		colors = {
 			colorPrimary = "rgba(18, 18, 22, 0.9)", 
-			colorSecondary = "#FFD700",
-			colorText = "#ffffff",
+		    colorSecondary = "#ffffff",
+		    colorText = "#ffffff",
 		},
 	},
 

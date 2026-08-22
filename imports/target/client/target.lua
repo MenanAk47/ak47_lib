@@ -1,3 +1,5 @@
+Lib47.Target = {}
+
 local registered = {}
 
 local function getLabels(options)
@@ -145,7 +147,7 @@ local function convert(options)
     return options
 end
 
-Lib47.AddBoxZone = function(name, center, length, width, options, targetoptions)
+Lib47.Target.AddBoxZone = function(name, center, length, width, options, targetoptions)
     local resource = GetInvokingResource()
     if GetResourceState('ak47_target') == 'started' or GetResourceState('ox_target') == 'started' then
         local targetScript = GetResourceState('ak47_target') == 'started' and 'ak47_target' or 'ox_target'
@@ -186,7 +188,7 @@ Lib47.AddBoxZone = function(name, center, length, width, options, targetoptions)
     end
 end
 
-Lib47.AddPolyZone = function(name, points, options, targetoptions)
+Lib47.Target.AddPolyZone = function(name, points, options, targetoptions)
     local resource = GetInvokingResource()
     if GetResourceState('ak47_target') == 'started' or GetResourceState('ox_target') == 'started' then
         local targetScript = GetResourceState('ak47_target') == 'started' and 'ak47_target' or 'ox_target'
@@ -216,7 +218,7 @@ Lib47.AddPolyZone = function(name, points, options, targetoptions)
     end
 end
 
-Lib47.AddCircleZone = function(name, center, radius, options, targetoptions)
+Lib47.Target.AddCircleZone = function(name, center, radius, options, targetoptions)
     local resource = GetInvokingResource()
     if GetResourceState('ak47_target') == 'started' or GetResourceState('ox_target') == 'started' then
         local targetScript = GetResourceState('ak47_target') == 'started' and 'ak47_target' or 'ox_target'
@@ -240,7 +242,7 @@ Lib47.AddCircleZone = function(name, center, radius, options, targetoptions)
     end
 end
 
-Lib47.RemoveZone = function(id)
+Lib47.Target.RemoveZone = function(id)
     if GetResourceState('ak47_target') == 'started' or GetResourceState('ox_target') == 'started' then
         local targetScript = GetResourceState('ak47_target') == 'started' and 'ak47_target' or 'ox_target'
         exports[targetScript]:removeZone(id, true)
@@ -251,7 +253,7 @@ Lib47.RemoveZone = function(id)
     end
 end
 
-Lib47.AddTargetBone = function(bones, options)
+Lib47.Target.AddTargetBone = function(bones, options)
     local resource = GetInvokingResource()
     local labels = getLabels(options)
     
@@ -273,7 +275,7 @@ Lib47.AddTargetBone = function(bones, options)
     end
 end
 
-Lib47.AddTargetEntity = function(entities, options)
+Lib47.Target.AddTargetEntity = function(entities, options)
     local resource = GetInvokingResource()
     local labels = getLabels(options)
 
@@ -299,7 +301,7 @@ Lib47.AddTargetEntity = function(entities, options)
     end
 end
 
-Lib47.RemoveTargetEntity = function(entities, labels)
+Lib47.Target.RemoveTargetEntity = function(entities, labels)
     if GetResourceState('ak47_target') == 'started' or GetResourceState('ox_target') == 'started' then
         local targetScript = GetResourceState('ak47_target') == 'started' and 'ak47_target' or 'ox_target'
         if type(entities) ~= 'table' then entities = { entities } end
@@ -318,7 +320,7 @@ Lib47.RemoveTargetEntity = function(entities, labels)
     end
 end
 
-Lib47.AddTargetModel = function(models, options)
+Lib47.Target.AddTargetModel = function(models, options)
     local resource = GetInvokingResource()
     local labels = getLabels(options)
 
@@ -335,7 +337,7 @@ Lib47.AddTargetModel = function(models, options)
     end
 end
 
-Lib47.RemoveTargetModel = function(models, labels)
+Lib47.Target.RemoveTargetModel = function(models, labels)
     if GetResourceState('ak47_target') == 'started' or GetResourceState('ox_target') == 'started' then
         local targetScript = GetResourceState('ak47_target') == 'started' and 'ak47_target' or 'ox_target'
         exports[targetScript]:removeModel(models, labels)
@@ -346,7 +348,7 @@ Lib47.RemoveTargetModel = function(models, labels)
     end
 end
 
-Lib47.AddGlobalPed = function(options)
+Lib47.Target.AddGlobalPed = function(options)
     local resource = GetInvokingResource()
     local labels = getLabels(options)
 
@@ -363,7 +365,7 @@ Lib47.AddGlobalPed = function(options)
     end
 end
 
-Lib47.RemoveGlobalPed = function(labels)
+Lib47.Target.RemoveGlobalPed = function(labels)
     if GetResourceState('ak47_target') == 'started' or GetResourceState('ox_target') == 'started' then
         local targetScript = GetResourceState('ak47_target') == 'started' and 'ak47_target' or 'ox_target'
         exports[targetScript]:removeGlobalPed(labels)
@@ -374,7 +376,7 @@ Lib47.RemoveGlobalPed = function(labels)
     end
 end
 
-Lib47.AddGlobalVehicle = function(options)
+Lib47.Target.AddGlobalVehicle = function(options)
     local resource = GetInvokingResource()
     local labels = getLabels(options)
 
@@ -391,7 +393,7 @@ Lib47.AddGlobalVehicle = function(options)
     end
 end
 
-Lib47.RemoveGlobalVehicle = function(labels)
+Lib47.Target.RemoveGlobalVehicle = function(labels)
     if GetResourceState('ak47_target') == 'started' or GetResourceState('ox_target') == 'started' then
         local targetScript = GetResourceState('ak47_target') == 'started' and 'ak47_target' or 'ox_target'
         exports[targetScript]:removeGlobalVehicle(labels)
@@ -402,7 +404,7 @@ Lib47.RemoveGlobalVehicle = function(labels)
     end
 end
 
-Lib47.AddGlobalObject = function(options)
+Lib47.Target.AddGlobalObject = function(options)
     local resource = GetInvokingResource()
     local labels = getLabels(options)
 
@@ -419,7 +421,7 @@ Lib47.AddGlobalObject = function(options)
     end
 end
 
-Lib47.RemoveGlobalObject = function(labels)
+Lib47.Target.RemoveGlobalObject = function(labels)
     if GetResourceState('ak47_target') == 'started' or GetResourceState('ox_target') == 'started' then
         local targetScript = GetResourceState('ak47_target') == 'started' and 'ak47_target' or 'ox_target'
         exports[targetScript]:removeGlobalObject(labels)
@@ -430,7 +432,7 @@ Lib47.RemoveGlobalObject = function(labels)
     end
 end
 
-Lib47.AddGlobalPlayer = function(options)
+Lib47.Target.AddGlobalPlayer = function(options)
     local resource = GetInvokingResource()
     local labels = getLabels(options)
 
@@ -447,7 +449,7 @@ Lib47.AddGlobalPlayer = function(options)
     end
 end
 
-Lib47.RemoveGlobalPlayer = function(labels)
+Lib47.Target.RemoveGlobalPlayer = function(labels)
     if GetResourceState('ak47_target') == 'started' or GetResourceState('ox_target') == 'started' then
         local targetScript = GetResourceState('ak47_target') == 'started' and 'ak47_target' or 'ox_target'
         exports[targetScript]:removeGlobalPlayer(labels)
@@ -466,19 +468,19 @@ AddEventHandler('onResourceStop', function(resource)
         local data = item.data
 
         if type == 'zone' then
-            Lib47.RemoveZone(data)
+            Lib47.Target.RemoveZone(data)
         elseif type == 'model' then
-            Lib47.RemoveTargetModel(data.models, data.labels)
+            Lib47.Target.RemoveTargetModel(data.models, data.labels)
         elseif type == 'entity' then
-            Lib47.RemoveTargetEntity(data.entities, data.labels)
+            Lib47.Target.RemoveTargetEntity(data.entities, data.labels)
         elseif type == 'globalPed' then
-            Lib47.RemoveGlobalPed(data.labels)
+            Lib47.Target.RemoveGlobalPed(data.labels)
         elseif type == 'globalVehicle' then
-            Lib47.RemoveGlobalVehicle(data.labels)
+            Lib47.Target.RemoveGlobalVehicle(data.labels)
         elseif type == 'globalObject' then
-            Lib47.RemoveGlobalObject(data.labels)
+            Lib47.Target.RemoveGlobalObject(data.labels)
         elseif type == 'globalPlayer' then
-            Lib47.RemoveGlobalPlayer(data.labels)
+            Lib47.Target.RemoveGlobalPlayer(data.labels)
         elseif type == 'bone' then
             if GetResourceState('qb-target') == 'started' then
                 exports['qb-target']:RemoveTargetBone(data.bones, data.labels)
@@ -491,20 +493,42 @@ AddEventHandler('onResourceStop', function(resource)
     registered[resource] = nil
 end)
 
-exports('AddBoxZone', Lib47.AddBoxZone)
-exports('AddPolyZone', Lib47.AddPolyZone)
-exports('AddCircleZone', Lib47.AddCircleZone)
-exports('RemoveZone', Lib47.RemoveZone)
-exports('AddTargetBone', Lib47.AddTargetBone)
-exports('AddTargetEntity', Lib47.AddTargetEntity)
-exports('RemoveTargetEntity', Lib47.RemoveTargetEntity)
-exports('AddTargetModel', Lib47.AddTargetModel)
-exports('RemoveTargetModel', Lib47.RemoveTargetModel)
-exports('AddGlobalPed', Lib47.AddGlobalPed)
-exports('RemoveGlobalPed', Lib47.RemoveGlobalPed)
-exports('AddGlobalVehicle', Lib47.AddGlobalVehicle)
-exports('RemoveGlobalVehicle', Lib47.RemoveGlobalVehicle)
-exports('AddGlobalObject', Lib47.AddGlobalObject)
-exports('RemoveGlobalObject', Lib47.RemoveGlobalObject)
-exports('AddGlobalPlayer', Lib47.AddGlobalPlayer)
-exports('RemoveGlobalPlayer', Lib47.RemoveGlobalPlayer)
+exports('AddBoxZone', Lib47.Target.AddBoxZone)
+exports('AddPolyZone', Lib47.Target.AddPolyZone)
+exports('AddCircleZone', Lib47.Target.AddCircleZone)
+exports('RemoveZone', Lib47.Target.RemoveZone)
+exports('AddTargetBone', Lib47.Target.AddTargetBone)
+exports('AddTargetEntity', Lib47.Target.AddTargetEntity)
+exports('RemoveTargetEntity', Lib47.Target.RemoveTargetEntity)
+exports('AddTargetModel', Lib47.Target.AddTargetModel)
+exports('RemoveTargetModel', Lib47.Target.RemoveTargetModel)
+exports('AddGlobalPed', Lib47.Target.AddGlobalPed)
+exports('RemoveGlobalPed', Lib47.Target.RemoveGlobalPed)
+exports('AddGlobalVehicle', Lib47.Target.AddGlobalVehicle)
+exports('RemoveGlobalVehicle', Lib47.Target.RemoveGlobalVehicle)
+exports('AddGlobalObject', Lib47.Target.AddGlobalObject)
+exports('RemoveGlobalObject', Lib47.Target.RemoveGlobalObject)
+exports('AddGlobalPlayer', Lib47.Target.AddGlobalPlayer)
+exports('RemoveGlobalPlayer', Lib47.Target.RemoveGlobalPlayer)
+
+-- ====================================================================================
+--                                 BACKWARD COMPATIBILITY
+-- ====================================================================================
+
+Lib47.AddBoxZone = Lib47.Target.AddBoxZone -- will be removed soon
+Lib47.AddPolyZone = Lib47.Target.AddPolyZone -- will be removed soon
+Lib47.AddCircleZone = Lib47.Target.AddCircleZone -- will be removed soon
+Lib47.RemoveZone = Lib47.Target.RemoveZone -- will be removed soon
+Lib47.AddTargetBone = Lib47.Target.AddTargetBone -- will be removed soon
+Lib47.AddTargetEntity = Lib47.Target.AddTargetEntity -- will be removed soon
+Lib47.RemoveTargetEntity = Lib47.Target.RemoveTargetEntity -- will be removed soon
+Lib47.AddTargetModel = Lib47.Target.AddTargetModel -- will be removed soon
+Lib47.RemoveTargetModel = Lib47.Target.RemoveTargetModel -- will be removed soon
+Lib47.AddGlobalPed = Lib47.Target.AddGlobalPed -- will be removed soon
+Lib47.RemoveGlobalPed = Lib47.Target.RemoveGlobalPed -- will be removed soon
+Lib47.AddGlobalVehicle = Lib47.Target.AddGlobalVehicle -- will be removed soon
+Lib47.RemoveGlobalVehicle = Lib47.Target.RemoveGlobalVehicle -- will be removed soon
+Lib47.AddGlobalObject = Lib47.Target.AddGlobalObject -- will be removed soon
+Lib47.RemoveGlobalObject = Lib47.Target.RemoveGlobalObject -- will be removed soon
+Lib47.AddGlobalPlayer = Lib47.Target.AddGlobalPlayer -- will be removed soon
+Lib47.RemoveGlobalPlayer = Lib47.Target.RemoveGlobalPlayer -- will be removed soon

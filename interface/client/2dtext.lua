@@ -44,11 +44,67 @@ Interface.ShowTextUi = function(data)
     })
 end
 
-Interface.HideTextUi = function()
-    if ActiveTextUI then
-        ActiveTextUI = nil
-        SendNUIMessage({ action = "hide", id = NUI_ID })
+Interface.HideTextUi = function(key)
+    if not ActiveTextUI then return end
+
+    local currentUI = ActiveTextUI
+    ActiveTextUI = nil
+
+    if key and currentUI.data and currentUI.data.options then
+        local targetKeyStr = tostring(key):upper()
+        if type(key) == 'number' and Lib47.Keys and Lib47.Keys[key] then
+            targetKeyStr = (Lib47.Keys[key].keyboard or ''):upper()
+        end
+
+        local nuiOptions = {}
+        local found = false
+
+        for i, opt in ipairs(currentUI.data.options) do
+            local keyName = opt.keyName
+            if not keyName and opt.key and Lib47.Keys and Lib47.Keys[opt.key] then
+                keyName = Lib47.Keys[opt.key].keyboard
+            end
+
+            local isMatch = false
+            if opt.key and opt.key == key then
+                isMatch = true
+            elseif keyName and keyName:upper() == targetKeyStr then
+                isMatch = true
+            elseif opt.keyName and opt.keyName:upper() == tostring(key):upper() then
+                isMatch = true
+            end
+
+            if isMatch then
+                found = true
+            end
+
+            table.insert(nuiOptions, {
+                originalIndex = i,
+                label = opt.label,
+                key = keyName,
+                progress = 0,
+                activeBump = isMatch,
+                disabled = false,
+                hold = 0
+            })
+        end
+
+        if found then
+            local pos = currentUI.data.position or (Config.Defaults.TextUI and Config.Defaults.TextUI.position) or 'center-left'
+            SendNUIMessage({
+                action = "display",
+                id = NUI_ID,
+                position = pos,
+                options = nuiOptions,
+                mode = "full", 
+                arc = false, 
+                scale = currentUI.data.scale or 0.8
+            })
+            Wait(250)
+        end
     end
+
+    SendNUIMessage({ action = "hide", id = NUI_ID })
 end
 
 AddEventHandler('onResourceStop', function(resourceName)
@@ -68,12 +124,21 @@ RegisterCommand('test2dtext', function()
                 label = 'Interact',
             },
             {
-                label = 'Just some text',
+                key = 74, -- 'H' key
+                label = 'Manage',
+            },
+            {
+                keyName = 'DELETE',
+                label = 'Delete',
             }
         }
     })
 end)
 
-RegisterCommand('hide2dtext', function()
-    Lib47.HideTextUi()
+RegisterCommand('hide2dtext', function(source, args)
+    local key = args[1]
+    if key and tonumber(key) then
+        key = tonumber(key)
+    end
+    Lib47.HideTextUi(key)
 end)

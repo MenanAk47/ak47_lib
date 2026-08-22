@@ -336,7 +336,7 @@ function Lib47.Zones.Box(data)
     data.__type = 'box'
     data.width = data.size.x * 2
     data.length = data.size.y * 2
-    
+
     local polygon = (data.rotation * glm.polygon.new({
         vec3(data.size.x, data.size.y, 0),
         vec3(-data.size.x, data.size.y, 0),
@@ -382,10 +382,6 @@ if isClient then
             local maxZ = (zone._polyCompat and zone._polyCompat.maxZ) or zone.maxZ
             local zOffset = vec3(0, 0, zone.thickness / 2)
 
-            local center = zone.coords or vec3(0, 0, 0)
-            local topCenter = vec3(center.x, center.y, maxZ or (center.z + (zone.thickness / 2)))
-            local btmCenter = vec3(center.x, center.y, minZ or (center.z - (zone.thickness / 2)))
-
             for i = 1, #p do
                 local pA = p[i]
                 local pB = p[i + 1] or p[1]
@@ -413,15 +409,6 @@ if isClient then
                 DrawPoly(btmA.x, btmA.y, btmA.z, topB.x, topB.y, topB.z, btmB.x, btmB.y, btmB.z, r, g, b, a)
                 DrawPoly(topB.x, topB.y, topB.z, topA.x, topA.y, topA.z, btmA.x, btmA.y, btmA.z, r, g, b, a)
                 DrawPoly(btmB.x, btmB.y, btmB.z, topB.x, topB.y, topB.z, btmA.x, btmA.y, btmA.z, r, g, b, a)
-
-                -- Poly Faces (Top Roof & Bottom Floor)
-                if #p >= 3 then
-                    local faceA = math.floor(a * 0.7)
-                    DrawPoly(topCenter.x, topCenter.y, topCenter.z, topA.x, topA.y, topA.z, topB.x, topB.y, topB.z, r, g, b, faceA)
-                    DrawPoly(topB.x, topB.y, topB.z, topA.x, topA.y, topA.z, topCenter.x, topCenter.y, topCenter.z, r, g, b, faceA)
-                    DrawPoly(btmCenter.x, btmCenter.y, btmCenter.z, btmB.x, btmB.y, btmB.z, btmA.x, btmA.y, btmA.z, r, g, b, faceA)
-                    DrawPoly(btmA.x, btmA.y, btmA.z, btmB.x, btmB.y, btmB.z, btmCenter.x, btmCenter.y, btmCenter.z, r, g, b, faceA)
-                end
             end
         end
     end
@@ -624,5 +611,66 @@ if not _G.PolyZone then
         })
 
         return zone
+    end
+end
+
+if not _G.BoxZone then
+    _G.BoxZone = {}
+    function BoxZone:Create(center, length, width, options)
+        options = options or {}
+        local c = convertToVector(center)
+        local heading = options.heading or 0.0
+        local minZ = options.minZ or (c.z - 1.0)
+        local maxZ = options.maxZ or (c.z + 1.0)
+        local thickness = maxZ - minZ
+        local sizeZ = thickness > 0 and thickness or 2.0
+        local centerZ = minZ + (sizeZ / 2)
+
+        local zone = Lib47.Zones.Box({
+            name = options.name or "boxzone_compat",
+            coords = vec3(c.x, c.y, centerZ),
+            size = vec3(width or 2.0, length or 2.0, sizeZ),
+            rotation = heading,
+            debug = options.debugPoly or options.debugGrid,
+            debugColour = {r = 0, g = 255, b = 0, a = 100}
+        })
+        return zone
+    end
+end
+
+if not _G.CircleZone then
+    _G.CircleZone = {}
+    function CircleZone:Create(center, radius, options)
+        options = options or {}
+        local zone = Lib47.Zones.Sphere({
+            name = options.name or "circlezone_compat",
+            coords = center,
+            radius = (radius or 2.0) + 0.0,
+            debug = options.debugPoly or options.debugGrid,
+            debugColour = {r = 0, g = 255, b = 0, a = 100}
+        })
+        return zone
+    end
+end
+
+if not _G.ComboZone then
+    _G.ComboZone = {}
+    function ComboZone:Create(zones, options)
+        options = options or {}
+        local combo = {
+            zones = zones or {},
+            isPointInside = function(self, coords)
+                for _, z in ipairs(self.zones) do
+                    if z and z.isPointInside and z:isPointInside(coords) then return true end
+                end
+                return false
+            end,
+            destroy = function(self)
+                for _, z in ipairs(self.zones) do
+                    if z and z.destroy then z:destroy() end
+                end
+            end
+        }
+        return combo
     end
 end
