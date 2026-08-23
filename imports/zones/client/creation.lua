@@ -1256,4 +1256,4 @@ Lib47.Creation.Builders.CircleZone = function(existingData, locales, validateFn,
     end
 end
 
-Lib47.Creation.Builders.PolyZone = Lib47.Creation.Builders.PolyPoints
+Lib47.Creation.Builders.PolyPoints = Lib47.Creation.Builders.PolyZone
