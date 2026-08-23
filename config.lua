@@ -72,6 +72,13 @@ Config.Defaults = {
 		position = 'center', 
 
 		nightEffect = true, -- less dark background at night time
+
+		colors = {
+			colorPrimary = "rgba(18, 18, 22, 0.9)", 
+			colorHeader = "#ffffff",
+		    colorSecondary = "#ffffff",
+		    colorText = "#ffffff",
+		},
 	},
 	Objective = {
 		title = 'Objective',
@@ -80,6 +87,14 @@ Config.Defaults = {
 		position = 'center', 
 
 		nightEffect = true, -- less dark background at night time
+
+		colors = {
+			colorPrimary = "rgba(18, 18, 22, 0.9)", -- Card Background gradient
+	        colorHeader = "#ffffff",                -- Main Title ("OBJECT PLACEMENT")
+	        colorSubHeader = "#FFD700",             -- Section Headers ("CAMERA CONTROLS", "NAVIGATION")
+	        colorSecondary = "#ffffff",             -- Border Accent & List Dots
+	        colorText = "#ffffff",                  -- Control instructions & keys text
+		},
 	},
 	InputDialog = {
 		colors = {

@@ -130,7 +130,12 @@ Lib47.GetWeapons
 Lib47.GetZoneAtCoords
 Lib47.GiveVehicle
 Lib47.GiveVehicleKey
-Lib47.Gizmo
+Lib47.Gizmo.Start
+Lib47.Gizmo.PlaceObject
+Lib47.Creation.Builders.PolyZone
+Lib47.Creation.Builders.BoxZone
+Lib47.Creation.Builders.CircleZone
+Lib47.Creation.Builders.PlacePed
 Lib47.HasEnoughItem
 Lib47.HasGroupPermission
 Lib47.HasPermission

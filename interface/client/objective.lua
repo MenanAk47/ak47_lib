@@ -12,10 +12,8 @@ Interface.ShowObjective = function(text, title, position, colors)
 
     local pos = position or Config.Defaults.Objective.position
     
-    -- Ensure colors is a table or nil
-    local customColors = nil
-    if type(colors) == 'table' then
-        customColors = colors
+    if colors == nil then 
+        colors = Config.Defaults.Objective.colors 
     end
 
     local hour = GetClockHours()
@@ -30,7 +28,7 @@ Interface.ShowObjective = function(text, title, position, colors)
             position = pos,
             visible = true,
             isNight = isNight,
-            colors = customColors -- Pass colors to NUI
+            colors = colors
         }
     })
 end
@@ -78,7 +76,9 @@ local text = {
 
 local colors = {
     colorPrimary = "rgba(0, 0, 255, 0.8)",     -- Background
-    colorSecondery = "#00FF00",                -- Borders/Headers (Note spelling matches prompt)
+    colorHeader = "#FFFFFF",                   -- Main Card Title
+    colorSubHeader = "#00FF00",                -- Sub-section Headers
+    colorSecondary = "#00FF00",                -- Borders/Dots Accent
     colorText = "#FFFFFF"                      -- Content Text
 }
 

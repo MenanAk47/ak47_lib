@@ -1,8 +1,7 @@
-Lib47.Creation = {
-    Cam = {},
-    Render = {},
-    Builders = {},
-}
+Lib47.Creation = Lib47.Creation or {}
+Lib47.Creation.Cam = Lib47.Creation.Cam or {}
+Lib47.Creation.Render = Lib47.Creation.Render or {}
+Lib47.Creation.Builders = Lib47.Creation.Builders or {}
 
 local defaultLocales = {
     add_point = "Add Point",
