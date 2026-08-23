@@ -20,6 +20,7 @@ local currentGizmoEntity = nil
 local isSpawnedDummy = false
 local activeCallback = nil
 local lastGizmoData = nil
+local lastCamCoords = nil
 local initialGizmoData = nil
 local initialPedCoords = nil
 local initialPedHeading = nil
@@ -47,9 +48,19 @@ local function L(locales, key)
     return defaultLocales[key] or key
 end
 
--- =========================================================================
---                          GEOMETRY & MATH UTILS
--- =========================================================================
+local function ToVector3(val)
+    if not val then return nil end
+    if type(val) == 'vector3' then return val end
+    if type(val) == 'table' then
+        if val.x and val.y and val.z then
+            return vector3(tonumber(val.x) or 0.0, tonumber(val.y) or 0.0, tonumber(val.z) or 0.0)
+        elseif val[1] and val[2] and val[3] then
+            return vector3(tonumber(val[1]) or 0.0, tonumber(val[2]) or 0.0, tonumber(val[3]) or 0.0)
+        end
+    end
+    return nil
+end
+
 local function RotationToDirection(rotation)
     local z = math.rad(rotation.z)
     local x = math.rad(rotation.x)
@@ -271,7 +282,7 @@ function Lib47.Gizmo.Start(options, callback)
         local modelHash = type(options.model) == 'string' and joaat(options.model) or options.model
         Lib47.RequestModel(modelHash)
         
-        local spawnPos = options.coords
+        local spawnPos = ToVector3(options.coords) or options.coords
         if not spawnPos then
             local fwdPos = plyCoords + (GetEntityForwardVector(plyPed) * 3.0)
             local foundGround, groundZ = GetGroundZFor_3dCoord(fwdPos.x, fwdPos.y, fwdPos.z + 2.0, false)
@@ -295,8 +306,8 @@ function Lib47.Gizmo.Start(options, callback)
     currentGizmoEntity = targetEntity
 
     -- 2. Setup Coords & Rotation
-    local initialCoords = options.coords
-    local initialRot = options.rot
+    local initialCoords = ToVector3(options.coords) or options.coords
+    local initialRot = ToVector3(options.rot) or options.rot
 
     if targetEntity and DoesEntityExist(targetEntity) then
         if not initialCoords then
@@ -326,12 +337,38 @@ function Lib47.Gizmo.Start(options, callback)
 
     lastGizmoData = json.decode(json.encode(initialGizmoData))
 
-    -- 3. Show Objective HUD if requested or in builder mode
+    -- 3. Point camera to object if camCoords provided
+    local initialCamCoords = ToVector3(options.camCoords or options.cam)
+    if initialCamCoords and initialCoords then
+        SetEntityCoordsNoOffset(plyPed, initialCamCoords.x, initialCamCoords.y, initialCamCoords.z)
+
+        local dx = initialCoords.x - initialCamCoords.x
+        local dy = initialCoords.y - initialCamCoords.y
+        local dz = initialCoords.z - initialCamCoords.z
+        local dist2d = math.sqrt(dx * dx + dy * dy)
+
+        local heading = plyHeading
+        if math.abs(dx) > 0.001 or math.abs(dy) > 0.001 then
+            heading = GetHeadingFromVector_2d(dx, dy)
+        end
+        local pitch = dist2d > 0.001 and math.deg(math.atan2(dz, dist2d)) or 0.0
+        pitch = math.max(-85.0, math.min(85.0, pitch))
+
+        SetEntityHeading(plyPed, heading)
+        SetGameplayCamRelativeHeading(0.0)
+        SetGameplayCamRelativePitch(pitch, 1.0)
+
+        lastCamCoords = initialCamCoords
+    else
+        lastCamCoords = GetGameplayCamCoord()
+    end
+
+    -- 4. Show Objective HUD if requested or in builder mode
     if options.showObjective ~= false then
         ShowGizmoObjective(options.locales)
     end
 
-    -- 4. Open React NUI Gizmo
+    -- 5. Open React NUI Gizmo
     SendNUIMessage({
         action = "toggleGizmo",
         show = true,
@@ -345,7 +382,7 @@ function Lib47.Gizmo.Start(options, callback)
 
     SetNuiFocus(true, true)
 
-    -- 5. Main Camera & Input Loop Thread
+    -- 6. Main Camera & Input Loop Thread
     local invokingResource = GetInvokingResource()
 
     Citizen.CreateThread(function()
@@ -449,6 +486,7 @@ function Lib47.Gizmo.Start(options, callback)
             local camCoords = GetGameplayCamCoord()
             local camRot = GetGameplayCamRot(2)
             local forward = RotationToDirection(camRot)
+            lastCamCoords = camCoords
 
             SendNUIMessage({
                 action = "updateGizmoCamera",
@@ -483,6 +521,8 @@ function Lib47.Gizmo.Stop(isCancel)
     isGizmoFocused = false
     isHoldingRMB = false
     isHoldingLMB = false
+
+    local finalCamCoords = lastCamCoords or GetGameplayCamCoord()
 
     SetNuiFocus(false, false)
     SetNuiFocusKeepInput(false)
@@ -552,12 +592,14 @@ function Lib47.Gizmo.Stop(isCancel)
                 event = 'cancelled',
                 coords = initialGizmoData and vector3(initialGizmoData.x, initialGizmoData.y, initialGizmoData.z) or nil,
                 rot = initialGizmoData and vector3(initialGizmoData.rotX, initialGizmoData.rotY, initialGizmoData.rotZ) or nil,
+                camCoords = finalCamCoords,
             })
         else
             activeCallback({
                 event = 'closed',
                 coords = finalCoords,
                 rot = finalRot,
+                camCoords = finalCamCoords,
             })
         end
         activeCallback = nil
@@ -568,13 +610,14 @@ function Lib47.Gizmo.Stop(isCancel)
         if isCancel then
             gizmoResultPromise:resolve(nil)
         else
-            gizmoResultPromise:resolve({ coords = finalCoords, rot = finalRot })
+            gizmoResultPromise:resolve({ coords = finalCoords, rot = finalRot, camCoords = finalCamCoords })
         end
         gizmoResultPromise = nil
     end
 
     lastGizmoData = nil
     initialGizmoData = nil
+    lastCamCoords = nil
 end
 
 -- =========================================================================
@@ -645,9 +688,10 @@ end)
 --- @param modelOrEntity string|number Model name, model hash, entity handle, or options table
 --- @param optionsOrData table|function Optional options table or callback
 --- @param locales table Optional localization table
---- @param validateFn function Optional validation function(coords, rot)
+--- @param validateFn function Optional validation function(coords, rot, camCoords)
 --- @return vector3|nil coords Final position vector3 or nil if cancelled
 --- @return vector3|nil rot Final rotation vector3 (rotX, rotY, rotZ) or nil if cancelled
+--- @return vector3|nil camCoords Final camera coordinates vector3 or nil if cancelled
 Lib47.Gizmo.PlaceObject = function(modelOrEntity, optionsOrData, locales, validateFn)
     local opts = {}
 
@@ -665,7 +709,9 @@ Lib47.Gizmo.PlaceObject = function(modelOrEntity, optionsOrData, locales, valida
 
     -- Process first parameter
     if type(modelOrEntity) == 'table' then
-        opts = json.decode(json.encode(modelOrEntity))
+        for k, v in pairs(modelOrEntity) do
+            opts[k] = v
+        end
     elseif type(modelOrEntity) == 'string' or (type(modelOrEntity) == 'number' and not DoesEntityExist(modelOrEntity)) then
         opts.model = modelOrEntity
     elseif type(modelOrEntity) == 'number' and DoesEntityExist(modelOrEntity) then
@@ -679,6 +725,7 @@ Lib47.Gizmo.PlaceObject = function(modelOrEntity, optionsOrData, locales, valida
         end
     end
 
+    opts.camCoords = opts.camCoords or opts.cam
     opts.locales = locales or opts.locales
     opts.isBuilder = true
 
@@ -686,9 +733,9 @@ Lib47.Gizmo.PlaceObject = function(modelOrEntity, optionsOrData, locales, valida
     if callback then
         Lib47.Gizmo.Start(opts, function(result)
             if result.event == 'closed' then
-                callback(result.coords, result.rot)
+                callback(result.coords, result.rot, result.camCoords)
             elseif result.event == 'cancelled' then
-                callback(nil, nil)
+                callback(nil, nil, nil)
             end
         end)
         return
@@ -699,14 +746,16 @@ Lib47.Gizmo.PlaceObject = function(modelOrEntity, optionsOrData, locales, valida
 
     local result = Citizen.Await(gizmoResultPromise)
     if result and result.coords and result.rot then
-        if validateFn and not validateFn(result.coords, result.rot) then
-            return nil, nil
+        if validateFn and not validateFn(result.coords, result.rot, result.camCoords) then
+            return nil, nil, nil
         end
-        return result.coords, result.rot
+        return result.coords, result.rot, result.camCoords
     end
 
-    return nil, nil
+    return nil, nil, nil
 end
+
+Lib47.Creation.Builders.PlaceObject = Lib47.Gizmo.PlaceObject
 
 -- =========================================================================
 --                               EXPORTS
