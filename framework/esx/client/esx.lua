@@ -38,6 +38,8 @@ RegisterNetEvent('esx:playerLoaded', function(xPlayer)
 end)
 
 RegisterNetEvent('esx:onPlayerLogout', function()
+    Lib47.PlayerLoaded = false
+    Lib47.PlayerData = {}
     TriggerEvent('ak47_lib:OnPlayerUnload')
 end)
 

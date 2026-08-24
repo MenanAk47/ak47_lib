@@ -29,6 +29,8 @@ RegisterNetEvent('QBCore:Client:OnPlayerLoaded', function()
 end)
 
 RegisterNetEvent('QBCore:Client:OnPlayerUnload', function()
+    Lib47.PlayerLoaded = false
+    Lib47.PlayerData = {}
     TriggerEvent('ak47_lib:OnPlayerUnload')
 end)
 
