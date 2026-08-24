@@ -272,12 +272,12 @@ function Lib47.Gizmo.Start(options, callback)
         targetEntity = options.entity
         isSpawnedDummy = false
         SetEntityCollision(targetEntity, false, false)
-        SetEntityAlpha(targetEntity, 200, false)
+        SetEntityAlpha(targetEntity, 204, false)
     elseif options.handle and DoesEntityExist(options.handle) then
         targetEntity = options.handle
         isSpawnedDummy = false
         SetEntityCollision(targetEntity, false, false)
-        SetEntityAlpha(targetEntity, 200, false)
+        SetEntityAlpha(targetEntity, 204, false)
     elseif options.model then
         local modelHash = type(options.model) == 'string' and joaat(options.model) or options.model
         Lib47.RequestModel(modelHash)
@@ -299,7 +299,7 @@ function Lib47.Gizmo.Start(options, callback)
 
         targetEntity = CreateObject(modelHash, spawnPos.x, spawnPos.y, spawnPos.z, false, false, false)
         SetEntityCollision(targetEntity, false, false)
-        SetEntityAlpha(targetEntity, 200, false)
+        SetEntityAlpha(targetEntity, 204, false)
         isSpawnedDummy = true
     end
 
@@ -498,7 +498,7 @@ function Lib47.Gizmo.Start(options, callback)
             })
 
             if currentGizmoEntity and DoesEntityExist(currentGizmoEntity) then
-                DrawEntityBoundingBox(currentGizmoEntity, 255, 255, 255, 140)
+                DrawEntityBoundingBox(currentGizmoEntity, 255, 0, 0, 200)
             end
         end
 
