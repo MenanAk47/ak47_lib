@@ -1066,13 +1066,22 @@ Lib47.Creation.Builders.CircleZone = function(existingData, locales, validateFn,
     local propId = 1
     local propEntity = nil
 
-    if existingData and (existingData.position or existingData.coords or existingData.x) then
-        local rawPos = existingData.position or existingData.coords or existingData
-        point = vector3(rawPos.x, rawPos.y, rawPos.z)
-        radius = existingData.radius or 15.0
-        if existingData.prop and propList then
+    if existingData then
+        if existingData.position or existingData.coords or (type(existingData.x) == 'number') then
+            local rawPos = existingData.position or existingData.coords or existingData
+            if rawPos and rawPos.x and rawPos.y and rawPos.z then
+                point = vector3(rawPos.x, rawPos.y, rawPos.z)
+            end
+        end
+        if existingData.radius then
+            radius = tonumber(existingData.radius) or radius
+        end
+        local targetProp = existingData.prop or existingData.currentProp or existingData.model
+        if targetProp and propList then
+            local targetModel = type(targetProp) == 'table' and (targetProp.model or targetProp.name) or targetProp
             for i, p in ipairs(propList) do
-                if p == existingData.prop then
+                local pModel = type(p) == 'table' and (p.model or p.name) or p
+                if pModel == targetModel then
                     propId = i
                     break
                 end
@@ -1190,7 +1199,9 @@ Lib47.Creation.Builders.CircleZone = function(existingData, locales, validateFn,
                 end
 
                 if propList and #propList > 0 then
-                    local hash = GetHashKey(propList[propId])
+                    local currentProp = propList[propId]
+                    local currentModel = type(currentProp) == 'table' and (currentProp.model or currentProp.name) or currentProp
+                    local hash = GetHashKey(currentModel)
                     if not propEntity or not DoesEntityExist(propEntity) then
                         spawnPreviewProp(hash, endCoords)
                     else
@@ -1200,10 +1211,14 @@ Lib47.Creation.Builders.CircleZone = function(existingData, locales, validateFn,
                     -- Change prop
                     if IsDisabledControlJustPressed(0, 181) or IsDisabledControlJustPressed(0, 241) or IsDisabledControlJustPressed(0, 175) then
                         propId = (propId >= #propList) and 1 or (propId + 1)
-                        spawnPreviewProp(GetHashKey(propList[propId]), endCoords)
+                        local nextProp = propList[propId]
+                        local nextModel = type(nextProp) == 'table' and (nextProp.model or nextProp.name) or nextProp
+                        spawnPreviewProp(GetHashKey(nextModel), endCoords)
                     elseif IsDisabledControlJustPressed(0, 180) or IsDisabledControlJustPressed(0, 242) or IsDisabledControlJustPressed(0, 174) then
                         propId = (propId <= 1) and #propList or (propId - 1)
-                        spawnPreviewProp(GetHashKey(propList[propId]), endCoords)
+                        local prevProp = propList[propId]
+                        local prevModel = type(prevProp) == 'table' and (prevProp.model or prevProp.name) or prevProp
+                        spawnPreviewProp(GetHashKey(prevModel), endCoords)
                     end
                 else
                     DrawMarker(1, endCoords.x, endCoords.y, endCoords.z - 0.05, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 0.3, r, g, 0, 180, false, false, 0, false, false, false, false)
@@ -1229,7 +1244,9 @@ Lib47.Creation.Builders.CircleZone = function(existingData, locales, validateFn,
                 EnableAllControlActions(0)
                 Lib47.Creation.Cam.Destroy(camera)
                 Lib47.HideObjective()
-                return point, radius, propId, (propList and propList[propId] or nil)
+                local chosenProp = propList and propList[propId] or nil
+                local propName = type(chosenProp) == 'table' and (chosenProp.model or chosenProp.name) or chosenProp
+                return point, radius, propId, propName
             end
 
             -- Radius Adjustments
