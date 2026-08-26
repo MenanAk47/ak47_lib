@@ -22,8 +22,11 @@ end
 -- ====================================================================================
 
 RegisterNetEvent('QBCore:Client:OnPlayerLoaded', function()
-    Lib47.PlayerData = QBCore.Functions.GetPlayerData()
+    Wait(math.random(100, 500))
+    if Lib47.PlayerLoaded then return end
+
     Lib47.PlayerLoaded = true
+    Lib47.PlayerData = QBCore.Functions.GetPlayerData()
     TriggerEvent('ak47_lib:OnPlayerLoaded', Lib47.PlayerData)
     TriggerEvent('ak47_bridge:OnPlayerLoaded', Lib47.PlayerData) -- will be removed soon
 end)
