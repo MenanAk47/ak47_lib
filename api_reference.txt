@@ -45,6 +45,7 @@ Lib47.AddGlobalPed
 Lib47.AddGlobalPlayer
 Lib47.AddGlobalVehicle
 Lib47.AddItem
+Lib47.SetItemInfo
 Lib47.AddMoney
 Lib47.AddOfflineMoney
 Lib47.AddPolyZone

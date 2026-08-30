@@ -412,3 +412,54 @@ end
 Lib47.GetWeaponNameFromHash = function( hash )
     return Lib47.ItemsByHash[hash] and Lib47.ItemsByHash[hash].name
 end
+
+Lib47.SetItemInfo = function(inventoryId, slot, meta)
+    if not slot or not meta then return false end
+
+    if Config.Inventory == 'ak47_inventory' then
+        return exports['ak47_inventory']:SetItemInfo(inventoryId, slot, meta)
+
+    elseif Config.Inventory == 'ak47_qb_inventory' then
+        return exports['ak47_qb_inventory']:SetItemInfo(inventoryId, slot, meta)
+
+    elseif Config.Inventory == 'ox_inventory' then
+        return exports['ox_inventory']:SetMetadata(inventoryId, slot, meta)
+
+    elseif Config.Inventory == 'qs-inventory' then
+        return exports['qs-inventory']:SetItemMetadata(inventoryId, slot, meta)
+
+    elseif Config.Inventory == 'codem-inventory' then
+        return exports['codem-inventory']:SetItemMetadata(inventoryId, slot, meta)
+
+    elseif Config.Inventory == 'core_inventory' then
+        return exports['core_inventory']:setMetadata(inventoryId, slot, meta)
+
+    elseif Config.Inventory == 'tgiann-inventory' then
+        return exports['tgiann-inventory']:UpdateItemMetadata(inventoryId, slot, meta)
+
+    elseif Config.Inventory == 'ps-inventory' or Config.Inventory == 'lj-inventory' or Config.Inventory == 'qb-inventory' or Config.Inventory == 'qb-inventory-old' or Lib47.Framework == 'qb' then
+        local Player = Lib47.GetPlayer(tonumber(inventoryId))
+        if Player and Player.PlayerData and Player.PlayerData.items and Player.PlayerData.items[slot] then
+            Player.PlayerData.items[slot].info = meta
+            Player.Functions.SetPlayerData("items", Player.PlayerData.items)
+            return true
+        end
+        return false
+
+    else
+        local items = Lib47.GetInventoryItems(inventoryId)
+        local item = items and items[slot]
+        if item and item.name then
+            local amount = item.amount or item.count or 1
+            if amount > 1 then
+                Lib47.RemoveItem(inventoryId, item.name, 1, item.slot)
+                Lib47.AddItem(inventoryId, item.name, 1, nil, meta)
+            else
+                Lib47.RemoveItem(inventoryId, item.name, 1, item.slot)
+                Lib47.AddItem(inventoryId, item.name, 1, item.slot, meta)
+            end
+            return true
+        end
+        return false
+    end
+end
