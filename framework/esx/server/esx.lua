@@ -58,7 +58,7 @@ Lib47.GetPlayers = function()
     local data = {}
     local xPlayers = ESX.GetExtendedPlayers()
     for _, xPlayer in ipairs(xPlayers) do
-        table.insert(players, tonumber(xPlayer.source))
+        table.insert(data, tonumber(xPlayer.source))
     end
     return data
 end
