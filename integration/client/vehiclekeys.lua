@@ -48,8 +48,13 @@ end
 
 Lib47.Callback.Register('ak47_lib:callback:client:GiveVehicleKey', function( plate, vehNetId, virtual )
     local vehicle = nil
-    if NetworkDoesNetworkIdExist(vehNetId) then
-        vehicle = NetToVeh(vehNetId)
+    if vehNetId and vehNetId ~= 0 then
+        local success = Lib47.WaitUntil(function()
+            return NetworkDoesNetworkIdExist(vehNetId)
+        end)
+        if success then
+            vehicle = NetToVeh(vehNetId)
+        end
     end
     return Lib47.GiveVehicleKey(plate, vehicle, virtual)
 end)
@@ -70,7 +75,8 @@ Lib47.RemoveVehicleKey = function(plate, vehicle, virtual)
     elseif Config.VehicleKey == 'wasabi_carlock' then
         exports['wasabi_carlock']:RemoveKey(plate)
     elseif Config.VehicleKey == 'qs-vehiclekeys' then
-        exports['qs-vehiclekeys']:RemoveKeys(plate, GetDisplayNameFromVehicleModel(GetEntityModel(vehicle)))
+        local modelName = vehicle and DoesEntityExist(vehicle) and GetDisplayNameFromVehicleModel(GetEntityModel(vehicle)) or ''
+        exports['qs-vehiclekeys']:RemoveKeys(plate, modelName)
     elseif Config.VehicleKey == 'cd_garage' then
         TriggerEvent('cd_garage:RemoveKeys', plate)
     elseif Config.VehicleKey == 'qb-vehiclekeys' or Config.VehicleKey == 'qbx_vehiclekeys' then
@@ -83,8 +89,13 @@ end
 
 Lib47.Callback.Register('ak47_lib:callback:client:RemoveVehicleKey', function( plate, vehNetId, virtual )
     local vehicle = nil
-    if NetworkDoesNetworkIdExist(vehNetId) then
-        vehicle = NetToVeh(vehNetId)
+    if vehNetId and vehNetId ~= 0 then
+        local success = Lib47.WaitUntil(function()
+            return NetworkDoesNetworkIdExist(vehNetId)
+        end)
+        if success then
+            vehicle = NetToVeh(vehNetId)
+        end
     end
     return Lib47.RemoveVehicleKey(plate, vehicle, virtual)
 end)

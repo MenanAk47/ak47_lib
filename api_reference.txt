@@ -36,6 +36,10 @@ Lib47.ShowObjective
 Lib47.ShowTextUi
 Lib47.ShowTextUi3d
 Lib47.StartTensionMinigame
+Lib47.GetOutfit
+Lib47.SetOutfit
+Lib47.LoadOutfit
+Lib47.ResetOutfit
 Lib47.String
 Lib47.UpdateChecklist
 Lib47.AddBoxZone
@@ -150,6 +154,7 @@ Lib47.IsIncapacitated
 Lib47.IsItemTypeWeapon
 Lib47.IsLastStand
 Lib47.IsTimeOut
+Lib47.WaitUntil
 Lib47.IsVehicleOwner
 Lib47.IsVersionCompatible
 Lib47.LookAtEntity

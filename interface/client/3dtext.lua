@@ -20,6 +20,7 @@ local CullingThreadActive = false
 local CULLING_DISTANCE = 30.0
 
 local function GenerateID(data)
+    if data.id then return tostring(data.id) end
     local x = math.floor(data.coords.x * 100) / 100
     local y = math.floor(data.coords.y * 100) / 100
     local z = math.floor(data.coords.z * 100) / 100

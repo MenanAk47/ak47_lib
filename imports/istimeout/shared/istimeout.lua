@@ -7,3 +7,28 @@ Lib47.IsTimeOut = function(timeout)
         return (GetGameTimer() - startTime) > timeout
     end
 end
+
+Lib47.WaitUntil = function(condition, timeout, interval)
+    if type(condition) ~= "function" then
+        return false, nil
+    end
+
+    timeout = (type(timeout) == "number" and timeout > 0) and timeout or 10000
+    interval = (type(interval) == "number" and interval >= 0) and interval or 1000
+
+    while (GetGameTimer() - startTime) < timeout do
+        local success, result = pcall(condition)
+
+        if not success then
+            return false, nil
+        end
+
+        if result then
+            return true, result
+        end
+
+        Wait(interval)
+    end
+
+    return false, nil
+end
