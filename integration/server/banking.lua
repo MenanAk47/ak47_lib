@@ -3,6 +3,7 @@ local ConfigBackup = Config.Banking
 local scripts = {
     'ak47_banking',
     'qb-banking',
+    'ars_banking',
     'okokBanking',
     'Renewed-Banking',
 }
@@ -58,6 +59,9 @@ Integration.AddSocietyMoney = function(job, amount, reason, ignoreBankingExport)
     elseif Config.Banking == 'qb-banking' then
         exports['qb-banking']:AddMoney(job, amount, reason)
         return true
+    elseif Config.Banking == 'ars_banking' then
+        exports['ars_banking']:AddMoney(job, amount, reason)
+        return true
     elseif Config.Banking == 'okokBanking' then
         exports['okokBanking']:AddMoney(job, amount)
         return true
@@ -99,6 +103,9 @@ Integration.RemoveSocietyMoney = function(job, amount, reason, ignoreBankingExpo
     elseif Config.Banking == 'okokBanking' then
         exports['okokBanking']:RemoveMoney(job, amount, reason)
         return true
+    elseif Config.Banking == 'ars_banking' then
+        exports['ars_banking']:RemoveMoney(job, amount, reason)
+        return true
     elseif Config.Banking == 'Renewed-Banking' then
         exports['Renewed-Banking']:removeAccountMoney(job, amount)
         return true
@@ -137,6 +144,8 @@ Integration.GetSocietyMoney = function(job, ignoreBankingExport)
         return exports['qb-banking']:GetAccountBalance(job)
     elseif Config.Banking == 'okokBanking' then
         return exports['okokBanking']:GetAccount(job)
+    elseif Config.Banking == 'ars_banking' then
+        return exports['ars_banking']:GetAccountBalance(job)
     elseif Config.Banking == 'Renewed-Banking' then
         return exports['Renewed-Banking']:getAccountMoney(job)
     end
