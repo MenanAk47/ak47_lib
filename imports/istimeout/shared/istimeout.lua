@@ -16,6 +16,8 @@ Lib47.WaitUntil = function(condition, timeout, interval)
     timeout = (type(timeout) == "number" and timeout > 0) and timeout or 10000
     interval = (type(interval) == "number" and interval >= 0) and interval or 1000
 
+    local startTime = GetGameTimer()
+    
     while (GetGameTimer() - startTime) < timeout do
         local success, result = pcall(condition)
 
