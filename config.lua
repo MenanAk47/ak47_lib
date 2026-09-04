@@ -43,6 +43,17 @@ Config.Inventory = 'auto'
 -- 'ak47_banking', 'qb-banking', 'okokBanking', 'Renewed-Banking'
 Config.Banking = 'auto'
 
+-- Locale (i18n).
+-- Active language is read from convar `ak47_lib:locale` (default 'en').
+Config.Locale = {
+    -- Default language if no convar is set. Server admins can override at runtime:
+--      setr ak47_lib:locale
+    Default = 'en',
+    -- Subdirectory inside each consumer resource that holds the .json locale files.
+    Path = 'locales',
+    -- Allow users to switch language with the client command `/ak47locale <lang>`.
+    AllowClientSwitch = true,
+}
 
 
 

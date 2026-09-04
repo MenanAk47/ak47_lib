@@ -157,6 +157,13 @@ Lib47.IsTimeOut
 Lib47.WaitUntil
 Lib47.IsVehicleOwner
 Lib47.IsVersionCompatible
+Lib47.Locale
+Lib47.Locale.Dict
+Lib47.Locale.GetKey
+Lib47.Locale.Load
+Lib47.Locale.Path
+Lib47.Locale.Set
+Lib47.Locale.Translate
 Lib47.LookAtEntity
 Lib47.Notify
 Lib47.OpenGarageHousing
@@ -215,3 +222,4 @@ ak47_lib:OnPlayerDataUpdate
 ak47_lib:OnPlayerLoaded
 ak47_lib:OnPlayerUnload
 ak47_lib:OnRemoveItem
+ak47_lib:setLocale
