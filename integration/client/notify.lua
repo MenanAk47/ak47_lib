@@ -9,7 +9,8 @@ Lib47.Notify = function(msg, type, duration)
         })
     elseif Config.Notify == 'ak47_hud' then
         exports['ak47_hud']:Notify(msg, type, duration)
-
+    elseif Config.Notify == 'ars_hud' and GetResourceState('ars_hud') == 'started' then
+        exports['ars_hud']:Notify('', tostring(msg), type, duration)
     elseif Config.Notify == 'ox' then
         exports['ox_lib']:notify({
             type = type or 'info',
