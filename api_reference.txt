@@ -40,7 +40,8 @@ Lib47.GetOutfit
 Lib47.SetOutfit
 Lib47.LoadOutfit
 Lib47.ResetOutfit
-Lib47.String
+Lib47.String.Trim
+Lib47.String.FirstToUpper
 Lib47.UpdateChecklist
 Lib47.AddBoxZone
 Lib47.AddCircleZone
@@ -79,6 +80,8 @@ Lib47.GetClosestObject
 Lib47.GetClosestPed
 Lib47.GetClosestPlayer
 Lib47.GetClosestVehicle
+Lib47.GetVehicleInFront
+Lib47.GetVehicleFromPlate
 Lib47.GetCoreConfig
 Lib47.GetEntitiesInBucket
 Lib47.GetFrameworkVehicleByHash

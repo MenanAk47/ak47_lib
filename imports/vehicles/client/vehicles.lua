@@ -285,3 +285,19 @@ Lib47.EnforceVehicleProperties = function(vehicle, props, timeout)
         end
     end)
 end
+
+Lib47.GetVehicleInFront = function(distance)
+    distance = distance or 5.0
+    local playerPed = PlayerPedId()
+    local playerCoords = GetEntityCoords(playerPed)
+    local inDirection = GetOffsetFromEntityInWorldCoords(playerPed, 0.0, distance, 0.0)
+    local rayHandle = StartExpensiveSynchronousShapeTestLosProbe(playerCoords.x, playerCoords.y, playerCoords.z, inDirection.x, inDirection.y, inDirection.z, 10, playerPed, 0)
+    local _, hit, _, _, entityHit = GetShapeTestResult(rayHandle)
+
+    if hit == 1 and GetEntityType(entityHit) == 2 then
+        local entityCoords = GetEntityCoords(entityHit)
+        return entityHit, entityCoords
+    end
+
+    return nil
+end

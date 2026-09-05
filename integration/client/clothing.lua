@@ -1,5 +1,5 @@
-local isMale = function(ped)
-    return GetEntityModel(ped) == `mp_m_freemode_01`
+Lib47.IsMpMale = function()
+    return GetEntityModel(PlayerPedId()) == `mp_m_freemode_01`
 end
 
 local clothingCategories = {
@@ -214,7 +214,7 @@ Lib47.ResetOutfit = function()
         elseif GetResourceState('fivem-appearance') == 'started' then
             TriggerEvent('fivem-appearance:client:reloadSkin')
         elseif GetResourceState('qb-clothing') == 'started' then
-            TriggerServerEvent('qb-clothing:loadPlayerSkin')
+            TriggerServerEvent('qb-clothes:loadPlayerSkin')
         end
     end
 end
