@@ -48,6 +48,11 @@ Config.Banking = 'auto'
 
 -- Default Config
 Config.Defaults = {
+	Progressbar = {
+		-- 'capsule', 'minimal', 'segments', 'pulse',
+		-- 'radial-smooth', 'radial-orbit', 'radial-ticks', 'radial-dashed'
+		type = 'minimal',
+	},
 	Notify = {
 		-- 'inform', 'success', 'warning', 'error'
 		type = 'inform',

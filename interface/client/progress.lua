@@ -203,9 +203,15 @@ end
 Interface.CreateProgress = function(data)
     local id = data.id or GetUniqueId()
     
-    data.duration = data.duration or 3000
+    data.duration = data.duration or data.time or 3000
+    if type(data.duration) == 'number' and data.duration > 0 and data.duration < 50 then
+        data.duration = data.duration * 1000
+    end
     data.label = data.label or "Progress"
-    data.type = data.type or "capsule"
+    local defaultType = (Config.Defaults and Config.Defaults.Progressbar and Config.Defaults.Progressbar.type) or "capsule"
+    if not data.type or data.type == "default" then
+        data.type = defaultType
+    end
     data.manual = data.manual == true
     data.reverse = data.reverse == true
     data.is3d = data.is3d == true
@@ -241,7 +247,7 @@ end
 Interface.ShowProgress = function(data, onFinish, onCancel)
     for _, v in pairs(activeBars) do
         if not v.data.is3d then 
-            return nil 
+            v:destroy()
         end
     end
     
@@ -328,9 +334,16 @@ exports('CreateProgress', Interface.CreateProgress)
 Lib47.CreateProgress = Interface.CreateProgress
 
 AddEventHandler('onResourceStop', function(resourceName)
-    for i, v in pairs(activeBars) do
-        if v.invoked == resourceName then
+    if resourceName == GetCurrentResourceName() then
+        for i, v in pairs(activeBars) do
             v:destroy()
+        end
+        activeBars = {}
+    else
+        for i, v in pairs(activeBars) do
+            if v.invoked == resourceName then
+                v:destroy()
+            end
         end
     end
 end)
