@@ -115,7 +115,7 @@ Interface.Notify = function(data)
 end
 
 -- Export
-exports('Notify', Interface.Notify)
+-- exports moved to integration
 
 -- Test Command
 RegisterCommand('testnotify', function(_, args)

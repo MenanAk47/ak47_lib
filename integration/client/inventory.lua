@@ -1,3 +1,4 @@
+Lib47.ItemsReady = false
 Lib47.Items = {}
 Lib47.Weapons = {}
 Lib47.ItemsByHash = {}
@@ -53,6 +54,12 @@ FetchInvItems = function()
             Lib47.Weapons[name] = v
         end
     end
+
+    Lib47.ItemsReady = true
+end
+
+Lib47.IsItemsReady = function()
+    return Lib47.ItemsReady
 end
 
 Integration.GetItems = function()
@@ -335,3 +342,12 @@ RegisterInventoryEvents = function()
     -- other detections are based on framework data set
     -- check client/functions.lua
 end
+
+exports('SetInventoryBusy', Lib47.SetInventoryBusy)
+exports('OpenSearchInventory', Lib47.OpenSearchInventory)
+exports('OpenStash', Lib47.OpenStash)
+exports('CloseInventory', Lib47.CloseInventory)
+exports('GetInventoryImageLink', Lib47.GetInventoryImageLink)
+exports('GetItemImageLink', Lib47.GetItemImageLink)
+exports('RemoveItemQuality', Lib47.RemoveItemQuality)
+exports('GetWeaponNameFromHash', Lib47.GetWeaponNameFromHash)

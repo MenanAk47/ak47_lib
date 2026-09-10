@@ -122,3 +122,6 @@ end
 -- Don't change below
 RegisterNetEvent('ak47_lib:client:ShowProgress', Lib47.ShowProgress)
 Lib47.Callback.Register('ak47_lib:callback:client:ShowProgress', Lib47.ShowProgress)
+
+exports('ShowProgress', Lib47.ShowProgress)
+exports('CancelProgress', Lib47.CancelProgress)

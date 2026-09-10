@@ -3,7 +3,7 @@ Config = {}
 -- 'esx', 'qb', 'qbx'
 Config.Framework = 'auto'
 
--- 'default', 'ak47_hud', ox', 'esx', 'qb', 'qbx', 'custom'
+-- 'default', 'ak47_hud', 'ars_hud', 'ox', 'esx', 'qb', 'qbx', 'custom'
 Config.Notify = 'default'
 
 -- 'default', ox', 
@@ -21,6 +21,9 @@ Config.InputDialog = 'default'
 -- 'default', 'ox'
 Config.AlertDialog = 'default'
 
+-- 'default', 'ox'
+Config.TextUI = 'default'
+
 -- 'ak47_garage', 'ak47_qb_garage', 'cd_garage', 'okokGarage' 
 -- 'jg-advancedgarages', 'loaf_garage', 'qb-garages', 'qbx_garages' 'custom'
 Config.Garage = 'auto'
@@ -37,7 +40,7 @@ Config.FuelScript = 'auto'
 -- 'origen_inventory', 'tgiann-inventory', 'custom'
 Config.Inventory = 'auto'
 
--- 'ak47_banking', 'qb-banking', 'okokBanking', 'Renewed-Banking'
+-- 'ak47_banking', 'qb-banking', 'okokBanking', 'Renewed-Banking', 'ars_banking'
 Config.Banking = 'auto'
 
 
@@ -45,6 +48,11 @@ Config.Banking = 'auto'
 
 -- Default Config
 Config.Defaults = {
+	Progressbar = {
+		-- 'capsule', 'minimal', 'segments', 'pulse',
+		-- 'radial-smooth', 'radial-orbit', 'radial-ticks', 'radial-dashed'
+		type = 'minimal',
+	},
 	Notify = {
 		-- 'inform', 'success', 'warning', 'error'
 		type = 'inform',
@@ -69,6 +77,13 @@ Config.Defaults = {
 		position = 'center', 
 
 		nightEffect = true, -- less dark background at night time
+
+		colors = {
+			colorPrimary = "rgba(18, 18, 22, 0.9)", 
+			colorHeader = "#ffffff",
+		    colorSecondary = "#ffffff",
+		    colorText = "#ffffff",
+		},
 	},
 	Objective = {
 		title = 'Objective',
@@ -77,12 +92,20 @@ Config.Defaults = {
 		position = 'center', 
 
 		nightEffect = true, -- less dark background at night time
+
+		colors = {
+			colorPrimary = "rgba(18, 18, 22, 0.9)", -- Card Background gradient
+	        colorHeader = "#ffffff",                -- Main Title ("OBJECT PLACEMENT")
+	        colorSubHeader = "#FFD700",             -- Section Headers ("CAMERA CONTROLS", "NAVIGATION")
+	        colorSecondary = "#ffffff",             -- Border Accent & List Dots
+	        colorText = "#ffffff",                  -- Control instructions & keys text
+		},
 	},
 	InputDialog = {
 		colors = {
-			colorPrimary = "rgba(15, 15, 20, 0.85)", 
-            colorSecondary = "#FFD700" ,
-            colorText = "#ffffff",
+			colorPrimary = "rgba(18, 18, 22, 0.9)", 
+		    colorSecondary = "#ffffff",
+		    colorText = "#ffffff",
 		},
 
 		-- 'left', 'right', 'top', 'bottom' (can be combined)
@@ -93,9 +116,9 @@ Config.Defaults = {
 	},
 	AlertDialog = {
 		colors = {
-			colorPrimary = "rgba(15, 15, 20, 0.85)", 
-            colorSecondary = "#FFD700" ,
-            colorText = "#ffffff",
+			colorPrimary = "rgba(18, 18, 22, 0.9)", 
+		    colorSecondary = "#ffffff",
+		    colorText = "#ffffff",
 		},
 
 		-- 'left', 'right', 'top', 'bottom' (can be combined)
@@ -117,8 +140,8 @@ Config.Defaults = {
 		-- Default colors matching your solid background design
 		colors = {
 			colorPrimary = "rgba(18, 18, 22, 0.9)", 
-			colorSecondary = "#FFD700",
-			colorText = "#ffffff",
+		    colorSecondary = "#ffffff",
+		    colorText = "#ffffff",
 		},
 
 		-- "xs", "sm", "md", "lg", "xl"
@@ -140,8 +163,8 @@ Config.Defaults = {
 		-- Default colors matching your solid background design
 		colors = {
 			colorPrimary = "rgba(18, 18, 22, 0.9)", 
-			colorSecondary = "#FFD700",
-			colorText = "#ffffff",
+		    colorSecondary = "#ffffff",
+		    colorText = "#ffffff",
 		},
 
 		-- "xs", "sm", "md", "lg", "xl"
@@ -155,9 +178,16 @@ Config.Defaults = {
 		-- Default colors matching your solid background design
 		colors = {
 			colorPrimary = "rgba(18, 18, 22, 0.9)", 
-			colorSecondary = "#FFD700",
-			colorText = "#ffffff",
+		    colorSecondary = "#ffffff",
+		    colorText = "#ffffff",
 		},
+	},
+
+	TextUI = {
+		-- 'top-left', 'top-right', 'top-center',
+		-- 'bottom-left', 'bottom-right', 'bottom-center',
+		-- 'center-left', 'center-right',
+		position = 'center-left', 
 	},
 
 	Minigame = {

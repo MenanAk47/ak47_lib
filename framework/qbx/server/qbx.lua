@@ -390,3 +390,14 @@ end
 -- ====================================================================================
 --                                THREADS & EXPORTS
 -- ====================================================================================
+
+Lib47.GetVehicleSchema = function()
+    return {
+        name = "player_vehicles",
+        owner = "citizenid",
+        vehicle = "mods",
+        stored = "state",
+        garage = "garage",
+        pound = "depotprice"
+    }
+end

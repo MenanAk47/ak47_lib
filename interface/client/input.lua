@@ -80,8 +80,7 @@ Interface.IsInputOpen = function()
     return inputState.visible
 end
 
-exports('ShowInput', Interface.ShowInput)
-exports('HideInput', Interface.HideInput)
+-- exports moved to integration
 
 AddEventHandler('onResourceStop', function(resourceName)
     if inputState.visible and inputState.invoked == resourceName then

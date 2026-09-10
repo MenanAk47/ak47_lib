@@ -19,3 +19,6 @@ Lib47.HideAlert = function()
 
     end
 end
+
+exports('ShowAlert', Lib47.ShowAlert)
+exports('HideAlert', Lib47.HideAlert)

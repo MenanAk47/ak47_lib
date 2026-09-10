@@ -117,6 +117,7 @@ Interface.ShowNpcInteract = function(id, focusIndex)
     local colors = npcConfig.colors or Config.Defaults.NpcInteract.colors
 
     SetNuiFocus(true, true)
+    SendNUIMessage({ action = 'hideAll' })
     SendNUIMessage({
         action = 'OPEN_NPC_INTERACT',
         data = {
@@ -191,13 +192,19 @@ RegisterNUICallback('npcExit', function(data, cb)
     cb('ok')
 end)
 
+Interface.IsNpcInteractActive = function()
+    return npcState.visible
+end
+
 exports('RegisterNpcInteract', Interface.RegisterNpcInteract)
 exports('ShowNpcInteract', Interface.ShowNpcInteract)
 exports('HideNpcInteract', Interface.HideNpcInteract)
+exports('IsNpcInteractActive', Interface.IsNpcInteractActive)
 
 Lib47.RegisterNpcInteract = Interface.RegisterNpcInteract
 Lib47.ShowNpcInteract = Interface.ShowNpcInteract
 Lib47.HideNpcInteract = Interface.HideNpcInteract
+Lib47.IsNpcInteractActive = Interface.IsNpcInteractActive
 
 --============================= Example ============================
 

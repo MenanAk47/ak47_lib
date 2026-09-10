@@ -13,10 +13,8 @@ Interface.ShowChecklist = function(tasks, title, position, colors)
     local title = title or Config.Defaults.Checklist.title
     local pos = position or Config.Defaults.Checklist.position
     
-    -- Ensure colors is a table or nil
-    local customColors = nil
-    if type(colors) == 'table' then
-        customColors = colors
+    if colors == nil then 
+        colors = Config.Defaults.Checklist.colors 
     end
 
     local hour = GetClockHours()
@@ -31,7 +29,7 @@ Interface.ShowChecklist = function(tasks, title, position, colors)
             position = pos,
             visible = true,
             isNight = isNight,
-            colors = customColors -- Pass colors to NUI
+            colors = colors
         }
     })
 end
@@ -91,7 +89,7 @@ Lib47.HideChecklist = Interface.HideChecklist
 Example Usage with Colors:
 Interface.ShowChecklist(tasks, "My Title", "top", {
     colorPrimary = "rgba(0, 0, 255, 0.8)",     -- Background
-    colorSecondery = "#00FF00",                -- Borders/Headers (Note spelling matches prompt)
+    colorSecondary = "#00FF00",                -- Borders/Headers
     colorText = "#FFFFFF"                      -- Content Text
 })
 ]]

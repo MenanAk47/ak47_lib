@@ -5,7 +5,8 @@ Lib47.Framework = 'qbx'
 
 print(string.format("^2['FRAMEWORK']: %s^0", Config.Framework))
 
-Lib47.Vehicles = exports.qbx_core:GetVehiclesByHash()
+Lib47.Vehicles = exports.qbx_core:GetVehiclesByName()
+Lib47.VehiclesByHash = exports.qbx_core:GetVehiclesByHash()
 
 -- ====================================================================================
 --                                     CORE
@@ -24,13 +25,18 @@ end
 -- ====================================================================================
 
 RegisterNetEvent('QBCore:Client:OnPlayerLoaded', function()
-    Lib47.PlayerData = exports.qbx_core:GetPlayerData()
+    Wait(math.random(100, 500))
+    if Lib47.PlayerLoaded then return end
+
     Lib47.PlayerLoaded = true
+    Lib47.PlayerData = exports.qbx_core:GetPlayerData()
     TriggerEvent('ak47_lib:OnPlayerLoaded', Lib47.PlayerData)
     TriggerEvent('ak47_bridge:OnPlayerLoaded', Lib47.PlayerData) -- will be removed soon
 end)
 
 RegisterNetEvent('QBCore:Client:OnPlayerUnload', function()
+    Lib47.PlayerLoaded = false
+    Lib47.PlayerData = {}
     TriggerEvent('ak47_lib:OnPlayerUnload')
 end)
 
@@ -109,5 +115,20 @@ Lib47.GetFrameworkVehicles = function()
 end
 
 Lib47.GetFrameworkVehicleByHash = function(hash)
-    return exports.qbx_core:GetVehiclesByHash(hash)
+    return Lib47.VehiclesByHash[hash]
+end
+
+Lib47.GetFrameworkVehicleByModel = function(model)
+    return Lib47.Vehicles[model]
+end
+
+Lib47.GetVehicleSchema = function()
+    return {
+        name = "player_vehicles",
+        owner = "citizenid",
+        vehicle = "mods",
+        stored = "state",
+        garage = "garage",
+        pound = "depotprice"
+    }
 end

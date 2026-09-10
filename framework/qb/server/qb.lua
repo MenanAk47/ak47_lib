@@ -59,7 +59,7 @@ Lib47.GetPlayers = function()
     local data = {}
     local Players = QBCore.Functions.GetPlayers()
     for _, ply in ipairs(Players) do
-        table.insert(players, tonumber(ply))
+        table.insert(data, tonumber(ply))
     end
     return data
 end
@@ -393,3 +393,15 @@ Citizen.CreateThread(function()
         end
     end
 end)
+
+Lib47.GetVehicleSchema = function()
+    return {
+        name = "player_vehicles",
+        owner = "citizenid",
+        vehicle = "mods",
+        stored = "state",
+        garage = "garage",
+        pound = "depotprice"
+    }
+end
+

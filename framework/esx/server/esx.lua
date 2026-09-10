@@ -58,7 +58,7 @@ Lib47.GetPlayers = function()
     local data = {}
     local xPlayers = ESX.GetExtendedPlayers()
     for _, xPlayer in ipairs(xPlayers) do
-        table.insert(players, tonumber(xPlayer.source))
+        table.insert(data, tonumber(xPlayer.source))
     end
     return data
 end
@@ -461,7 +461,7 @@ Citizen.CreateThread(function()
 	local vehicles = MySQL.Sync.fetchAll('SELECT * FROM vehicles')
     if vehicles then
     	for i, v in pairs(vehicles) do
-        	Lib47.Vehicles[GetHashKey(v.model)] = v
+        	Lib47.Vehicles[v.model] = v
         end
     else
         print('^1Vehicle table not found!^0')
@@ -471,3 +471,14 @@ end)
 Lib47.Callback.Register('ak47_lib:callback:getvehicles', function( source )
     return Lib47.GetFrameworkVehicles()
 end)
+
+Lib47.GetVehicleSchema = function()
+    return {
+        name = "owned_vehicles",
+        owner = "owner",
+        vehicle = "vehicle",
+        stored = "stored",
+        garage = "parking",
+        pound = "pound"
+    }
+end

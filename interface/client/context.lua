@@ -354,8 +354,14 @@ RegisterNUICallback('contextAction', function(data, cb)
     if not option then return end
 
     local args = injectArgs(option, option.args)
-
     local seqBefore = contextShowSeq
+
+    if option.menu then
+        table.insert(menuHistoryStack, { id = startMenuId, index = data.index })
+        Interface.ShowContext(option.menu, keyboardOnly, { isForward = true })
+    elseif data.close ~= false and option.close ~= false then
+        Interface.HideContext(false)
+    end
 
     if option.onSelect then option.onSelect(args) end
     if option.event then TriggerEvent(option.event, args) end
@@ -364,13 +370,6 @@ RegisterNUICallback('contextAction', function(data, cb)
     if menu.cb then
         local scrollIdx = option.values and ((option.defaultIndex or 0) + 1) or nil
         menu.cb(index, scrollIdx, args)
-    end
-
-    if option.menu then
-        table.insert(menuHistoryStack, { id = startMenuId, index = data.index })
-        Interface.ShowContext(option.menu, keyboardOnly, { isForward = true })
-    elseif contextShowSeq == seqBefore and data.close ~= false and option.close ~= false then
-        Interface.HideContext(false)
     end
 end)
 
@@ -425,15 +424,7 @@ end
 Interface.HideMenu = function(onExit)
     Interface.HideContext(onExit)
 end
-
-exports('RegisterContext', Interface.RegisterContext)
-exports('RegisterMenu', Interface.RegisterMenu)
-exports('ShowContext', Interface.ShowContext)
-exports('ShowMenu', Interface.ShowMenu)
-exports('HideContext', Interface.HideContext)
-exports('HideMenu', Interface.HideMenu)
-exports('GetOpenMenu', Interface.GetOpenMenu)
-exports('SetMenuOptions', Interface.SetMenuOptions)
+-- exports moved to integration
 
 
 --================== Example ====================

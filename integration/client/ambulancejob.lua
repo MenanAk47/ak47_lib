@@ -95,3 +95,7 @@ end
 Lib47.IsIncapacitated = function(target)
     return Lib47.IsLastStand(target) or Lib47.IsDead(target)
 end
+
+exports('IsLastStand', Lib47.IsLastStand)
+exports('IsDead', Lib47.IsDead)
+exports('IsIncapacitated', Lib47.IsIncapacitated)

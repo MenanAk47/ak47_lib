@@ -7,10 +7,14 @@ print(string.format("^2['FRAMEWORK']: %s^0", Config.Framework))
 
 ESX = exports['es_extended']:getSharedObject()
 Lib47.Vehicles = {}
+Lib47.VehiclesByHash = {}
 
 CreateThread(function()
     Wait(2000)
     Lib47.Vehicles = Lib47.Callback.Await('ak47_lib:callback:getvehicles')
+    for i, v in pairs(Lib47.Vehicles) do
+        Lib47.VehiclesByHash[GetHashKey(v.model)] = v
+    end
 end)
 
 -- ====================================================================================
@@ -26,14 +30,19 @@ end
 -- ====================================================================================
 
 RegisterNetEvent('esx:playerLoaded', function(xPlayer)
+    Wait(math.random(100, 500))
+    if Lib47.PlayerLoaded then return end
+    
+    Lib47.PlayerLoaded = true
     Lib47.PlayerData = xPlayer
     Lib47.PlayerData.job = Functions.FormatJobData(Lib47.PlayerData.job)
-    Lib47.PlayerLoaded = true
     TriggerEvent('ak47_lib:OnPlayerLoaded', Lib47.PlayerData)
     TriggerEvent('ak47_bridge:OnPlayerLoaded', Lib47.PlayerData) -- will be removed soon
 end)
 
 RegisterNetEvent('esx:onPlayerLogout', function()
+    Lib47.PlayerLoaded = false
+    Lib47.PlayerData = {}
     TriggerEvent('ak47_lib:OnPlayerUnload')
 end)
 
@@ -126,6 +135,21 @@ Lib47.GetFrameworkVehicles = function()
 end
 
 Lib47.GetFrameworkVehicleByHash = function(hash)
-    return Lib47.Vehicles[hash]
+    return Lib47.VehiclesByHash[hash]
+end
+
+Lib47.GetFrameworkVehicleByModel = function(model)
+    return Lib47.Vehicles[model]
+end
+
+Lib47.GetVehicleSchema = function()
+    return {
+        name = "owned_vehicles",
+        owner = "owner",
+        vehicle = "vehicle",
+        stored = "stored",
+        garage = "parking",
+        pound = "pound"
+    }
 end
 

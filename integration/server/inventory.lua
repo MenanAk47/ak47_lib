@@ -1,6 +1,51 @@
+Lib47.ItemsReady = false
 Lib47.Items = {}
 Lib47.ItemsByHash = {}
 Lib47.Weapons = {}
+
+local function WaitForItems(callback)
+    CreateThread(function()
+        local stableTicks = 0
+        local previousCount = -1
+        local timeout = 0
+        local maxWaitTime = 40 -- 40 * 500ms = 20 seconds maximum wait time
+
+        print("^3['INVENTORY']: Waiting for inventory to finish initializing items...^0")
+
+        while timeout < maxWaitTime do
+            Wait(500)
+            
+            local items = Integration.GetItems()
+            local currentCount = 0
+
+            if items and type(items) == 'table' then
+                for _ in pairs(items) do
+                    currentCount = currentCount + 1
+                end
+            end
+
+            if currentCount > 0 then
+                if currentCount == previousCount then
+                    stableTicks = stableTicks + 1
+                    if stableTicks >= 4 then
+                        break
+                    end
+                else
+                    stableTicks = 0
+                    previousCount = currentCount
+                end
+            end
+
+            timeout = timeout + 1
+        end
+
+        if timeout >= maxWaitTime then
+            print("^1['INVENTORY']: Item loading wait timed out. Proceeding with fetched items anyway. Check your inventory script if items are missing.^0")
+        end
+
+        callback()
+    end)
+end
 
 if Config.Inventory == 'auto' then
     local scripts = {
@@ -47,21 +92,25 @@ if Config.Inventory == 'auto' then
 
                 print(string.format("^2['INVENTORY']: %s^0", Config.Inventory))
 
-                FetchInvItems()
+                WaitForItems(function()
+                    FetchInvItems()
+                end)
                 return
             end
         end
-        
     end)
 else
     CreateThread(function()
-        Wait(2000)
-        FetchInvItems()
+        WaitForItems(function()
+            FetchInvItems()
+        end)
     end)
 end
 
 FetchInvItems = function()
     Lib47.Items = Integration.GetItems()
+    local itemsCount, weaponsCount = 0, 0
+
     for i, v in pairs(Lib47.Items) do
         local name = v.name or i
         name = name:lower()
@@ -70,8 +119,20 @@ FetchInvItems = function()
         Lib47.ItemsByHash[nameHash].name = name
         if Lib47.IsItemTypeWeapon(name) then
             Lib47.Weapons[name] = v
+            weaponsCount = weaponsCount + 1
+        else
+            itemsCount = itemsCount + 1
         end
     end
+
+    print(string.format("^2['FRAMEWORK ITEMS']: x%s^0", itemsCount))
+    print(string.format("^2['FRAMEWORK WEAPONS']: x%s^0", weaponsCount))
+
+    Lib47.ItemsReady = true
+end
+
+Lib47.IsItemsReady = function()
+    return Lib47.ItemsReady
 end
 
 Lib47.Callback.Register('ak47_lib:callback:getitems', function( source )
@@ -350,4 +411,55 @@ end
 
 Lib47.GetWeaponNameFromHash = function( hash )
     return Lib47.ItemsByHash[hash] and Lib47.ItemsByHash[hash].name
+end
+
+Lib47.SetItemInfo = function(inventoryId, slot, meta)
+    if not slot or not meta then return false end
+
+    if Config.Inventory == 'ak47_inventory' then
+        return exports['ak47_inventory']:SetItemInfo(inventoryId, slot, meta)
+
+    elseif Config.Inventory == 'ak47_qb_inventory' then
+        return exports['ak47_qb_inventory']:SetItemInfo(inventoryId, slot, meta)
+
+    elseif Config.Inventory == 'ox_inventory' then
+        return exports['ox_inventory']:SetMetadata(inventoryId, slot, meta)
+
+    elseif Config.Inventory == 'qs-inventory' then
+        return exports['qs-inventory']:SetItemMetadata(inventoryId, slot, meta)
+
+    elseif Config.Inventory == 'codem-inventory' then
+        return exports['codem-inventory']:SetItemMetadata(inventoryId, slot, meta)
+
+    elseif Config.Inventory == 'core_inventory' then
+        return exports['core_inventory']:setMetadata(inventoryId, slot, meta)
+
+    elseif Config.Inventory == 'tgiann-inventory' then
+        return exports['tgiann-inventory']:UpdateItemMetadata(inventoryId, slot, meta)
+
+    elseif Config.Inventory == 'ps-inventory' or Config.Inventory == 'lj-inventory' or Config.Inventory == 'qb-inventory' or Config.Inventory == 'qb-inventory-old' or Lib47.Framework == 'qb' then
+        local Player = Lib47.GetPlayer(tonumber(inventoryId))
+        if Player and Player.PlayerData and Player.PlayerData.items and Player.PlayerData.items[slot] then
+            Player.PlayerData.items[slot].info = meta
+            Player.Functions.SetPlayerData("items", Player.PlayerData.items)
+            return true
+        end
+        return false
+
+    else
+        local items = Lib47.GetInventoryItems(inventoryId)
+        local item = items and items[slot]
+        if item and item.name then
+            local amount = item.amount or item.count or 1
+            if amount > 1 then
+                Lib47.RemoveItem(inventoryId, item.name, 1, item.slot)
+                Lib47.AddItem(inventoryId, item.name, 1, nil, meta)
+            else
+                Lib47.RemoveItem(inventoryId, item.name, 1, item.slot)
+                Lib47.AddItem(inventoryId, item.name, 1, item.slot, meta)
+            end
+            return true
+        end
+        return false
+    end
 end

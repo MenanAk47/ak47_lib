@@ -12,10 +12,8 @@ Interface.ShowObjective = function(text, title, position, colors)
 
     local pos = position or Config.Defaults.Objective.position
     
-    -- Ensure colors is a table or nil
-    local customColors = nil
-    if type(colors) == 'table' then
-        customColors = colors
+    if colors == nil then 
+        colors = Config.Defaults.Objective.colors 
     end
 
     local hour = GetClockHours()
@@ -30,7 +28,7 @@ Interface.ShowObjective = function(text, title, position, colors)
             position = pos,
             visible = true,
             isNight = isNight,
-            colors = customColors -- Pass colors to NUI
+            colors = colors
         }
     })
 end
@@ -56,7 +54,6 @@ Lib47.ShowObjective = Interface.ShowObjective
 Lib47.HideObjective = Interface.HideObjective
 
 --[[
-
 local text = {
     {
         Title = "Zone Controls",
@@ -79,13 +76,16 @@ local text = {
 
 local colors = {
     colorPrimary = "rgba(0, 0, 255, 0.8)",     -- Background
-    colorSecondery = "#00FF00",                -- Borders/Headers (Note spelling matches prompt)
+    colorHeader = "#FFFFFF",                   -- Main Card Title
+    colorSubHeader = "#00FF00",                -- Sub-section Headers
+    colorSecondary = "#00FF00",                -- Borders/Dots Accent
     colorText = "#FFFFFF"                      -- Content Text
 }
 
-Lib47.ShowObjective(text, "Editor Mode", "center", colors)
-
-
+CreateThread(function( ... )
+    Wait(2000)
+    Lib47.ShowObjective(text, "Editor Mode", "center", colors)
+end)
 
 local text2 = {
     Title = "Quick Menu",
@@ -105,5 +105,4 @@ Lib47.ShowObjective(text3, "Current Task", "top")
 
 local text4 = "Collect the evidence"
 Lib47.ShowObjective(text4, "Current Task", "top")
-
 ]]

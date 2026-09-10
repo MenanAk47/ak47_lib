@@ -56,3 +56,6 @@ Lib47.OpenGarageHousing = function(garageid)
 
     end
 end
+
+exports('StoreVehicleHousing', Lib47.StoreVehicleHousing)
+exports('OpenGarageHousing', Lib47.OpenGarageHousing)

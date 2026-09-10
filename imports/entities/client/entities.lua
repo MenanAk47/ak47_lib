@@ -1,6 +1,7 @@
 Lib47.GetVehicles = function() return GetGamePool('CVehicle') end
 Lib47.GetObjects = function() return GetGamePool('CObject') end
 Lib47.GetPlayers = function() return GetActivePlayers() end
+
 Lib47.GetPeds = function(ignoreList)
     local pedPool = GetGamePool('CPed')
     local peds, ignoreTable = {}, {}
