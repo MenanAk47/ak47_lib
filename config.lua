@@ -43,6 +43,12 @@ Config.Inventory = 'auto'
 -- 'ak47_banking', 'qb-banking', 'okokBanking', 'Renewed-Banking', 'ars_banking'
 Config.Banking = 'auto'
 
+-- Locale (i18n).
+-- 'en', 'de', ...
+-- setr ak47_lib:locale en
+Config.Locale = {
+    Default = 'en',
+}
 
 
 

@@ -2,7 +2,7 @@ fx_version 'adamant'
 game 'gta5'
 description 'Ak47 Lib'
 author 'MenanAk47'
-version '1.9.5'
+version '1.9.6'
 
 ui_page 'web/index.html'
 --ui_page 'http://localhost:5173'
@@ -10,6 +10,8 @@ ui_page 'web/index.html'
 files {
     'web/index.html',
     'web/**/*',
+    'locales/*.json',
+    'init.lua',
 }
 
 shared_scripts {
