@@ -9,6 +9,7 @@
 * **Auto-Detection:** Automatically configures itself based on started resources (Configurable to 'auto').
 * **Extensive Integrations:** Built-in support for popular inventories, fuel scripts, garages, and target systems.
 * **Developer Friendly:** Simplifies dependency management for paid or free releases.
+* **Localization (i18n):** Per-resource JSON locales with English fallback and runtime switching.
 
 ## 📋 Requirements
 
@@ -62,6 +63,11 @@ Config.Inventory = 'auto'
 
 -- Banking: 'qb-banking', 'okokBanking', 'Renewed-Banking'
 Config.Banking = 'auto'
+
+-- Locale (i18n): default language, e.g. 'en', 'de' (convar: setr ak47_lib:locale en)
+Config.Locale = {
+    Default = 'en',
+}
 
 ```
 
