@@ -1,0 +1,8 @@
+{
+    "command": {
+        "locale_usage": "Verwendung: /ak47locale <lang>",
+        "locale_changed": "Sprache -> {lang}"
+    },
+    "greeting": "Hallo {name}!",
+    "welcome": "Hallo %s!"
+}
