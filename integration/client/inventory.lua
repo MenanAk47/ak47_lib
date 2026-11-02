@@ -350,6 +350,17 @@ Lib47.GetWeaponNameFromHash = function( hash )
     return Lib47.ItemsByHash[hash] and Lib47.ItemsByHash[hash].name
 end
 
+Lib47.GetItemLabel = function( item )
+    if not item then return end
+    if Lib47.Items then
+        local entry = Lib47.Items[item] or Lib47.Items[item:lower()]
+        if entry and entry.label and entry.label ~= '' then
+            return entry.label
+        end
+    end
+    return item
+end
+
 RegisterInventoryEvents = function()
     if Config.Inventory == 'ak47_inventory' or Config.Inventory == 'ak47_qb_inventory' then
         RegisterNetEvent('ak47_inventory:onRemoveItem', function(item, amount, slot, has)
@@ -374,3 +385,4 @@ exports('GetInventoryImageLink', Lib47.GetInventoryImageLink)
 exports('GetItemImageLink', Lib47.GetItemImageLink)
 exports('RemoveItemQuality', Lib47.RemoveItemQuality)
 exports('GetWeaponNameFromHash', Lib47.GetWeaponNameFromHash)
+exports('GetItemLabel', Lib47.GetItemLabel)
