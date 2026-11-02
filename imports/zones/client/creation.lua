@@ -37,10 +37,40 @@ local defaultLocales = {
     adjust_center_z = "Center Height +/-",
     adjust_height = "Total Height +/-",
     micro_adjust = "Move Box",
+    undo_node = "Undo Node",
+    rotate_veh = "Rotate Vehicle",
+    rotate_sign = "Rotate Sign",
+    rotate_basket = "Rotate Basket",
+    rotate_ped = "Rotate Ped",
+    place_sign = "Place Sign",
+    add_node = "Add Node",
+    toggle_wait = "Toggle Wait (Stoppage)",
+    toggle_action = "Toggle Action (Checkout)",
+    complete_path = "Complete Path",
+    skip_step = "Skip Step",
+    finish_queue = "Finish Queue",
+    save_queue = "Save Queue",
+    save_changes = "Save Changes",
+    cancel_edits = "Cancel Edits",
+    path_nodes = "Path Nodes",
+    node_types = "Node Types",
+    queue_nodes = "Queue Nodes",
+    mode_current = "Current Mode",
+    mode_walk = "Walk",
+    mode_checkout = "Checkout (Action)",
+    mode_stoppage = "Stoppage (Wait)",
+    path_blocked = "Path Blocked",
+    error_min_checkout = "At least one checkout/action point is required",
+    error_min_stoppage = "At least one stoppage/wait point is required",
+    confirm_pos = "Confirm Position",
+    marker_creation = "Marker Placement",
+    wall_obj_creation = "Wall Object Placement",
+    npc_nav = "NPC Navigation",
+    queue_line = "Queue Line",
 }
 
 local function L(locales, key)
-    if locales and locales[key] then return locales[key] end
+    if type(locales) == 'table' and locales[key] then return locales[key] end
     return defaultLocales[key] or key
 end
 
@@ -136,6 +166,22 @@ Lib47.Creation.Render.DrawText3D = function(coords, text)
         local factor = (string.len(text)) / 370
         DrawRect(_x, _y + 0.0125, 0.015 + factor, 0.03, 41, 11, 41, 100)
     end
+end
+
+Lib47.Creation.Render.DrawLineVector = function(startPos, direction, length, r, g, b, a)
+    local endPoint = {
+        x = startPos.x + direction.x * length,
+        y = startPos.y + direction.y * length,
+        z = startPos.z + direction.z * length
+    }
+    DrawLine(startPos.x, startPos.y, startPos.z, endPoint.x, endPoint.y, endPoint.z, r, g, b, a)
+end
+
+Lib47.Creation.Render.GetHeadingFromVector_2d = function(dx, dy)
+    local angle = math.atan(dy, dx) * 180 / math.pi
+    local heading = angle - 90
+    if heading < 0 then heading = heading + 360 end
+    return heading
 end
 
 -- =============================================================================
@@ -250,7 +296,7 @@ end
 -- BUILDER MODULES
 -- =============================================================================
 
-Lib47.Creation.Builders.PolyZone = function(existingData, locales, validateFn)
+Lib47.Creation.Builders.PolyZone = function(existingData, locales, validateFn, options)
     local invokingResource = GetInvokingResource()
     local points = existingData and existingData.points or {}
     local plyPed = PlayerPedId()
@@ -272,6 +318,14 @@ Lib47.Creation.Builders.PolyZone = function(existingData, locales, validateFn)
     local camera = Lib47.Creation.Cam.Create("DEFAULT_SCRIPTED_CAMERA", camPos, camRot, true)
 
     local objectiveTitle = (locales and (locales.title or locales.zone_creation)) or L(locales, 'zone_creation')
+    local navList = {
+        L(locales, 'next_step') .. " <k>ENTER<k>",
+    }
+    if options and options.canBack then
+        table.insert(navList, L(locales, 'go_back') .. " <k>BACKSPACE<k>")
+    end
+    table.insert(navList, L(locales, 'cancel') .. " <k>DEL<k>")
+
     Lib47.ShowObjective({
         {
             Title = L(locales, 'zone_control'),
@@ -291,10 +345,7 @@ Lib47.Creation.Builders.PolyZone = function(existingData, locales, validateFn)
         },
         {
             Title = L(locales, 'navigation'),
-            List = {
-                L(locales, 'next_step') .. " <k>ENTER<k>",
-                L(locales, 'cancel') .. " <k>DEL<k>",
-            },
+            List = navList,
         },
     }, objectiveTitle)
     
@@ -315,7 +366,22 @@ Lib47.Creation.Builders.PolyZone = function(existingData, locales, validateFn)
             Lib47.Creation.Cam.Destroy(camera)
             if polyZone then polyZone:destroy() end
             Lib47.HideObjective()
+            if options and options.returnStatus then
+                return { status = 'cancel' }
+            end
             return nil
+        end
+
+        -- Back (BACKSPACE)
+        if options and options.canBack and IsDisabledControlJustPressed(0, 194) then
+            EnableAllControlActions(0)
+            Lib47.Creation.Cam.Destroy(camera)
+            if polyZone then polyZone:destroy() end
+            Lib47.HideObjective()
+            return {
+                status = 'back',
+                data = { points = points, minZ = (polyZone and polyZone.minZ), maxZ = (polyZone and polyZone.maxZ) }
+            }
         end
 
         -- Done/Next (ENTER)
@@ -332,6 +398,12 @@ Lib47.Creation.Builders.PolyZone = function(existingData, locales, validateFn)
                 local exportPoints = {}
                 for i = 1, #points do
                     exportPoints[i] = {x = points[i].x, y = points[i].y}
+                end
+                if options and options.returnStatus then
+                    return {
+                        status = 'next',
+                        data = { points = exportPoints, minZ = finalMinZ, maxZ = finalMaxZ }
+                    }
                 end
                 return exportPoints, finalMinZ, finalMaxZ
             end
@@ -462,7 +534,7 @@ Lib47.Creation.Builders.PolyZone = function(existingData, locales, validateFn)
     end
 end
 
-Lib47.Creation.Builders.PlaceModel = function(model, existingData, locales, isWater, validateFn)
+Lib47.Creation.Builders.PlaceModel = function(model, existingData, locales, isWater, validateFn, options)
     local invokingResource = GetInvokingResource()
     local hash = type(model) == 'string' and GetHashKey(model) or model
     RequestModel(hash)
@@ -500,12 +572,20 @@ Lib47.Creation.Builders.PlaceModel = function(model, existingData, locales, isWa
 
     local objectiveTitle = type(locales) == 'string' and locales or (locales and (locales.title or locales.setup_point)) or L(locales, 'setup_point')
     local setPointLabel = (locales and type(locales) == 'table' and (locales.set_point or locales.title)) or L(locales, 'set_point')
+    local rotateLabel = (locales and type(locales) == 'table' and locales.rotate) or (IsModelAVehicle(hash) and L(locales, 'rotate_veh') or L(locales, 'rotate'))
+    
+    local navList = {}
+    if options and options.canBack then
+        table.insert(navList, L(locales, 'go_back') .. " <k>BACKSPACE<k>")
+    end
+    table.insert(navList, L(locales, 'cancel') .. " <k>DEL<k>")
+
     Lib47.ShowObjective({
         {
             Title = L(locales, 'placement'),
             List = {
                 setPointLabel .. " <m>1<m>",
-                L(locales, 'rotate') .. " <m>3<m>",
+                rotateLabel .. " <m>3<m>",
                 L(locales, 'precision') .. " <k>SHIFT<k>",
             },
         },
@@ -519,9 +599,7 @@ Lib47.Creation.Builders.PlaceModel = function(model, existingData, locales, isWa
         },
         {
             Title = L(locales, 'navigation'),
-            List = {
-                L(locales, 'cancel') .. " <k>DEL<k>",
-            }
+            List = navList,
         },
     }, objectiveTitle)
 
@@ -536,22 +614,38 @@ Lib47.Creation.Builders.PlaceModel = function(model, existingData, locales, isWa
             return nil
         end
 
-        -- Cancel
+        -- Cancel (DEL)
         if IsDisabledControlJustPressed(0, 178) then
             EnableAllControlActions(0)
             Lib47.Creation.Cam.Destroy(camera)
             DeleteEntity(entity)
             Lib47.HideObjective()
+            if options and options.returnStatus then
+                return { status = 'cancel' }
+            end
             return nil
         end
 
-        -- Done/Place
-        if IsDisabledControlJustPressed(0, 24) then
+        -- Back (BACKSPACE)
+        if options and options.canBack and IsDisabledControlJustPressed(0, 194) then
             EnableAllControlActions(0)
             Lib47.Creation.Cam.Destroy(camera)
             DeleteEntity(entity)
             Lib47.HideObjective()
-            return point and vector4(point.x, point.y, point.z, entityHeading) or nil
+            return { status = 'back', data = existingData }
+        end
+
+        -- Done/Place (Mouse 1 or Enter)
+        if IsDisabledControlJustPressed(0, 24) or (options and options.useEnter and IsDisabledControlJustPressed(0, 191)) then
+            EnableAllControlActions(0)
+            Lib47.Creation.Cam.Destroy(camera)
+            DeleteEntity(entity)
+            Lib47.HideObjective()
+            local res = point and vector4(point.x, point.y, point.z, entityHeading) or nil
+            if options and options.returnStatus then
+                return { status = 'next', data = res }
+            end
+            return res
         end
 
         -- Rotate (Scroll)
@@ -614,7 +708,7 @@ Lib47.Creation.Builders.PlaceModel = function(model, existingData, locales, isWa
     end
 end
 
-Lib47.Creation.Builders.PlacePed = function(model, existingData, locales, validateFn)
+Lib47.Creation.Builders.PlacePed = function(model, existingData, locales, validateFn, options)
     local invokingResource = GetInvokingResource()
     local model = model or GetEntityModel(PlayerPedId())
     local hash = type(model) == 'string' and GetHashKey(model) or model
@@ -648,12 +742,20 @@ Lib47.Creation.Builders.PlacePed = function(model, existingData, locales, valida
 
     local objectiveTitle = type(locales) == 'string' and locales or (locales and (locales.title or locales.setup_point)) or L(locales, 'setup_point')
     local setPointLabel = (locales and type(locales) == 'table' and (locales.set_point or locales.title)) or L(locales, 'set_point')
+    local rotateLabel = (locales and type(locales) == 'table' and locales.rotate_ped) or L(locales, 'rotate_ped')
+
+    local navList = {}
+    if options and options.canBack then
+        table.insert(navList, L(locales, 'go_back') .. " <k>BACKSPACE<k>")
+    end
+    table.insert(navList, L(locales, 'cancel') .. " <k>DEL<k>")
+
     Lib47.ShowObjective({
         {
             Title = L(locales, 'placement'),
             List = {
                 setPointLabel .. " <m>1<m>",
-                L(locales, 'rotate') .. " <m>3<m>",
+                rotateLabel .. " <m>3<m>",
                 L(locales, 'precision') .. " <k>SHIFT<k>",
             },
         },
@@ -667,9 +769,7 @@ Lib47.Creation.Builders.PlacePed = function(model, existingData, locales, valida
         },
         {
             Title = L(locales, 'navigation'),
-            List = {
-                L(locales, 'cancel') .. " <k>DEL<k>",
-            }
+            List = navList,
         },
     }, objectiveTitle)
 
@@ -684,21 +784,36 @@ Lib47.Creation.Builders.PlacePed = function(model, existingData, locales, valida
             return nil
         end
 
-        -- Cancel
+        -- Cancel (DEL)
         if IsDisabledControlJustPressed(0, 178) then
             EnableAllControlActions(0)
             Lib47.Creation.Cam.Destroy(camera)
             DeleteEntity(entity)
             Lib47.HideObjective()
+            if options and options.returnStatus then
+                return { status = 'cancel' }
+            end
             return nil
         end
 
-        -- Done/Place
+        -- Back (BACKSPACE)
+        if options and options.canBack and IsDisabledControlJustPressed(0, 194) then
+            EnableAllControlActions(0)
+            Lib47.Creation.Cam.Destroy(camera)
+            DeleteEntity(entity)
+            Lib47.HideObjective()
+            return { status = 'back', data = existingData }
+        end
+
+        -- Done/Place (Mouse 1)
         if IsDisabledControlJustPressed(0, 24) then
             EnableAllControlActions(0)
             Lib47.Creation.Cam.Destroy(camera)
             DeleteEntity(entity)
             Lib47.HideObjective()
+            if options and options.returnStatus then
+                return { status = 'next', data = point and vector4(point.x, point.y, point.z, entityHeading) or nil }
+            end
             return point and vector3(point.x, point.y, point.z), entityHeading
         end
 
@@ -744,7 +859,7 @@ Lib47.Creation.Builders.PlacePed = function(model, existingData, locales, valida
     end
 end
 
-Lib47.Creation.Builders.BoxZone = function(existingData, locales, validateFn)
+Lib47.Creation.Builders.BoxZone = function(existingData, locales, validateFn, options)
     local invokingResource = GetInvokingResource()
     local plyPed = PlayerPedId()
     local fwd, right, up, plyPos = GetEntityMatrix(plyPed)
@@ -791,7 +906,10 @@ Lib47.Creation.Builders.BoxZone = function(existingData, locales, validateFn)
             },
             {
                 Title = L(locales, 'navigation'),
-                List = {
+                List = (options and options.canBack) and {
+                    L(locales, 'go_back') .. " <k>BACKSPACE<k>",
+                    L(locales, 'cancel') .. " <k>DEL<k>",
+                } or {
                     L(locales, 'cancel') .. " <k>DEL<k>",
                 },
             },
@@ -819,7 +937,11 @@ Lib47.Creation.Builders.BoxZone = function(existingData, locales, validateFn)
             },
             {
                 Title = L(locales, 'navigation'),
-                List = {
+                List = (options and options.canBack) and {
+                    L(locales, 'next_step') .. " <k>ENTER<k>",
+                    L(locales, 'go_back') .. " <k>BACKSPACE<k>",
+                    L(locales, 'cancel') .. " <k>DEL<k>",
+                } or {
                     L(locales, 'next_step') .. " <k>ENTER<k>",
                     L(locales, 'cancel') .. " <k>DEL<k>",
                 },
@@ -842,7 +964,18 @@ Lib47.Creation.Builders.BoxZone = function(existingData, locales, validateFn)
             EnableAllControlActions(0)
             Lib47.Creation.Cam.Destroy(camera)
             Lib47.HideObjective()
+            if options and options.returnStatus then
+                return { status = 'cancel' }
+            end
             return nil
+        end
+
+        -- Back (BACKSPACE)
+        if options and options.canBack and IsDisabledControlJustPressed(0, 194) then
+            EnableAllControlActions(0)
+            Lib47.Creation.Cam.Destroy(camera)
+            Lib47.HideObjective()
+            return { status = 'back', data = existingData }
         end
 
         DisableAllControlActions(0)
@@ -907,6 +1040,12 @@ Lib47.Creation.Builders.BoxZone = function(existingData, locales, validateFn)
                 EnableAllControlActions(0)
                 Lib47.Creation.Cam.Destroy(camera)
                 Lib47.HideObjective()
+                if options and options.returnStatus then
+                    return {
+                        status = 'next',
+                        data = { pos = boxPos, length = length, width = width, heading = boxHeading, minZ = minZ, maxZ = maxZ }
+                    }
+                end
                 return boxPos, length, width, boxHeading, minZ, maxZ
             end
 
@@ -1308,6 +1447,724 @@ Lib47.Creation.Builders.CircleZone = function(existingData, locales, validateFn,
             DrawMarker(28, point.x, point.y, point.z, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, radius * 2.0, radius * 2.0, radius * 2.0, r, g, b, 70, false, false, 2, false, nil, nil, false)
             DrawMarker(1, point.x, point.y, point.z - 0.2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, radius * 2.0, radius * 2.0, 0.4, r, g, b, 140, false, false, 2, false, nil, nil, false)
             DrawLine(point.x, point.y, point.z, point.x, point.y, point.z + 2.0, r, g, b, 255)
+        end
+    end
+end
+
+
+Lib47.Creation.Builders.PlaceWallObject = function(model, existingData, locales, validateFn, options)
+    local invokingResource = GetInvokingResource()
+    local hash = type(model) == 'string' and GetHashKey(model) or model
+    RequestModel(hash)
+    while not HasModelLoaded(hash) do Wait(0) end
+
+    local pedPos = GetEntityCoords(PlayerPedId())
+    local prop = CreateObject(hash, pedPos.x, pedPos.y, pedPos.z - 10.0, 0.0, false)
+    SetEntityCollision(prop, false, false)
+    SetEntityAlpha(prop, 200)
+
+    local manualRotOffset = 0.0
+    local point = nil
+
+    if existingData and existingData.x then
+        point = vector3(existingData.x, existingData.y, existingData.z)
+    end
+
+    local fwd, right, up, plyPos = GetEntityMatrix(PlayerPedId())
+    local basePos = point or plyPos
+    local baseHeading = existingData and (existingData.w or existingData.heading) or GetEntityHeading(PlayerPedId())
+    local camPos = basePos + (up * 2)
+    local camRot = vector3(-35.0, 0.0, baseHeading)
+    local camera = Lib47.Creation.Cam.Create("DEFAULT_SCRIPTED_CAMERA", camPos, camRot, true)
+
+    local objectiveTitle = (locales and (locales.title or locales.wall_obj_creation)) or L(locales, 'wall_obj_creation')
+    local placeLabel = (locales and locales.place_sign) or L(locales, 'place_sign')
+    local rotateLabel = (locales and locales.rotate_sign) or L(locales, 'rotate_sign')
+
+    local navList = {}
+    if options and options.canBack then
+        table.insert(navList, L(locales, 'go_back') .. " <k>BACKSPACE<k>")
+    end
+    table.insert(navList, L(locales, 'cancel') .. " <k>DEL<k>")
+
+    Lib47.ShowObjective({
+        {
+            Title = L(locales, 'placement'),
+            List = {
+                placeLabel .. " <m>1<m>",
+                rotateLabel .. " <m>3<m>",
+                L(locales, 'precision') .. " <k>SHIFT<k>",
+            },
+        },
+        {
+            Title = L(locales, 'cam_controls'),
+            List = {
+                "<m><m> <k>W<k> <k>A<k> <k>S<k> <k>D<k>",
+                L(locales, 'move_up') .. " <k>Q<k>",
+                L(locales, 'move_down') .. " <k>E<k>",
+            },
+        },
+        {
+            Title = L(locales, 'navigation'),
+            List = navList,
+        },
+    }, objectiveTitle)
+
+    while true do
+        Wait(0)
+
+        if invokingResource and GetResourceState(invokingResource) ~= 'started' then
+            EnableAllControlActions(0)
+            Lib47.Creation.Cam.Destroy(camera)
+            DeleteEntity(prop)
+            Lib47.HideObjective()
+            return nil
+        end
+
+        -- Cancel (DEL)
+        if IsDisabledControlJustPressed(0, 178) then
+            EnableAllControlActions(0)
+            Lib47.Creation.Cam.Destroy(camera)
+            DeleteEntity(prop)
+            Lib47.HideObjective()
+            if options and options.returnStatus then
+                return { status = 'cancel' }
+            end
+            return nil
+        end
+
+        -- Back (BACKSPACE)
+        if options and options.canBack and IsDisabledControlJustPressed(0, 194) then
+            EnableAllControlActions(0)
+            Lib47.Creation.Cam.Destroy(camera)
+            DeleteEntity(prop)
+            Lib47.HideObjective()
+            return { status = 'back', data = existingData }
+        end
+
+        -- Place (Mouse 1)
+        if IsDisabledControlJustPressed(0, 24) then
+            EnableAllControlActions(0)
+            Lib47.Creation.Cam.Destroy(camera)
+            local finalPos = point and vector4(point.x, point.y, point.z, GetEntityHeading(prop)) or nil
+            DeleteEntity(prop)
+            Lib47.HideObjective()
+            if options and options.returnStatus then
+                return { status = 'next', data = finalPos }
+            end
+            return finalPos
+        end
+
+        -- Rotate (Scroll)
+        if IsDisabledControlJustPressed(0, 181) then
+            if IsDisabledControlPressed(0, 21) then
+                manualRotOffset = manualRotOffset + 2.0
+            else
+                manualRotOffset = manualRotOffset + 10.0
+            end
+        end
+        if IsDisabledControlJustPressed(0, 180) then
+            if IsDisabledControlPressed(0, 21) then
+                manualRotOffset = manualRotOffset - 2.0
+            else
+                manualRotOffset = manualRotOffset - 10.0
+            end
+        end
+
+        DisableAllControlActions(0)
+        camPos, camRot = Lib47.Creation.Cam.HandleFlyCam(camera)
+        local right, fwd, up, pos = GetCamMatrix(camera)
+        local rayHit = StartExpensiveSynchronousShapeTestLosProbe(pos.x, pos.y, pos.z, pos.x + (fwd.x * 100.0), pos.y + (fwd.y * 100.0), pos.z + (fwd.z * 100.0), 511, PlayerPedId(), 4)
+        local retval, hit, endCoords, surfaceNormal, entityHit = GetShapeTestResult(rayHit)
+
+        if hit ~= 0 then
+            point = endCoords
+            SetEntityCoordsNoOffset(prop, endCoords.x, endCoords.y, endCoords.z)
+            local wallHeading = Lib47.Creation.Render.GetHeadingFromVector_2d(surfaceNormal.x, surfaceNormal.y)
+            SetEntityHeading(prop, wallHeading + 180.0 + manualRotOffset)
+            local r, g = 0, 255
+            if validateFn and not validateFn(point) then
+                r, g = 255, 0
+            end
+            DrawLine(endCoords.x, endCoords.y, endCoords.z, endCoords.x + surfaceNormal.x, endCoords.y + surfaceNormal.y, endCoords.z + surfaceNormal.z, r, g, 0, 255)
+            if objectiveTitle then
+                Lib47.Creation.Render.DrawText3D(vector3(endCoords.x, endCoords.y, endCoords.z + 0.3), objectiveTitle)
+            end
+        else
+            SetEntityCoordsNoOffset(prop, 0.0, 0.0, -10.0)
+        end
+    end
+end
+
+Lib47.Creation.Builders.PlaceMarker = function(existingData, locales, validateFn, options)
+    local invokingResource = GetInvokingResource()
+    local point = existingData and vector3(existingData.x, existingData.y, existingData.z) or nil
+    local fwd, right, up, plyPos = GetEntityMatrix(PlayerPedId())
+    local basePos = point or plyPos
+    local camPos = basePos + (up * 2)
+    local camRot = vector3(-35.0, 0.0, GetEntityHeading(PlayerPedId()))
+    local camera = Lib47.Creation.Cam.Create("DEFAULT_SCRIPTED_CAMERA", camPos, camRot, true)
+
+    local objectiveTitle = (locales and (locales.title or locales.marker_creation)) or L(locales, 'marker_creation')
+    local confirmLabel = (locales and locales.confirm_pos) or L(locales, 'confirm_pos')
+
+    local navList = {}
+    if options and options.canBack then
+        table.insert(navList, L(locales, 'go_back') .. " <k>BACKSPACE<k>")
+    end
+    table.insert(navList, L(locales, 'cancel') .. " <k>DEL<k>")
+
+    Lib47.ShowObjective({
+        {
+            Title = L(locales, 'placement'),
+            List = {
+                confirmLabel .. " <m>1<m>",
+            }
+        },
+        {
+            Title = L(locales, 'cam_controls'),
+            List = {
+                "<m><m> <k>W<k> <k>A<k> <k>S<k> <k>D<k>",
+                L(locales, 'move_up') .. " <k>Q<k>",
+                L(locales, 'move_down') .. " <k>E<k>",
+            },
+        },
+        {
+            Title = L(locales, 'navigation'),
+            List = navList,
+        },
+    }, objectiveTitle)
+
+    while true do
+        Wait(0)
+
+        if invokingResource and GetResourceState(invokingResource) ~= 'started' then
+            EnableAllControlActions(0)
+            Lib47.Creation.Cam.Destroy(camera)
+            Lib47.HideObjective()
+            return nil
+        end
+
+        -- Cancel (DEL)
+        if IsDisabledControlJustPressed(0, 178) then
+            EnableAllControlActions(0)
+            Lib47.Creation.Cam.Destroy(camera)
+            Lib47.HideObjective()
+            if options and options.returnStatus then
+                return { status = 'cancel' }
+            end
+            return nil
+        end
+
+        -- Back (BACKSPACE)
+        if options and options.canBack and IsDisabledControlJustPressed(0, 194) then
+            EnableAllControlActions(0)
+            Lib47.Creation.Cam.Destroy(camera)
+            Lib47.HideObjective()
+            return { status = 'back', data = existingData }
+        end
+
+        -- Place (Mouse 1)
+        if IsDisabledControlJustPressed(0, 24) then
+            EnableAllControlActions(0)
+            Lib47.Creation.Cam.Destroy(camera)
+            Lib47.HideObjective()
+            if options and options.returnStatus then
+                return { status = 'next', data = point }
+            end
+            return point
+        end
+
+        DisableAllControlActions(0)
+        camPos, camRot = Lib47.Creation.Cam.HandleFlyCam(camera)
+        local right, fwd, up, pos = GetCamMatrix(camera)
+        local rayHit = StartExpensiveSynchronousShapeTestLosProbe(pos.x, pos.y, pos.z, pos.x + (fwd.x * 100.0), pos.y + (fwd.y * 100.0), pos.z + (fwd.z * 100.0), 4294967295, PlayerPedId(), 4)
+        local retval, hit, endCoords, surfaceNormal, entityHit = GetShapeTestResult(rayHit)
+        if hit ~= 0 then
+            point = vector3(endCoords.x, endCoords.y, endCoords.z + 0.8)
+            local r, g = 0, 255
+            if validateFn and not validateFn(point) then
+                r, g = 255, 0
+            end
+            DrawLine(endCoords.x, endCoords.y, endCoords.z, endCoords.x, endCoords.y, endCoords.z + 1.0, 255, 0, 0, 255)
+            DrawMarker(21, endCoords.x, endCoords.y, endCoords.z + 0.8, 0, 0, 0, 0, 0, 0, 0.5, 0.5, 0.4, 255, 0, 0, 100, 0, 0, 0, 1)
+            if objectiveTitle then
+                Lib47.Creation.Render.DrawText3D(vector3(endCoords.x, endCoords.y, endCoords.z + 1.0), objectiveTitle)
+            end
+        end
+    end
+end
+
+Lib47.Creation.Builders.NavPoints = function(existingPoints, locales, options)
+    local invokingResource = GetInvokingResource()
+    local navs = {}
+    if existingPoints and #existingPoints > 0 then
+        for i = 1, #existingPoints do
+            local item = existingPoints[i]
+            local pos = item.position or item
+            local posVec = vector4(pos.x, pos.y, pos.z, pos.w or pos.h or pos.heading or 0.0)
+            table.insert(navs, {
+                position = posVec,
+                stoppage = item.stoppage or false,
+                checkout = item.checkout or false
+            })
+        end
+    end
+
+    local walkDict, walkClip = "move_m@confident", 'walk'
+    local giveDict, giveClip = "mp_common", "givetake1_a"
+    RequestAnimDict(walkDict); while not HasAnimDictLoaded(walkDict) do Wait(0) end
+    RequestAnimDict(giveDict); while not HasAnimDictLoaded(giveDict) do Wait(0) end
+
+    local ped = ClonePed(PlayerPedId(), false)
+    SetEntityAlpha(ped, 200)
+    SetEntityCollision(ped, false, false)
+    ClearPedTasksImmediately(ped)
+    FreezeEntityPosition(ped, true)
+
+    local startPos = GetEntityCoords(PlayerPedId())
+    local pedHeading = 0.0
+    if #navs > 0 then
+        startPos = vector3(navs[#navs].position.x, navs[#navs].position.y, navs[#navs].position.z)
+        pedHeading = navs[#navs].position.w
+    end
+
+    local fwd, right, up, plyPos = GetEntityMatrix(ped)
+    local camPos = startPos + (up * 2)
+    local camRot = vector3(-35.0, 0.0, GetEntityHeading(PlayerPedId()))
+    local camera = Lib47.Creation.Cam.Create("DEFAULT_SCRIPTED_CAMERA", camPos, camRot, true)
+
+    local navPeds = {}
+    local function spawnExistingPeds()
+        for i = 1, #navs do
+            local v = navs[i]
+            local p = ClonePed(ped, false)
+            SetEntityCoords(p, v.position.x, v.position.y, v.position.z - 1.0)
+            SetEntityHeading(p, v.position.w)
+            SetEntityAlpha(p, 255)
+            FreezeEntityPosition(p, true)
+            if v.checkout then
+                TaskPlayAnim(p, giveDict, giveClip, 8.0, 8.0, -1, 1)
+            elseif not v.stoppage then
+                TaskPlayAnim(p, walkDict, walkClip, 8.0, 8.0, -1, 1)
+            end
+            table.insert(navPeds, p)
+        end
+    end
+    spawnExistingPeds()
+
+    local checkout, stoppage = false, false
+    local point = nil
+
+    local function updateNavUI()
+        local currentMode = L(locales, 'mode_walk')
+        if checkout then currentMode = L(locales, 'mode_checkout')
+        elseif stoppage then currentMode = L(locales, 'mode_stoppage') end
+
+        local navList = {
+            (L(locales, 'complete_path') or L(locales, 'save_changes')) .. " <k>ENTER<k>",
+        }
+        if options and options.canSkip then
+            table.insert(navList, L(locales, 'skip_step') .. " <k>TAB<k>")
+        end
+        if options and options.canBack then
+            table.insert(navList, L(locales, 'go_back') .. " <k>BACKSPACE<k>")
+        end
+        table.insert(navList, L(locales, 'cancel') .. " <k>DEL<k>")
+
+        Lib47.ShowObjective({
+            {
+                Title = L(locales, 'mode_current') .. ": " .. currentMode,
+                List = {}
+            },
+            {
+                Title = L(locales, 'path_nodes'),
+                List = {
+                    L(locales, 'add_node') .. " <m>1<m>",
+                    L(locales, 'undo_node') .. " <m>2<m>",
+                    L(locales, 'rotate_ped') .. " <m>3<m>",
+                    L(locales, 'precision') .. " <k>SHIFT<k>",
+                },
+            },
+            {
+                Title = L(locales, 'node_types'),
+                List = {
+                    L(locales, 'toggle_wait') .. " <k>F<k>",
+                    L(locales, 'toggle_action') .. " <k>G<k>",
+                },
+            },
+            {
+                Title = L(locales, 'navigation'),
+                List = navList,
+            },
+            {
+                Title = L(locales, 'cam_controls'),
+                List = {
+                    "<m><m> <k>W<k> <k>A<k> <k>S<k> <k>D<k>",
+                    L(locales, 'move_up') .. " <k>Q<k>",
+                    L(locales, 'move_down') .. " <k>E<k>",
+                },
+            },
+        }, (locales and (locales.title or locales.npc_nav)) or L(locales, 'npc_nav'))
+    end
+
+    updateNavUI()
+
+    local function cleanup()
+        EnableAllControlActions(0)
+        Lib47.Creation.Cam.Destroy(camera)
+        DeleteEntity(ped)
+        for _, v in pairs(navPeds) do DeleteEntity(v) end
+        Lib47.HideObjective()
+    end
+
+    while true do
+        Wait(0)
+        local stopCount, checkCount = 0, 0
+
+        if invokingResource and GetResourceState(invokingResource) ~= 'started' then
+            cleanup()
+            return nil
+        end
+
+        -- Cancel (DEL)
+        if IsDisabledControlJustPressed(0, 178) then
+            cleanup()
+            if options and options.returnStatus then
+                return { status = 'cancel' }
+            end
+            return nil
+        end
+
+        -- Draw nodes and connections
+        for i = 1, #navs do
+            local pos = navs[i].position
+            if navs[i].stoppage then stopCount = stopCount + 1 end
+            if navs[i].checkout then checkCount = checkCount + 1 end
+            Lib47.Creation.Render.DrawText3D(vector3(pos.x, pos.y, pos.z + 2.1), "Node " .. i)
+            if i > 1 then
+                local prevPos = navs[i-1].position
+                DrawLine(prevPos.x, prevPos.y, prevPos.z, pos.x, pos.y, pos.z, 0, 255, 0, 255)
+            end
+            if navPeds[i] and DoesEntityExist(navPeds[i]) then
+                if navs[i].checkout then
+                    if not IsEntityPlayingAnim(navPeds[i], giveDict, giveClip, 3) then TaskPlayAnim(navPeds[i], giveDict, giveClip, 8.0, 8.0, -1, 1) end
+                elseif not navs[i].stoppage and not IsEntityPlayingAnim(navPeds[i], walkDict, walkClip, 3) then
+                    TaskPlayAnim(navPeds[i], walkDict, walkClip, 8.0, 8.0, -1, 1)
+                end
+            end
+        end
+
+        -- Draw other paths if provided in options.otherPaths
+        if options and options.otherPaths then
+            for pIdx = 1, #options.otherPaths do
+                local oPath = options.otherPaths[pIdx]
+                for j = 1, #oPath do
+                    local oPos = oPath[j].position or oPath[j]
+                    if j > 1 then
+                        local prev = oPath[j-1].position or oPath[j-1]
+                        DrawLine(prev.x, prev.y, prev.z, oPos.x, oPos.y, oPos.z, 100, 100, 100, 150)
+                    end
+                end
+            end
+        end
+
+        -- Back (BACKSPACE)
+        if options and options.canBack and IsDisabledControlJustPressed(0, 194) then
+            cleanup()
+            return { status = 'back', data = navs }
+        end
+
+        -- Skip (TAB)
+        if options and options.canSkip and IsDisabledControlJustPressed(0, 37) then
+            cleanup()
+            if options.returnStatus then
+                return { status = 'next', data = {} }
+            end
+            return {}
+        end
+
+        -- Done (ENTER)
+        if IsDisabledControlJustPressed(0, 191) then
+            local reqCheck = (options and options.requireCheckout ~= nil) and options.requireCheckout or true
+            local reqStop = (options and options.requireStoppage ~= nil) and options.requireStoppage or true
+            if reqCheck and checkCount < 1 then
+                Lib47.Notify(L(locales, 'error_min_checkout'), 'error')
+            elseif reqStop and stopCount < 1 then
+                Lib47.Notify(L(locales, 'error_min_stoppage'), 'error')
+            else
+                cleanup()
+                if options and options.returnStatus then
+                    return { status = 'next', data = navs }
+                end
+                return navs
+            end
+        end
+
+        -- Add node (Mouse 1)
+        if IsDisabledControlJustPressed(0, 24) and point then
+            local tempPed = ClonePed(ped, false)
+            SetEntityAlpha(tempPed, 255)
+            SetEntityCollision(tempPed, false, false)
+            SetEntityHeading(tempPed, pedHeading)
+            FreezeEntityPosition(tempPed, true)
+
+            if checkout then TaskPlayAnim(tempPed, giveDict, giveClip, 8.0, 8.0, -1, 1)
+            elseif not stoppage then TaskPlayAnim(tempPed, walkDict, walkClip, 8.0, 8.0, -1, 1) end
+
+            table.insert(navPeds, tempPed)
+            table.insert(navs, {position = vector4(point.x, point.y, point.z, pedHeading), stoppage = stoppage, checkout = checkout})
+            stoppage = false
+            checkout = false
+            updateNavUI()
+        end
+
+        -- Undo node (Mouse 2)
+        if IsDisabledControlJustPressed(0, 25) then
+            if #navPeds > 0 then
+                DeleteEntity(navPeds[#navPeds])
+                table.remove(navPeds, #navPeds)
+                table.remove(navs, #navs)
+            end
+        end
+
+        -- Heading rotate
+        if IsDisabledControlJustPressed(0, 181) then
+            if IsDisabledControlPressed(0, 21) then pedHeading = pedHeading + 2.0 else pedHeading = pedHeading + 10.0 end
+        end
+        if IsDisabledControlJustPressed(0, 180) then
+            if IsDisabledControlPressed(0, 21) then pedHeading = pedHeading - 2.0 else pedHeading = pedHeading - 10.0 end
+        end
+
+        -- Stoppage toggle (F / 23)
+        if IsDisabledControlJustPressed(0, 23) then
+            stoppage = not stoppage
+            if stoppage then checkout = false end
+            ClearPedTasks(ped)
+            updateNavUI()
+        end
+
+        -- Checkout toggle (G / 47)
+        if IsDisabledControlJustPressed(0, 47) then
+            checkout = not checkout
+            if checkout then stoppage = false end
+            ClearPedTasks(ped)
+            updateNavUI()
+        end
+
+        if checkout then
+            if not IsEntityPlayingAnim(ped, giveDict, giveClip, 3) then TaskPlayAnim(ped, giveDict, giveClip, 8.0, 8.0, -1, 1) end
+        elseif not stoppage then
+            if not IsEntityPlayingAnim(ped, walkDict, walkClip, 3) then TaskPlayAnim(ped, walkDict, walkClip, 8.0, 8.0, -1, 1) end
+        else
+            if IsEntityPlayingAnim(ped, walkDict, walkClip, 3) or IsEntityPlayingAnim(ped, giveDict, giveClip, 3) then ClearPedTasks(ped) end
+        end
+
+        DisableAllControlActions(0)
+        camPos, camRot = Lib47.Creation.Cam.HandleFlyCam(camera)
+        local right, fwd, up, pos = GetCamMatrix(camera)
+        local rayHit = StartExpensiveSynchronousShapeTestLosProbe(pos.x, pos.y, pos.z, pos.x + (fwd.x * 100.0), pos.y + (fwd.y * 100.0), pos.z + (fwd.z * 100.0), 1, PlayerPedId(), 4)
+        local retval, hit, endCoords, surfaceNormal, entityHit = GetShapeTestResult(rayHit)
+        point = vector3(endCoords.x, endCoords.y, endCoords.z + 1.0)
+
+        SetEntityCoordsNoOffset(ped, endCoords.x, endCoords.y, endCoords.z + 1.0, false, false, false)
+        SetEntityHeading(ped, pedHeading)
+
+        if #navs > 0 then
+            local lastPos = vector3(navs[#navs].position.x, navs[#navs].position.y, navs[#navs].position.z)
+            local currentPedCoords = GetEntityCoords(ped)
+            local dirVector = currentPedCoords - lastPos
+            local dist = #(dirVector)
+            local rightVector = vector3(1.0, 0.0, 0.0)
+            if dist > 0.1 then
+                local dirNorm = dirVector / dist
+                rightVector = vector3(dirNorm.y, -dirNorm.x, 0.0)
+            else
+                local _, rVec, _, _ = GetEntityMatrix(ped)
+                rightVector = rVec
+            end
+            local widthOffset = 0.25
+            local checkLines = {
+                { startP = lastPos, endP = currentPedCoords },
+                { startP = lastPos - (rightVector * widthOffset), endP = currentPedCoords - (rightVector * widthOffset) },
+                { startP = lastPos + (rightVector * widthOffset), endP = currentPedCoords + (rightVector * widthOffset) }
+            }
+            local isBlocked = false
+            for i = 1, #checkLines do
+                local line = checkLines[i]
+                local lineHit = StartExpensiveSynchronousShapeTestLosProbe(line.startP.x, line.startP.y, line.startP.z, line.endP.x, line.endP.y, line.endP.z, 511, ped, 4)
+                local _, lHit, _, _, _ = GetShapeTestResult(lineHit)
+                if lHit ~= 0 then isBlocked = true end
+            end
+            local r, g, b = 0, 255, 0
+            if isBlocked then
+                r, g, b = 255, 0, 0
+                Lib47.Creation.Render.DrawText3D(vector3(endCoords.x, endCoords.y, endCoords.z + 1.25), L(locales, 'path_blocked'))
+            end
+            for i = 1, #checkLines do
+                local line = checkLines[i]
+                DrawLine(line.startP.x, line.startP.y, line.startP.z, line.endP.x, line.endP.y, line.endP.z, r, g, b, 255)
+            end
+        end
+    end
+end
+
+Lib47.Creation.Builders.QueuePoints = function(existingQueue, locales, options)
+    local invokingResource = GetInvokingResource()
+    local queuePoints = {}
+    if existingQueue and #existingQueue > 0 then
+        for i = 1, #existingQueue do
+            local item = existingQueue[i]
+            local pos = vector4(item.x, item.y, item.z, item.w or item.h or item.heading or 0.0)
+            table.insert(queuePoints, pos)
+        end
+    end
+
+    local ped = ClonePed(PlayerPedId(), false)
+    SetEntityAlpha(ped, 200)
+    SetEntityCollision(ped, false, false)
+    FreezeEntityPosition(ped, true)
+
+    local pedHeading = 0.0
+    local point = nil
+
+    local startPos = GetEntityCoords(PlayerPedId())
+    if #queuePoints > 0 then
+        startPos = vector3(queuePoints[#queuePoints].x, queuePoints[#queuePoints].y, queuePoints[#queuePoints].z)
+        pedHeading = queuePoints[#queuePoints].w
+    end
+
+    local fwd, right, up, plyPos = GetEntityMatrix(ped)
+    local camPos = startPos + (up * 2)
+    local camRot = vector3(-35.0, 0.0, GetEntityHeading(PlayerPedId()))
+    local camera = Lib47.Creation.Cam.Create("DEFAULT_SCRIPTED_CAMERA", camPos, camRot, true)
+
+    local navList = {
+        (L(locales, 'finish_queue') or L(locales, 'save_queue')) .. " <k>ENTER<k>",
+    }
+    if options and options.canBack then
+        table.insert(navList, L(locales, 'go_back') .. " <k>BACKSPACE<k>")
+    end
+    table.insert(navList, L(locales, 'cancel') .. " <k>DEL<k>")
+
+    Lib47.ShowObjective({
+        {
+            Title = L(locales, 'queue_nodes'),
+            List = {
+                L(locales, 'add_node') .. " <m>1<m>",
+                L(locales, 'undo_node') .. " <m>2<m>",
+                L(locales, 'rotate_ped') .. " <m>3<m>",
+                L(locales, 'precision') .. " <k>SHIFT<k>",
+            },
+        },
+        {
+            Title = L(locales, 'navigation'),
+            List = navList,
+        },
+        {
+            Title = L(locales, 'cam_controls'),
+            List = {
+                "<m><m> <k>W<k> <k>A<k> <k>S<k> <k>D<k>",
+                L(locales, 'move_up') .. " <k>Q<k>",
+                L(locales, 'move_down') .. " <k>E<k>",
+            },
+        },
+    }, (locales and (locales.title or locales.queue_line)) or L(locales, 'queue_line'))
+
+    local queuePeds = {}
+    local function refreshQueuePeds()
+        for _, v in pairs(queuePeds) do DeleteEntity(v) end
+        queuePeds = {}
+        for _, pos in ipairs(queuePoints) do
+            local p = ClonePed(ped, false)
+            SetEntityAlpha(p, 200)
+            SetEntityCollision(p, false, false)
+            SetEntityCoords(p, pos.x, pos.y, pos.z - 1.0)
+            SetEntityHeading(p, pos.w)
+            FreezeEntityPosition(p, true)
+            table.insert(queuePeds, p)
+        end
+    end
+    refreshQueuePeds()
+
+    local function cleanup()
+        EnableAllControlActions(0)
+        Lib47.Creation.Cam.Destroy(camera)
+        DeleteEntity(ped)
+        for _, v in pairs(queuePeds) do DeleteEntity(v) end
+        Lib47.HideObjective()
+    end
+
+    while true do
+        Wait(0)
+
+        if invokingResource and GetResourceState(invokingResource) ~= 'started' then
+            cleanup()
+            return nil
+        end
+
+        -- Cancel (DEL)
+        if IsDisabledControlJustPressed(0, 178) then
+            cleanup()
+            if options and options.returnStatus then
+                return { status = 'cancel' }
+            end
+            return nil
+        end
+
+        -- Back (BACKSPACE)
+        if options and options.canBack and IsDisabledControlJustPressed(0, 194) then
+            cleanup()
+            return { status = 'back', data = queuePoints }
+        end
+
+        -- Done (ENTER)
+        if IsDisabledControlJustPressed(0, 191) then
+            cleanup()
+            if options and options.returnStatus then
+                return { status = 'next', data = queuePoints }
+            end
+            return queuePoints
+        end
+
+        -- Add node (Mouse 1)
+        if IsDisabledControlJustPressed(0, 24) and point then
+            table.insert(queuePoints, vector4(point.x, point.y, point.z, pedHeading))
+            refreshQueuePeds()
+        end
+
+        -- Undo node (Mouse 2)
+        if IsDisabledControlJustPressed(0, 25) then
+            if #queuePoints > 0 then
+                table.remove(queuePoints, #queuePoints)
+                refreshQueuePeds()
+            end
+        end
+
+        -- Heading rotate
+        if IsDisabledControlJustPressed(0, 181) then
+            if IsDisabledControlPressed(0, 21) then pedHeading = pedHeading + 2.0 else pedHeading = pedHeading + 10.0 end
+        end
+        if IsDisabledControlJustPressed(0, 180) then
+            if IsDisabledControlPressed(0, 21) then pedHeading = pedHeading - 2.0 else pedHeading = pedHeading - 10.0 end
+        end
+
+        DisableAllControlActions(0)
+        camPos, camRot = Lib47.Creation.Cam.HandleFlyCam(camera)
+        local right, fwd, up, pos = GetCamMatrix(camera)
+        local rayHit = StartExpensiveSynchronousShapeTestLosProbe(pos.x, pos.y, pos.z, pos.x + (fwd.x * 100.0), pos.y + (fwd.y * 100.0), pos.z + (fwd.z * 100.0), 1, PlayerPedId(), 4)
+        local retval, hit, endCoords, surfaceNormal, entityHit = GetShapeTestResult(rayHit)
+        point = vector3(endCoords.x, endCoords.y, endCoords.z + 1.0)
+
+        SetEntityCoordsNoOffset(ped, endCoords.x, endCoords.y, endCoords.z + 1.0)
+        SetEntityHeading(ped, pedHeading)
+
+        for i, v in ipairs(queuePoints) do
+            Lib47.Creation.Render.DrawText3D(vector3(v.x, v.y, v.z + 1.0), "Q" .. i)
+            if i > 1 then
+                local prev = queuePoints[i-1]
+                DrawLine(prev.x, prev.y, prev.z, v.x, v.y, v.z, 200, 200, 0, 150)
+            end
         end
     end
 end

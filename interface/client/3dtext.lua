@@ -372,7 +372,7 @@ InteractionsLoop = function()
                             alignment = (camForwardX * toCamX + camForwardY * toCamY + camForwardZ * toCamZ) / toCamLen
                         end
                         
-                        local inFocusRange = (dist <= distNear and alignment > 0.98)
+                        local inFocusRange = (dist <= distNear and (data.ignoreFocus or alignment > 0.98))
 
                         table_insert(onScreenCandidates, {
                             id = id,
@@ -380,6 +380,7 @@ InteractionsLoop = function()
                             screenX = screenX,
                             screenY = screenY,
                             dist = dist,
+                            distNear = distNear,
                             alignment = alignment,
                             inFocusRange = inFocusRange
                         })
@@ -404,13 +405,30 @@ InteractionsLoop = function()
         -- Find the single best focused candidate
         local bestTargetId = nil
         local bestAlignment = -1.0
+        local bestDist = 999999.0
         local bestInteract = nil
+        local bestIsDirectFocus = false
+
         for i = 1, #onScreenCandidates do
             local cand = onScreenCandidates[i]
-            if cand.inFocusRange and cand.alignment > bestAlignment then
-                bestAlignment = cand.alignment
-                bestTargetId = cand.id
-                bestInteract = cand.interact
+            if cand.inFocusRange then
+                local isDirect = cand.alignment > 0.98
+                if isDirect then
+                    if not bestIsDirectFocus or cand.alignment > bestAlignment then
+                        bestIsDirectFocus = true
+                        bestAlignment = cand.alignment
+                        bestDist = cand.dist
+                        bestTargetId = cand.id
+                        bestInteract = cand.interact
+                    end
+                elseif not bestIsDirectFocus then
+                    if cand.dist < bestDist then
+                        bestDist = cand.dist
+                        bestAlignment = cand.alignment
+                        bestTargetId = cand.id
+                        bestInteract = cand.interact
+                    end
+                end
             end
         end
 
@@ -427,27 +445,33 @@ InteractionsLoop = function()
             local optVisible = interact.optVisible
             local optCanInteract = interact.optCanInteract
 
-            local mode = (id == bestTargetId) and "full" or "mini"
+            local distNear = cand.distNear or data.distance or 2.5
+            local isIgnoredFocus = data.ignoreFocus and cand.dist <= distNear
+            local mode = (id == bestTargetId or isIgnoredFocus) and "full" or "mini"
 
             -- Ensure controls are released before accepting inputs in full mode
             if mode == "full" then
-                if not interact.keysReleased then
-                    local isHoldingAny = false
-                    if options then
-                        for idx = 1, #options do
-                            local opt = options[idx]
-                            if optVisible[idx] ~= false and opt.key and IsControlPressed(0, opt.key) then
-                                isHoldingAny = true
-                                break
+                if id == bestTargetId then
+                    if not interact.keysReleased then
+                        local isHoldingAny = false
+                        if options then
+                            for idx = 1, #options do
+                                local opt = options[idx]
+                                if optVisible[idx] ~= false and opt.key and IsControlPressed(0, opt.key) then
+                                    isHoldingAny = true
+                                    break
+                                end
                             end
                         end
-                    end
 
-                    if isHoldingAny then
-                        mode = "mini"
-                    else
-                        interact.keysReleased = true
+                        if isHoldingAny then
+                            mode = "mini"
+                        else
+                            interact.keysReleased = true
+                        end
                     end
+                else
+                    interact.keysReleased = false
                 end
             else
                 interact.keysReleased = false
