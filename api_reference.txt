@@ -57,7 +57,15 @@ Lib47.AddMoney
 Lib47.AddOfflineMoney
 Lib47.AddPolyZone
 Lib47.AddSocietyMoney
+Lib47.SetHunger
+Lib47.AddHunger
+Lib47.RemoveHunger
+Lib47.SetThirst
+Lib47.AddThirst
+Lib47.RemoveThirst
+Lib47.SetStress
 Lib47.AddStress
+Lib47.RemoveStress
 Lib47.AddTargetBone
 Lib47.AddTargetEntity
 Lib47.AddTargetModel

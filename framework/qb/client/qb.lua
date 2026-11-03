@@ -1,3 +1,4 @@
+if Config.Framework == 'auto' and GetResourceState('qbx_core') ~= 'missing' then return end
 if Config.Framework == 'auto' and GetResourceState('qb-core') == 'missing' then return end
 if Config.Framework ~= 'auto' and Config.Framework ~= 'qb' then return end
 Config.Framework = 'qb'
@@ -93,6 +94,84 @@ AddEventHandler('onResourceStart', function(resourceName)
 end)
 
 -- ====================================================================================
+--                                     STATUS
+-- ====================================================================================
+
+Lib47.SetHunger = function(amount)
+    if not amount then return end
+    local val = math.max(0, math.min(100, math.floor(amount)))
+    TriggerServerEvent('consumables:server:addHunger', val)
+end
+
+Lib47.AddHunger = function(amount)
+    if not amount or amount <= 0 then return end
+    local PlayerData = Lib47.GetPlayerData()
+    local currentVal = (PlayerData and PlayerData.metadata and PlayerData.metadata.hunger) or 0
+
+    local set = math.min(100, currentVal + amount)
+    Lib47.SetHunger(set)
+end
+
+Lib47.RemoveHunger = function(amount)
+    if not amount or amount <= 0 then return end
+    local PlayerData = Lib47.GetPlayerData()
+    local currentVal = (PlayerData and PlayerData.metadata and PlayerData.metadata.hunger) or 0
+
+    local set = math.max(0, currentVal - amount)
+    Lib47.SetHunger(set)
+end
+
+Lib47.SetThirst = function(amount)
+    if not amount then return end
+    local val = math.max(0, math.min(100, math.floor(amount)))
+    TriggerServerEvent('consumables:server:addThirst', val)
+end
+
+Lib47.AddThirst = function(amount)
+    if not amount or amount <= 0 then return end
+    local PlayerData = Lib47.GetPlayerData()
+    local currentVal = (PlayerData and PlayerData.metadata and PlayerData.metadata.thirst) or 0
+
+    local set = math.min(100, currentVal + amount)
+    Lib47.SetThirst(set)
+end
+
+Lib47.RemoveThirst = function(amount)
+    if not amount or amount <= 0 then return end
+    local PlayerData = Lib47.GetPlayerData()
+    local currentVal = (PlayerData and PlayerData.metadata and PlayerData.metadata.thirst) or 0
+
+    local set = math.max(0, currentVal - amount)
+    Lib47.SetThirst(set)
+end
+
+Lib47.SetStress = function(amount)
+    if not amount then return end
+    local val = math.max(0, math.min(100, math.floor(amount)))
+    TriggerServerEvent('ak47_lib:server:SetStress', val)
+end
+
+Lib47.AddStress = function(amount)
+    if not amount or amount <= 0 then return end
+    local PlayerData = Lib47.GetPlayerData()
+    local currentVal = (PlayerData and PlayerData.metadata and PlayerData.metadata.stress) or 0
+    if currentVal >= 100 then return end
+
+    local addAmount = math.min(100 - currentVal, math.floor(amount))
+    TriggerServerEvent('hud:server:GainStress', addAmount)
+end
+
+Lib47.RemoveStress = function(amount)
+    if not amount or amount <= 0 then return end
+    local PlayerData = Lib47.GetPlayerData()
+    local currentVal = (PlayerData and PlayerData.metadata and PlayerData.metadata.stress) or 0
+    if currentVal <= 0 then return end
+
+    local removeAmount = math.min(currentVal, math.floor(amount))
+    TriggerServerEvent('hud:server:RelieveStress', removeAmount)
+end
+
+-- ====================================================================================
 --                                     FUNCTIONS
 -- ====================================================================================
 
@@ -108,14 +187,6 @@ end
 
 Lib47.OpenBossMenu = function( jobName )
     TriggerEvent('qb-bossmenu:client:OpenMenu')
-end
-
-Lib47.AddStress = function(amount)
-    TriggerServerEvent('hud:server:GainStress', amount)
-end
-
-Lib47.RemoveStress = function(amount)
-    TriggerServerEvent('hud:server:RelieveStress', amount)
 end
 
 Lib47.GetIdentifier = function()

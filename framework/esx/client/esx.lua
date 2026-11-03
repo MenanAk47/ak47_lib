@@ -89,6 +89,55 @@ AddEventHandler('onResourceStart', function(resourceName)
 end)
 
 -- ====================================================================================
+--                                     STATUS
+-- ====================================================================================
+
+Lib47.SetHunger = function(amount)
+    if not amount then return end
+    TriggerEvent('esx_status:set', 'hunger', amount * 10000)
+end
+
+Lib47.AddHunger = function(amount)
+    if not amount or amount <= 0 then return end
+    TriggerEvent('esx_status:add', 'hunger', amount * 10000)
+end
+
+Lib47.RemoveHunger = function(amount)
+    if not amount or amount <= 0 then return end
+    TriggerEvent('esx_status:remove', 'hunger', amount * 10000)
+end
+
+Lib47.SetThirst = function(amount)
+    if not amount then return end
+    TriggerEvent('esx_status:set', 'thirst', amount * 10000)
+end
+
+Lib47.AddThirst = function(amount)
+    if not amount or amount <= 0 then return end
+    TriggerEvent('esx_status:add', 'thirst', amount * 10000)
+end
+
+Lib47.RemoveThirst = function(amount)
+    if not amount or amount <= 0 then return end
+    TriggerEvent('esx_status:remove', 'thirst', amount * 10000)
+end
+
+Lib47.SetStress = function(amount)
+    if not amount then return end
+    TriggerEvent('esx_status:set', 'stress', amount * 10000)
+end
+
+Lib47.AddStress = function(amount)
+    if not amount or amount <= 0 then return end
+    TriggerEvent('esx_status:add', 'stress', amount * 10000)
+end
+
+Lib47.RemoveStress = function(amount)
+    if not amount or amount <= 0 then return end
+    TriggerEvent('esx_status:remove', 'stress', amount * 10000)
+end
+
+-- ====================================================================================
 --                                     FUNCTIONS
 -- ====================================================================================
 
@@ -109,14 +158,6 @@ Lib47.OpenBossMenu = function( jobName )
             menu.close()
         end
     end)
-end
-
-Lib47.AddStress = function(amount)
-    TriggerEvent('esx_status:add', 'stress', amount * 10000)
-end
-
-Lib47.RemoveStress = function(amount)
-    TriggerEvent('esx_status:remove', 'stress', amount * 10000)
 end
 
 Lib47.GetIdentifier = function()
