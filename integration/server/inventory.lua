@@ -123,15 +123,17 @@ FetchInvItems = function()
 
     for i, v in pairs(Lib47.Items) do
         local name = v.name or i
-        name = name:lower()
-        local nameHash = GetHashKey(name)
-        Lib47.ItemsByHash[nameHash] = v
-        Lib47.ItemsByHash[nameHash].name = name
-        if Lib47.IsItemTypeWeapon(name) then
-            Lib47.Weapons[name] = v
-            weaponsCount = weaponsCount + 1
-        else
-            itemsCount = itemsCount + 1
+        if type(name) == 'string' then
+            name = name:lower()
+            local nameHash = GetHashKey(name)
+            Lib47.ItemsByHash[nameHash] = v
+            Lib47.ItemsByHash[nameHash].name = name
+            if Lib47.IsItemTypeWeapon(name) then
+                Lib47.Weapons[name] = v
+                weaponsCount = weaponsCount + 1
+            else
+                itemsCount = itemsCount + 1
+            end
         end
     end
 
