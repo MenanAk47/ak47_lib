@@ -405,13 +405,3 @@ Lib47.GetVehicleSchema = function()
         pound = "depotprice"
     }
 end
-
--- ====================================================================================
---                                EVENTS
--- ====================================================================================
-
-RegisterNetEvent('ak47_lib:server:SetStress', function( amount )
-    local src = source
-    Lib47.SetMetaData(src, 'stress', amount)
-    TriggerClientEvent('hud:client:UpdateStress', src, amount)
-end)

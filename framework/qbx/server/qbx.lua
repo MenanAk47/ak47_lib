@@ -406,25 +406,3 @@ end
 Lib47.GetFrameworkVehicleByModel = function(model)
     return exports.qbx_core:GetVehiclesByName(model)
 end
-
--- ====================================================================================
---                                EVENTS
--- ====================================================================================
-
-RegisterNetEvent('ak47_lib:server:SetHunger', function( amount )
-    local src = source
-    Lib47.SetMetaData(src, 'hunger', amount)
-    TriggerClientEvent('hud:client:UpdateNeeds', src, amount, Lib47.GetMetaData(src, 'thirst'))
-end)
-
-RegisterNetEvent('ak47_lib:server:SetThirst', function( amount )
-    local src = source
-    Lib47.SetMetaData(src, 'thirst', amount)
-    TriggerClientEvent('hud:client:UpdateNeeds', src, Lib47.GetMetaData(src, 'hunger'), amount)
-end)
-
-RegisterNetEvent('ak47_lib:server:SetStress', function( amount )
-    local src = source
-    Lib47.SetMetaData(src, 'stress', amount)
-    TriggerClientEvent('hud:client:UpdateStress', src, amount)
-end)
