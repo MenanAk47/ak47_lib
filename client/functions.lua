@@ -24,24 +24,30 @@ Functions.HasAnyItemRemoved = function(oldItems, newItems)
         if newAmount < oldAmount then
             local itemInfo = oldData[name]
             TriggerEvent('ak47_lib:OnRemoveItem', name, newAmount)
-            TriggerEvent('ak47_bridge:OnRemoveItem', name, newAmount) -- will be removed soon
         end
     end
 end
 
 Functions.FormatJobData = function( data )
+    if not data or not data.name then return {} end
     local job = {}
     
     job.name = data.name
     job.label = data.label
-    job.payment = data.grade_salary
+    job.payment = data.grade_salary or data.payment or 0
+    job.onduty = data.onDuty ~= nil and data.onDuty or (data.onduty ~= nil and data.onduty or true)
+    job.type = data.type or 'none'
     
-    job.isboss = data.grade_name == 'boss'
+    job.isboss = data.grade_name == 'boss' or (data.isboss == true)
 
     job.grade = {}
-    job.grade.name = data.grade_label
-    job.grade.level = data.grade
+    if type(data.grade) == 'table' then
+        job.grade.name = data.grade.name or data.grade_label
+        job.grade.level = data.grade.level or data.grade.grade or 0
+    else
+        job.grade.name = data.grade_label
+        job.grade.level = data.grade
+    end
 
     return job
 end
-

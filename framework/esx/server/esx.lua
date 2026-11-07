@@ -38,7 +38,7 @@ end
 
 Lib47.GetIdentifier = function(source)
 	local xPlayer = Lib47.GetPlayer(source)
-	return xPlayer.identifier
+	return xPlayer and xPlayer.identifier
 end
 
 Lib47.GetIdentifierByType = function(playerId, idtype)
@@ -98,12 +98,12 @@ end
 
 Lib47.GetMetaData = function(source, key)
     local xPlayer = Lib47.GetPlayer(source)
-	return xPlayer.getMeta(key)
+	return xPlayer and xPlayer.getMeta(key)
 end
 
 Lib47.SetMetaData = function(source, key, value)
     local xPlayer = Lib47.GetPlayer(source)
-	return xPlayer.setMeta(key, value)
+	return xPlayer and xPlayer.setMeta(key, value)
 end
 
 Lib47.GetPlayerMetaValue = function(source, type) -- will be removed soon
@@ -126,7 +126,9 @@ Lib47.GetJob = function(source)
 	local job = {}
     job.name = xPlayer.job.name
     job.label = xPlayer.job.label
-    job.payment = xPlayer.job.grade_salary
+    job.payment = xPlayer.job.grade_salary or 0
+    job.onduty = xPlayer.job.onDuty ~= nil and xPlayer.job.onDuty or (xPlayer.job.onduty ~= nil and xPlayer.job.onduty or true)
+    job.type = xPlayer.job.type or 'none'
     job.isboss = xPlayer.job.grade_name == 'boss'
 
     job.grade = {}
@@ -168,19 +170,19 @@ end
 Lib47.GetMoney = function(source, account)
 	local account = account == 'cash' and 'money' or account
 	local xPlayer = Lib47.GetPlayer(source)
-	return xPlayer.getAccount(account).money
+	return xPlayer and xPlayer.getAccount(account).money
 end
 
 Lib47.AddMoney = function(source, account, amount)
 	local account = account == 'cash' and 'money' or account
 	local xPlayer = Lib47.GetPlayer(source)
-	xPlayer.addAccountMoney(account, amount)
+	return xPlayer and xPlayer.addAccountMoney(account, amount)
 end
 
 Lib47.RemoveMoney = function(source, account, amount)
 	local account = account == 'cash' and 'money' or account
 	local xPlayer = Lib47.GetPlayer(source)
-	xPlayer.removeAccountMoney(account, amount)
+    return xPlayer and xPlayer.removeAccountMoney(account, amount)
 end
 
 Lib47.AddSocietyMoney = function(job, money, reason, ignoreBankingExport)
@@ -354,18 +356,24 @@ end
 
 Lib47.GetInventoryItem = function(source, item)
 	local xPlayer = Lib47.GetPlayer(source)
+    if not xPlayer then return 0 end
+    
 	local inv = xPlayer.getInventoryItem(item)
 	return inv and inv.count or 0
 end
 
 Lib47.GetItemAmount = function(source, item)
 	local xPlayer = Lib47.GetPlayer(source)
+    if not xPlayer then return 0 end
+
 	local inv = xPlayer.getInventoryItem(item)
 	return inv and (inv.amount or inv.count) or 0
 end
 
 Lib47.HasEnoughItem = function(source, item, amount)
 	local xPlayer = Lib47.GetPlayer(source)
+    if not xPlayer then return 0 end
+
 	local inv = xPlayer.getInventoryItem(item)
 	return inv and ((inv.count and inv.count >= amount) or (inv.amount and inv.amount >= amount)) or false
 end

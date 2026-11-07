@@ -31,7 +31,6 @@ RegisterNetEvent('QBCore:Client:OnPlayerLoaded', function()
     Lib47.PlayerLoaded = true
     Lib47.PlayerData = exports.qbx_core:GetPlayerData()
     TriggerEvent('ak47_lib:OnPlayerLoaded', Lib47.PlayerData)
-    TriggerEvent('ak47_bridge:OnPlayerLoaded', Lib47.PlayerData) -- will be removed soon
 end)
 
 RegisterNetEvent('QBCore:Client:OnPlayerUnload', function()
@@ -40,10 +39,10 @@ RegisterNetEvent('QBCore:Client:OnPlayerUnload', function()
     TriggerEvent('ak47_lib:OnPlayerUnload')
 end)
 
-RegisterNetEvent('QBCore:Client:OnJobUpdate', function(JobInfo)
-    Lib47.PlayerData.job = JobInfo
-    TriggerEvent('ak47_lib:OnJobUpdate', JobInfo)
-    TriggerEvent('ak47_bridge:OnJobUpdate', JobInfo) -- will be removed soon
+RegisterNetEvent('QBCore:Client:OnJobUpdate', function(job)
+    if not job or not job.name then return end
+    Lib47.PlayerData.job = job
+    TriggerEvent('ak47_lib:OnJobUpdate', job)
 end)
 
 RegisterNetEvent('QBCore:Player:SetPlayerData', function(val)
@@ -52,7 +51,6 @@ RegisterNetEvent('QBCore:Player:SetPlayerData', function(val)
     end
     Lib47.PlayerData = val
     TriggerEvent('ak47_lib:OnPlayerDataUpdate', Lib47.PlayerData)
-    TriggerEvent('ak47_bridge:OnPlayerDataUpdate', Lib47.PlayerData) -- will be removed soon
 end)
 
 RegisterNetEvent('QBCore:Client:OnPlayerUpdated', function(key, val)
@@ -78,7 +76,6 @@ RegisterNetEvent('QBCore:Client:OnPlayerUpdated', function(key, val)
     local updatedState = Lib47.PlayerData
 
     TriggerEvent('ak47_lib:OnPlayerDataUpdate', updatedState)
-    TriggerEvent('ak47_bridge:OnPlayerDataUpdate', updatedState) -- will be removed soon
 end)
 
 AddEventHandler('onResourceStart', function(resourceName)
@@ -91,7 +88,6 @@ AddEventHandler('onResourceStart', function(resourceName)
     end
     if Lib47.PlayerLoaded then
         TriggerEvent('ak47_lib:OnPlayerLoaded', Lib47.PlayerData, resourceName)
-        TriggerEvent('ak47_bridge:OnPlayerLoaded', Lib47.PlayerData, resourceName) -- will be removed soon
     end
 end)
 
