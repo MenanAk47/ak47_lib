@@ -84,7 +84,11 @@ end)
 -- ====================================================================================
 
 Lib47.GetPlayerData = function()
-    Lib47.PlayerData = ESX.GetPlayerData()
+    local data = ESX.GetPlayerData()
+    if data and data.job then
+        data.job = Functions.FormatJobData(data.job)
+    end
+    Lib47.PlayerData = data
     return Lib47.PlayerData
 end
 
