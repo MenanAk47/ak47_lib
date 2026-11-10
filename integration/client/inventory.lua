@@ -138,23 +138,11 @@ Lib47.OpenSearchInventory = function(targetServerId)
     elseif Config.Inventory == 'ak47_qb_inventory' then
         exports['ak47_qb_inventory']:OpenInventory(targetServerId)
 
-    elseif Config.Inventory == 'ox_inventory' then
-        exports['ox_inventory']:openInventory('player', targetServerId)
+    elseif Config.Inventory == 'ox_inventory' or Config.Inventory == 'qb-inventory' then
+        TriggerServerEvent('ak47_lib:server:OpenSearchInventory', targetServerId)
 
-    elseif Config.Inventory == 'qs-inventory' then
+    elseif Config.Inventory == 'qs-inventory' or Config.Inventory == 'qb-inventory-old' or Config.Inventory == 'ps-inventory' or Config.Inventory == 'lj-inventory' then
         TriggerServerEvent("inventory:server:OpenInventory", "otherplayer", targetServerId)
-
-    elseif Config.Inventory == 'qb-inventory' then
-        TriggerServerEvent('ak47_lib:openqbinventory', targetServerId)
-
-    elseif Config.Inventory == 'qb-inventory-old' then
-        TriggerServerEvent("inventory:server:OpenInventory", "otherplayer", targetServerId)
-
-    elseif Config.Inventory == 'ps-inventory' then
-        TriggerServerEvent("ps-inventory:server:OpenInventory", "otherplayer", targetServerId)
-
-    elseif Config.Inventory == 'lj-inventory' then
-        TriggerServerEvent("lj-inventory:server:OpenInventory", "otherplayer", targetServerId)
 
     elseif Config.Inventory == 'codem-inventory' then
         TriggerClientEvent('codem-inventory:client:robplayer')
@@ -241,7 +229,7 @@ Lib47.CloseInventory = function()
         exports['ox_inventory']:closeInventory()
 
     elseif Config.Inventory == 'qb-inventory' then
-        TriggerServerEvent('ak47_lib:closeqbinventory')
+        TriggerServerEvent('ak47_lib:server:CloseInventory')
 
     elseif Config.Inventory == 'cheeza_inventory' then
         exports['inventory']:CloseInventory()

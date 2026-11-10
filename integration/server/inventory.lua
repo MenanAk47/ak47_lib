@@ -89,17 +89,20 @@ else
     end)
 end
 
-RegisterNetEvent('ak47_lib:closeqbinventory', function()
+RegisterNetEvent('ak47_lib:server:OpenSearchInventory', function(target)
     local source = source
-    if Config.Inventory == 'qb-inventory' then
-        exports['qb-inventory']:CloseInventory(source, Lib47.GetIdentifier(source))
+    if Config.Inventory == 'ox_inventory' then
+        exports.ox_inventory:forceOpenInventory(source, 'player', target)
+    elseif Config.Inventory == 'qb-inventory' then
+        exports['qb-inventory']:OpenInventoryById(source, target)
     end
 end)
 
-RegisterNetEvent('ak47_lib:openqbinventory', function(target)
+RegisterNetEvent('ak47_lib:server:CloseInventory', function(target)
     local source = source
+    local target = target or source
     if Config.Inventory == 'qb-inventory' then
-        exports['qb-inventory']:OpenInventoryById(source, target)
+        exports['qb-inventory']:CloseInventory(target, Lib47.GetIdentifier(target))
     end
 end)
 
