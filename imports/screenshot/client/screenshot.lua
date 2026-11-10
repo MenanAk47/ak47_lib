@@ -98,19 +98,19 @@ Lib47.TakeScreenshot = function(options)
     end
 end
 
---- Uploads a single file or table of files to FiveManage via NUI concurrently
+--- Uploads a single file or table of files to FiveManage or Discord Webhook via NUI
 --- @param fileData string|table Base64 string, data URL, or array of strings/tables
---- @param token string FiveManage API token
---- @param path string (optional, default: 'ak47_uploads') Folder path in FiveManage
+--- @param token string FiveManage API token OR Discord Webhook URL
+--- @param path string (optional, default: 'ak47_uploads') Folder path in FiveManage (ignored for Discord)
 --- @param mediaType string (optional: 'image' | 'video' | 'audio', default: 'image')
---- @return string|table|nil url (FiveManage URL or array of URLs if batch)
+--- @return string|table|nil url (FiveManage URL, Discord CDN URL, or array of URLs if batch)
 --- @return string|nil error
 Lib47.UploadToFiveManage = function(fileData, token, path, mediaType)
     if not fileData or (type(fileData) == 'string' and fileData == '') or (type(fileData) == 'table' and #fileData == 0) then
         return nil, 'Missing file data to upload'
     end
     if not token or token == '' then
-        return nil, 'Missing FiveManage authorization token'
+        return nil, 'Missing authorization token or Discord webhook URL'
     end
 
     path = path or GetInvokingResource()
@@ -171,11 +171,11 @@ Lib47.UploadMultipleToFiveManage = function(filesList, token, path, mediaType)
     return Lib47.UploadToFiveManage(filesList, token, path, mediaType)
 end
 
---- Takes a screenshot on-demand and uploads it to FiveManage in a single call
---- @param token string FiveManage API token
---- @param path string (optional, default: 'ak47_uploads') Folder path in FiveManage
+--- Takes a screenshot on-demand and uploads it to FiveManage or Discord in a single call
+--- @param token string FiveManage API token OR Discord Webhook URL
+--- @param path string (optional, default: 'ak47_uploads') Folder path in FiveManage (ignored for Discord)
 --- @param options table (optional, options passed to TakeScreenshot)
---- @return string|nil url (FiveManage public URL)
+--- @return string|nil url (FiveManage or Discord CDN public URL)
 --- @return string|nil error
 Lib47.TakeScreenshotAndUpload = function(token, path, options)
     local dataUrl, err = Lib47.TakeScreenshot(options)
