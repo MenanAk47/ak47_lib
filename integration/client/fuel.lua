@@ -19,6 +19,9 @@ end
 
 Lib47.GetVehicleFuel = function(vehicle)
     if Config.FuelScript == 'LegacyFuel' then
+        if Lib47.DoesExportExist('ak47_fuelstations', 'GetFuel') then
+            return exports['ak47_fuelstations']:GetFuel(vehicle)
+        end
         return exports['LegacyFuel']:GetFuel(vehicle)
     elseif Config.FuelScript == 'ox_fuel' then
         return Entity(vehicle).state.fuel
@@ -38,6 +41,10 @@ Lib47.SetVehicleFuel = function(vehicle, amount)
     if not vehicle or vehicle == 0 or not DoesEntityExist(vehicle) then return end
     amount = tonumber(amount) or 100.0
     if Config.FuelScript == 'LegacyFuel' then
+        if Lib47.DoesExportExist('ak47_fuelstations', 'SetFuel') then
+            exports['ak47_fuelstations']:SetFuel(vehicle)
+            return
+        end
         exports['LegacyFuel']:SetFuel(vehicle, amount + 0.0)
     elseif Config.FuelScript == 'ox_fuel' then
         Entity(vehicle).state.fuel = amount

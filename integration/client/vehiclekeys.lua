@@ -5,8 +5,8 @@ if Config.VehicleKey == 'auto' then
         'wasabi_carlock',
         'qs-vehiclekeys',
         'cd_garage',
-        'qb-vehiclekeys',
         'qbx_vehiclekeys',
+        'qb-vehiclekeys',
         'keys',
     }
     CreateThread(function()
@@ -40,8 +40,10 @@ Lib47.GiveVehicleKey = function(plate, vehicle, virtual)
         exports['qs-vehiclekeys']:GiveKeys(plate, modelName)
     elseif Config.VehicleKey == 'cd_garage' then
         TriggerEvent('cd_garage:AddKeys', plate)
-    elseif Config.VehicleKey == 'qb-vehiclekeys' or Config.VehicleKey == 'qbx_vehiclekeys' then
+    elseif Config.VehicleKey == 'qb-vehiclekeys' then
         TriggerEvent("qb-vehiclekeys:client:AddKeys", plate)
+    elseif Config.VehicleKey == 'qbx_vehiclekeys' then
+        TriggerServerEvent('ak47_lib:server:GiveVehicleKey', plate, VehToNet(vehicle), virtual)
     elseif Config.VehicleKey == 'keys' then
         local modelName = vehicle and DoesEntityExist(vehicle) and GetDisplayNameFromVehicleModel(GetEntityModel(vehicle)) or ''
         TriggerServerEvent('keys:giveTemporaryKeys', tostring(plate), GetLabelText(modelName), 'shop')
@@ -50,7 +52,6 @@ Lib47.GiveVehicleKey = function(plate, vehicle, virtual)
 
     end
 end
-
 
 Lib47.Callback.Register('ak47_lib:callback:client:GiveVehicleKey', function( plate, vehNetId, virtual )
     local vehicle = nil
@@ -85,8 +86,15 @@ Lib47.RemoveVehicleKey = function(plate, vehicle, virtual)
         exports['qs-vehiclekeys']:RemoveKeys(plate, modelName)
     elseif Config.VehicleKey == 'cd_garage' then
         TriggerEvent('cd_garage:RemoveKeys', plate)
-    elseif Config.VehicleKey == 'qb-vehiclekeys' or Config.VehicleKey == 'qbx_vehiclekeys' then
+    elseif Config.VehicleKey == 'qb-vehiclekeys' then
         TriggerEvent("qb-vehiclekeys:client:RemoveKeys", plate)
+    elseif Config.VehicleKey == 'qbx_vehiclekeys' then
+        if not DoesEntityExist(vehicle) then
+            print("^3Can't remove vehicle key. Vehicle doesn't exists!^0")
+            return
+        end
+        TriggerServerEvent('ak47_lib:server:RemoveVehicleKey', plate, VehToNet(vehicle), virtual)
+        Wait(1000)
     elseif Config.VehicleKey == 'custom' then
         -- your custom code below
 
