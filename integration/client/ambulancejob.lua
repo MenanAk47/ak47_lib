@@ -96,6 +96,21 @@ Lib47.IsIncapacitated = function(target)
     return Lib47.IsLastStand(target) or Lib47.IsDead(target)
 end
 
+Lib47.RevivePlayer = function()
+    if GetResourceState('ak47_ambulancejob') == 'started' then
+        TriggerEvent('ak47_ambulancejob:revive')
+    elseif GetResourceState('ak47_qb_ambulancejob') == 'started' then
+        TriggerEvent('ak47_qb_ambulancejob:revive')
+    elseif GetResourceState('qb-ambulancejob') == 'started' then
+        TriggerEvent('hospital:client:Revive')
+    elseif GetResourceState('esx_ambulancejob') == 'started' then
+        TriggerEvent('esx_ambulancejob:revive')
+    elseif GetResourceState('qbx_medical') == 'started' then
+        TriggerEvent('qbx_medical:client:playerRevived')
+    end
+end
+
 exports('IsLastStand', Lib47.IsLastStand)
 exports('IsDead', Lib47.IsDead)
 exports('IsIncapacitated', Lib47.IsIncapacitated)
+exports('RevivePlayer', Lib47.RevivePlayer)
