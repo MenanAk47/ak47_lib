@@ -34,19 +34,19 @@ end)
 
 Integration.AddSocietyMoney = function(job, amount, reason, ignoreBankingExport)
     if Config.Framework == 'esx' and GetResourceState('esx_addonaccount') == 'started' then
+        local p = promise.new()
         TriggerEvent('esx_addonaccount:getSharedAccount', 'society_'..job, function(account)
             if account then
                 account.addMoney(amount)
+                p:resolve(true)
+            else
+                p:resolve(false)
             end
         end)
-        return true
-    elseif Config.Framework == 'qb' and GetResourceState('qb-management') == 'started' then
-        local success, result = pcall(function()
+        return Citizen.Await(p)
+    elseif Config.Framework == 'qb' and GetResourceState('qb-management') == 'started' and GetResourceState('ak47_bossmenu') ~= 'started' then
+        if Lib47.DoesExportExist('qb-management', 'AddMoney') then
             return exports['qb-management']:AddMoney(job, amount)
-        end)
-
-        if success then
-            return true
         end
     end
 
@@ -75,19 +75,19 @@ end
 
 Integration.RemoveSocietyMoney = function(job, amount, reason, ignoreBankingExport)
     if Config.Framework == 'esx' and GetResourceState('esx_addonaccount') == 'started' then
+        local p = promise.new()
         TriggerEvent('esx_addonaccount:getSharedAccount', 'society_'..job, function(account)
             if account then
                 account.removeMoney(amount)
+                p:resolve(true)
+            else
+                p:resolve(false)
             end
         end)
-        return true
-    elseif Config.Framework == 'qb' and GetResourceState('qb-management') == 'started' then
-        local success, result = pcall(function()
+        return Citizen.Await(p)
+    elseif Config.Framework == 'qb' and GetResourceState('qb-management') == 'started' and GetResourceState('ak47_bossmenu') ~= 'started' then
+        if Lib47.DoesExportExist('qb-management', 'RemoveMoney') then
             return exports['qb-management']:RemoveMoney(job, amount)
-        end)
-
-        if success then
-            return true
         end
     end
 
@@ -125,13 +125,9 @@ Integration.GetSocietyMoney = function(job, ignoreBankingExport)
             end
         end)
         return Citizen.Await(p)
-    elseif Config.Framework == 'qb' and GetResourceState('qb-management') == 'started' then
-        local success, result = pcall(function()
+    elseif Config.Framework == 'qb' and GetResourceState('qb-management') == 'started' and GetResourceState('ak47_bossmenu') ~= 'started' then
+        if Lib47.DoesExportExist('qb-management', 'GetAccount') then
             return exports['qb-management']:GetAccount(job)
-        end)
-
-        if success then
-            return result
         end
     end
 

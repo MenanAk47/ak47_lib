@@ -170,11 +170,11 @@ Lib47.RemoveMoney = function(source, account, amount)
 end
 
 Lib47.AddSocietyMoney = function(job, money, reason, ignoreBankingExport)
-    Integration.AddSocietyMoney(job, money, reason, ignoreBankingExport)
+    return Integration.AddSocietyMoney(job, money, reason, ignoreBankingExport)
 end
 
 Lib47.RemoveSocietyMoney = function(job, money, reason, ignoreBankingExport)
-    Integration.RemoveSocietyMoney(job, money, reason, ignoreBankingExport)
+    return Integration.RemoveSocietyMoney(job, money, reason, ignoreBankingExport)
 end
 
 Lib47.GetSocietyMoney = function(job, ignoreBankingExport)
