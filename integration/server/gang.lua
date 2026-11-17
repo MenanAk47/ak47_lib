@@ -26,6 +26,28 @@ Integration.GetGangs = function(source)
         return qbFormatGangs
     end
 
+    if GetResourceState('ars_gangsystem') == 'started' and Lib47.DoesExportExist('ars_gangsystem', 'GetGangs') then
+        local gangs = exports['ars_gangsystem']:GetGangs()
+        local qbFormatGangs = {}
+
+        for tag, data in pairs(gangs) do
+            local grades = {}
+            local ranksList = data.ranks or {}
+            for i, rankLabel in ipairs(ranksList) do
+                -- key by raw ars rank (1 = highest) so grades[GetGang().grade.level] resolves correctly
+                grades[tostring(i)] = {
+                    name = rankLabel
+                }
+            end
+            qbFormatGangs[tag] = {
+                label = data.name,
+                grades = grades
+            }
+        end
+
+        return qbFormatGangs
+    end
+
     if Config.Framework == 'qb' then
         return QBCore.Shared.Gangs
     elseif Config.Framework == 'qbx' then
@@ -46,9 +68,23 @@ Integration.GetGang = function(source)
         gangData = exports['ak47_territories']:GetPlayerGang(source)
     elseif GetResourceState('ak47_qb_territories') == 'started' or GetResourceState('ak47_qb_territories') == 'uninitialized' then
         gangData = exports['ak47_qb_territories']:GetPlayerGang(source)
+    elseif GetResourceState('ars_gangsystem') == 'started' and Lib47.DoesExportExist('ars_gangsystem', 'GetPlayerGang') then
+        gangData = exports['ars_gangsystem']:GetPlayerGang(source)
     end
 
     if gangData then
+        if gangData.player then -- ars_gangsystem shape
+            return {
+                name = gangData.tag,
+                label = gangData.name,
+                isboss = gangData.player.rank == 1,
+                grade = {
+                    level = gangData.player.rank or 0,
+                    name = gangData.player.rankName
+                }
+            }
+        end
+
         return {
             name = gangData.tag,
             label = gangData.label,

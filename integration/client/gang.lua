@@ -11,6 +11,12 @@ Lib47.GetGangName = function()
     elseif GetResourceState('ak47_qb_territories') == 'started' or GetResourceState('ak47_qb_territories') == 'uninitialized' then
         local gang = exports['ak47_qb_territories']:GetPlayerGang()
         return gang and gang.tag
+    elseif GetResourceState('ars_gangsystem') == 'started' then
+        local gang = Lib47.Callback.Await('ak47_lib:getakgang', nil)
+        if gang and gang.name ~= 'none' then
+            return gang.name
+        end
+        return nil
     end
 
     if Config.Framework == 'qb' or Config.Framework == 'qbx' then
@@ -33,6 +39,12 @@ Lib47.GetGangRank = function()
     elseif GetResourceState('ak47_qb_territories') == 'started' or GetResourceState('ak47_qb_territories') == 'uninitialized' then
         local gang = exports['ak47_qb_territories']:GetPlayerGang()
         return gang and gang.rankid
+    elseif GetResourceState('ars_gangsystem') == 'started' then
+        local gang = Lib47.Callback.Await('ak47_lib:getakgang', nil)
+        if gang and gang.name ~= 'none' then
+            return gang.grade and gang.grade.level
+        end
+        return nil
     end
 
     if Config.Framework == 'qb' or Config.Framework == 'qbx' then
@@ -43,10 +55,11 @@ Lib47.GetGangRank = function()
 end
 
 Lib47.GetGangList = function()
-    if GetResourceState('ak47_gangs') == 'started' or 
-        GetResourceState('ak47_qb_gangs') == 'started' or 
-        GetResourceState('ak47_territories') == 'started' or 
-        GetResourceState('ak47_qb_territories') == 'started' then
+    if GetResourceState('ak47_gangs') == 'started' or
+        GetResourceState('ak47_qb_gangs') == 'started' or
+        GetResourceState('ak47_territories') == 'started' or
+        GetResourceState('ak47_qb_territories') == 'started' or
+        GetResourceState('ars_gangsystem') == 'started' then
         return Lib47.Callback.Await('ak47_lib:getakganglist')
     end
 
@@ -70,6 +83,11 @@ Lib47.GetGang = function()
         gangData = exports['ak47_territories']:GetPlayerGang()
     elseif GetResourceState('ak47_qb_territories') == 'started' or GetResourceState('ak47_qb_territories') == 'uninitialized' then
         gangData = exports['ak47_qb_territories']:GetPlayerGang()
+    elseif GetResourceState('ars_gangsystem') == 'started' then
+        local gang = Lib47.Callback.Await('ak47_lib:getakgang', nil)
+        if gang then
+            return gang
+        end
     end
 
     if gangData then
@@ -119,6 +137,10 @@ RegisterNetEvent('ak47_territories:setgang', Lib47.RefreshGangData)
 RegisterNetEvent('ak47_qb_territories:setgang', Lib47.RefreshGangData)
 RegisterNetEvent('ak47_gangs:setgang', Lib47.RefreshGangData)
 RegisterNetEvent('ak47_qb_gangs:setgang', Lib47.RefreshGangData)
+
+RegisterNetEvent('ars_gangsystem:playerLoaded', Lib47.RefreshGangData)
+RegisterNetEvent('ars_gangsystem:client:updatePlayerGangTag', Lib47.RefreshGangData)
+RegisterNetEvent('ars_gangsystem:client:updateGangList', Lib47.RefreshGangData)
 
 exports('GetGangName', Lib47.GetGangName)
 exports('GetGangRank', Lib47.GetGangRank)
