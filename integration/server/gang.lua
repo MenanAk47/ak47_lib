@@ -134,3 +134,7 @@ end
 Lib47.Callback.Register('ak47_lib:getakganglist', function()
     return Integration.GetGangs()
 end)
+
+Lib47.Callback.Register('ak47_lib:getakgang', function(source)
+    return Integration.GetGang(source)
+end)
