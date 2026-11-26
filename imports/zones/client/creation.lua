@@ -710,21 +710,28 @@ end
 
 Lib47.Creation.Builders.PlacePed = function(model, existingData, locales, validateFn, options)
     local invokingResource = GetInvokingResource()
-    local model = model or GetEntityModel(PlayerPedId())
-    local hash = type(model) == 'string' and GetHashKey(model) or model
-    RequestModel(hash)
-    while not HasModelLoaded(hash) do Wait(0) end
-    
+    local entity = nil
     local point = nil
     local entityHeading = 0.0
 
     if existingData and existingData.x then
         point = vector3(existingData.x, existingData.y, existingData.z)
-        entityHeading = existingData.w or 0.0
+        entityHeading = existingData.w or existingData.h or existingData.heading or 0.0
     end
 
     local pedPos = point or GetEntityCoords(PlayerPedId())
-    local entity = CreatePed(4, hash, pedPos.x, pedPos.y, pedPos.z, entityHeading, false, false)
+    if model then
+        local hash = type(model) == 'string' and GetHashKey(model) or model
+        RequestModel(hash)
+        while not HasModelLoaded(hash) do Wait(0) end
+        entity = CreatePed(4, hash, pedPos.x, pedPos.y, pedPos.z, entityHeading, false, false)
+    else
+        entity = ClonePed(PlayerPedId(), false)
+        ClearPedTasksImmediately(entity)
+        SetEntityCoordsNoOffset(entity, pedPos.x, pedPos.y, pedPos.z)
+        SetEntityHeading(entity, entityHeading)
+    end
+
     if not point then 
         SetEntityCoords(entity, pedPos.x, pedPos.y, pedPos.z - 10.0) 
     end
@@ -733,16 +740,76 @@ Lib47.Creation.Builders.PlacePed = function(model, existingData, locales, valida
     SetEntityAlpha(entity, 200)
     FreezeEntityPosition(entity, true)
 
+    local animCfg = (options and type(options.anim) == 'table') and options.anim or nil
+    local animDict = animCfg and animCfg.dict or nil
+    local animClip = animCfg and animCfg.clip or nil
+    local animFlag = (animCfg and animCfg.flag) or 1
+    local animOffset = animCfg and animCfg.offset or nil
+    local animLoaded = false
+
+    if animDict and animClip then
+        RequestAnimDict(animDict)
+        local deadline = GetGameTimer() + 5000
+        while not HasAnimDictLoaded(animDict) and GetGameTimer() < deadline do
+            Wait(0)
+        end
+        animLoaded = HasAnimDictLoaded(animDict)
+    end
+
+    local function getPreviewCoords(basePoint, heading)
+        if not animOffset then return basePoint end
+        local rad = math.rad(heading)
+        local fwdX, fwdY = -math.sin(rad), math.cos(rad)
+        local rightX, rightY = math.cos(rad), math.sin(rad)
+        local ox = tonumber(animOffset.x) or 0.0
+        local oy = tonumber(animOffset.y) or 0.0
+        local oz = tonumber(animOffset.z) or 0.0
+        return vector3(
+            basePoint.x + (rightX * ox) + (fwdX * oy),
+            basePoint.y + (rightY * ox) + (fwdY * oy),
+            basePoint.z + oz
+        )
+    end
+
+    local function applyPreviewTransform(basePoint, heading)
+        if not basePoint then return end
+        if animCfg then
+            local pCoords = getPreviewCoords(basePoint, heading)
+            SetEntityCoords(entity, pCoords.x, pCoords.y, pCoords.z, false, false, false, true)
+        else
+            SetEntityCoordsNoOffset(entity, basePoint.x, basePoint.y, basePoint.z)
+        end
+        SetEntityHeading(entity, heading)
+    end
+
+    if point then
+        applyPreviewTransform(point, entityHeading)
+    end
+    if animLoaded then
+        TaskPlayAnim(entity, animDict, animClip, 8.0, -8.0, -1, animFlag, 0, false, false, false)
+    end
+
     local fwd, right, up, plyPos = GetEntityMatrix(PlayerPedId())
     local basePos = point or plyPos
-    local baseHeading = existingData and (existingData.w or existingData.heading) or GetEntityHeading(PlayerPedId())
+    local baseHeading = (existingData and (existingData.w or existingData.h or existingData.heading)) or GetEntityHeading(PlayerPedId())
     local camPos = basePos + (up * 2)
     local camRot = vector3(-35.0, 0.0, baseHeading)
     local camera = Lib47.Creation.Cam.Create("DEFAULT_SCRIPTED_CAMERA", camPos, camRot, true)
 
+    local zOffset = (options and tonumber(options.zOffset)) or (animCfg and 0.0 or 1.0)
+
     local objectiveTitle = type(locales) == 'string' and locales or (locales and (locales.title or locales.setup_point)) or L(locales, 'setup_point')
     local setPointLabel = (locales and type(locales) == 'table' and (locales.set_point or locales.title)) or L(locales, 'set_point')
     local rotateLabel = (locales and type(locales) == 'table' and locales.rotate_ped) or L(locales, 'rotate_ped')
+
+    local placementList = {
+        setPointLabel .. " <m>1<m>",
+        rotateLabel .. " <m>3<m>",
+    }
+    if animCfg or (options and options.allowZAdjust) then
+        table.insert(placementList, L(locales, 'adjust_center_z') .. " <k>PGUP<k> <k>PGDN<k>")
+    end
+    table.insert(placementList, L(locales, 'precision') .. " <k>SHIFT<k>")
 
     local navList = {}
     if options and options.canBack then
@@ -753,11 +820,7 @@ Lib47.Creation.Builders.PlacePed = function(model, existingData, locales, valida
     Lib47.ShowObjective({
         {
             Title = L(locales, 'placement'),
-            List = {
-                setPointLabel .. " <m>1<m>",
-                rotateLabel .. " <m>3<m>",
-                L(locales, 'precision') .. " <k>SHIFT<k>",
-            },
+            List = placementList,
         },
         {
             Title = L(locales, 'cam_controls'),
@@ -773,23 +836,30 @@ Lib47.Creation.Builders.PlacePed = function(model, existingData, locales, valida
         },
     }, objectiveTitle)
 
+    local function cleanup()
+        EnableAllControlActions(0)
+        Lib47.Creation.Cam.Destroy(camera)
+        if DoesEntityExist(entity) then
+            ClearPedTasksImmediately(entity)
+            DeleteEntity(entity)
+        end
+        if animDict then
+            RemoveAnimDict(animDict)
+        end
+        Lib47.HideObjective()
+    end
+
     while true do
         Wait(0)
         
         if invokingResource and GetResourceState(invokingResource) ~= 'started' then
-            EnableAllControlActions(0)
-            Lib47.Creation.Cam.Destroy(camera)
-            DeleteEntity(entity)
-            Lib47.HideObjective()
+            cleanup()
             return nil
         end
 
         -- Cancel (DEL)
         if IsDisabledControlJustPressed(0, 178) then
-            EnableAllControlActions(0)
-            Lib47.Creation.Cam.Destroy(camera)
-            DeleteEntity(entity)
-            Lib47.HideObjective()
+            cleanup()
             if options and options.returnStatus then
                 return { status = 'cancel' }
             end
@@ -798,19 +868,13 @@ Lib47.Creation.Builders.PlacePed = function(model, existingData, locales, valida
 
         -- Back (BACKSPACE)
         if options and options.canBack and IsDisabledControlJustPressed(0, 194) then
-            EnableAllControlActions(0)
-            Lib47.Creation.Cam.Destroy(camera)
-            DeleteEntity(entity)
-            Lib47.HideObjective()
+            cleanup()
             return { status = 'back', data = existingData }
         end
 
         -- Done/Place (Mouse 1)
         if IsDisabledControlJustPressed(0, 24) then
-            EnableAllControlActions(0)
-            Lib47.Creation.Cam.Destroy(camera)
-            DeleteEntity(entity)
-            Lib47.HideObjective()
+            cleanup()
             if options and options.returnStatus then
                 return { status = 'next', data = point and vector4(point.x, point.y, point.z, entityHeading) or nil }
             end
@@ -833,6 +897,16 @@ Lib47.Creation.Builders.PlacePed = function(model, existingData, locales, valida
             end
         end
 
+        -- Height offset fine-tune (PGUP / PGDN)
+        if animCfg or (options and options.allowZAdjust) then
+            local step = IsDisabledControlPressed(0, 21) and 0.01 or 0.05
+            if IsDisabledControlPressed(0, 10) then
+                zOffset = zOffset + step
+            elseif IsDisabledControlPressed(0, 11) then
+                zOffset = zOffset - step
+            end
+        end
+
         DisableAllControlActions(0)
         camPos, camRot = Lib47.Creation.Cam.HandleFlyCam(camera)
         local right, fwd, up, pos = GetCamMatrix(camera)
@@ -841,8 +915,8 @@ Lib47.Creation.Builders.PlacePed = function(model, existingData, locales, valida
         local retval, hit, endCoords, surfaceNormal, entityHit = GetShapeTestResult(rayHit)
         
         if hit ~= 0 then
-            -- Default ped Z offset is +1.0 for placement typically, or ground z
-            point = vector3(endCoords.x, endCoords.y, endCoords.z + 1.0)
+            -- Default ped Z offset is +1.0 for placement typically, or adjusted with PGUP/PGDN
+            point = vector3(endCoords.x, endCoords.y, endCoords.z + zOffset)
             
             local r, g = 0, 255
             if validateFn and not validateFn(point) then
@@ -850,11 +924,14 @@ Lib47.Creation.Builders.PlacePed = function(model, existingData, locales, valida
             end
             
             DrawLine(endCoords.x, endCoords.y, endCoords.z, endCoords.x, endCoords.y, endCoords.z + 2.0, r, g, 0, 255)
-            SetEntityCoordsNoOffset(entity, point.x, point.y, point.z)
-            SetEntityHeading(entity, entityHeading)
+            applyPreviewTransform(point, entityHeading)
             if objectiveTitle then
                 Lib47.Creation.Render.DrawText3D(vector3(endCoords.x, endCoords.y, endCoords.z + 1.2), objectiveTitle)
             end
+        end
+
+        if animLoaded and not IsEntityPlayingAnim(entity, animDict, animClip, 3) then
+            TaskPlayAnim(entity, animDict, animClip, 8.0, -8.0, -1, animFlag, 0, false, false, false)
         end
     end
 end

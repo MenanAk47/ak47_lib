@@ -272,7 +272,7 @@ Lib47.GetInventoryImageLink = function()
         return "nui://ox_inventory/web/images/"
 
     elseif Config.Inventory == 'qs-inventory' then
-        return "nui://qs-inventory/html/images/"
+        return "nui://qs-inventory/web/dist/images/"
 
     elseif Config.Inventory == 'tgiann-inventory' then
         return "nui://inventory_images/images/"
