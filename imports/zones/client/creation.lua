@@ -744,7 +744,6 @@ Lib47.Creation.Builders.PlacePed = function(model, existingData, locales, valida
     local animDict = animCfg and animCfg.dict or nil
     local animClip = animCfg and animCfg.clip or nil
     local animFlag = (animCfg and animCfg.flag) or 1
-    local animOffset = animCfg and animCfg.offset or nil
     local animLoaded = false
 
     if animDict and animClip then
@@ -756,26 +755,10 @@ Lib47.Creation.Builders.PlacePed = function(model, existingData, locales, valida
         animLoaded = HasAnimDictLoaded(animDict)
     end
 
-    local function getPreviewCoords(basePoint, heading)
-        if not animOffset then return basePoint end
-        local rad = math.rad(heading)
-        local fwdX, fwdY = -math.sin(rad), math.cos(rad)
-        local rightX, rightY = math.cos(rad), math.sin(rad)
-        local ox = tonumber(animOffset.x) or 0.0
-        local oy = tonumber(animOffset.y) or 0.0
-        local oz = tonumber(animOffset.z) or 0.0
-        return vector3(
-            basePoint.x + (rightX * ox) + (fwdX * oy),
-            basePoint.y + (rightY * ox) + (fwdY * oy),
-            basePoint.z + oz
-        )
-    end
-
     local function applyPreviewTransform(basePoint, heading)
         if not basePoint then return end
         if animCfg then
-            local pCoords = getPreviewCoords(basePoint, heading)
-            SetEntityCoords(entity, pCoords.x, pCoords.y, pCoords.z, false, false, false, true)
+            SetEntityCoords(entity, basePoint.x, basePoint.y, basePoint.z, false, false, false, true)
         else
             SetEntityCoordsNoOffset(entity, basePoint.x, basePoint.y, basePoint.z)
         end

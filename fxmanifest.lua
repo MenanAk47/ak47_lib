@@ -2,7 +2,7 @@ fx_version 'adamant'
 game 'gta5'
 description 'Ak47 Lib'
 author 'MenanAk47'
-version '2.1.3'
+version '2.1.4'
 
 ui_page 'web/index.html'
 --ui_page 'http://localhost:5173'

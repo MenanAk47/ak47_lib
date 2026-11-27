@@ -72,32 +72,45 @@ ProgressObject.__index = ProgressObject
 
 function ProgressObject:show()
     if self.active then return self end
+    if not self.data.is3d and Interface.IsProgressActive() then return self end
+
     self.active = true
     self.invoked = GetInvokingResource()
-    
+
     activeBars[self.id] = self
-    
+
     local ped = PlayerPedId()
     local data = self.data
 
     if data.prop then
         local props = data.prop
         if props.model then props = { props } end
-        
+
         for _, propData in pairs(props) do
             local model = type(propData.model) == 'number' and propData.model or GetHashKey(propData.model)
             if IsModelInCdimage(model) then
                 RequestModel(model)
-                while not HasModelLoaded(model) do Wait(0) end
+                while not HasModelLoaded(model) do
+                    if not self.active then
+                        SetModelAsNoLongerNeeded(model)
+                        return self
+                    end
+                    Wait(0)
+                end
+                if not self.active then
+                    SetModelAsNoLongerNeeded(model)
+                    return self
+                end
 
+                ped = PlayerPedId()
                 local pObj = CreateObject(model, 0.0, 0.0, 0.0, true, true, true)
                 local boneIndex = GetPedBoneIndex(ped, propData.bone or 60309)
                 local pos = propData.pos or vector3(0,0,0)
                 local rot = propData.rot or vector3(0,0,0)
-                
-                AttachEntityToEntity(pObj, ped, boneIndex, 
-                    pos.x, pos.y, pos.z, 
-                    rot.x, rot.y, rot.z, 
+
+                AttachEntityToEntity(pObj, ped, boneIndex,
+                    pos.x, pos.y, pos.z,
+                    rot.x, rot.y, rot.z,
                     true, true, false, true, propData.rotOrder or 0, true
                 )
                 SetModelAsNoLongerNeeded(model)
@@ -109,12 +122,24 @@ function ProgressObject:show()
     if data.anim then
         if data.anim.dict then
             RequestAnimDict(data.anim.dict)
-            while not HasAnimDictLoaded(data.anim.dict) do Wait(0) end
-            TaskPlayAnim(ped, data.anim.dict, data.anim.clip, 
-                data.anim.blendIn or 3.0, 
-                data.anim.blendOut or 1.0, 
-                data.anim.duration or -1, 
-                data.anim.flag or 49, 
+            while not HasAnimDictLoaded(data.anim.dict) do
+                if not self.active then
+                    RemoveAnimDict(data.anim.dict)
+                    return self
+                end
+                Wait(0)
+            end
+            if not self.active then
+                RemoveAnimDict(data.anim.dict)
+                return self
+            end
+
+            ped = PlayerPedId()
+            TaskPlayAnim(ped, data.anim.dict, data.anim.clip,
+                data.anim.blendIn or 3.0,
+                data.anim.blendOut or 1.0,
+                data.anim.duration or -1,
+                data.anim.flag or 49,
                 0, false, false, false
             )
         elseif data.anim.scenario then
@@ -123,9 +148,10 @@ function ProgressObject:show()
     end
 
     local initX, initY = 0.5, 0.5
-    local initVisible = true 
+    local initVisible = true
 
     if data.is3d then
+        ped = PlayerPedId()
         local onScreen, screenX, screenY = GetScreenCoordFromWorldCoord(data.coords.x, data.coords.y, data.coords.z)
         local dist = #(GetEntityCoords(ped) - data.coords)
         local maxDist = data.distance or 10.0
@@ -160,7 +186,7 @@ function ProgressObject:update(value)
     if not self.active then return self end
     if value < 0 then value = 0 end
     if value > 100 then value = 100 end
-    
+
     SendNUIMessage({
         action = "progressbar",
         command = "update",
@@ -170,9 +196,13 @@ function ProgressObject:update(value)
     return self
 end
 
-function ProgressObject:destroy()
+function ProgressObject:destroy(suppressCancel)
     if not self.active then return nil end
-    
+
+    if not self.completed and not suppressCancel then
+        self.cancelled = true
+    end
+
     for _, prop in pairs(self.propObjects) do
         if DoesEntityExist(prop) then
             DetachEntity(prop, true, true)
@@ -180,7 +210,7 @@ function ProgressObject:destroy()
         end
     end
     self.propObjects = {}
-    
+
     if self.data.anim then
         ClearPedTasks(PlayerPedId())
     end
@@ -200,9 +230,10 @@ end
 --                            INTERFACE / EXPORTS
 -- =========================================================================
 
-Interface.CreateProgress = function(data)
+local function createProgressInstance(data)
+    data = data or {}
     local id = data.id or GetUniqueId()
-    
+
     data.duration = data.duration or data.time or 3000
     if type(data.duration) == 'number' and data.duration > 0 and data.duration < 50 then
         data.duration = data.duration * 1000
@@ -215,12 +246,12 @@ Interface.CreateProgress = function(data)
     data.manual = data.manual == true
     data.reverse = data.reverse == true
     data.is3d = data.is3d == true
-    
+
     if data.useWhileDead == nil then data.useWhileDead = false end
     if data.allowSwimming == nil then data.allowSwimming = false end
     if data.allowFalling == nil then data.allowFalling = false end
     if data.allowRagdoll == nil then data.allowRagdoll = false end
-    
+
     if data.is3d then
         if not data.coords then data.coords = GetEntityCoords(PlayerPedId()) end
         data.distance = data.distance or 10.0
@@ -230,6 +261,8 @@ Interface.CreateProgress = function(data)
         id = id,
         data = data,
         active = false,
+        completed = false,
+        cancelled = false,
         propObjects = {},
         lastVisible = false
     }, ProgressObject)
@@ -241,38 +274,54 @@ Interface.CreateProgress = function(data)
         destroy = function(self) internalInstance:destroy() return nil end
     }
 
+    return internalInstance, publicWrapper
+end
+
+Interface.IsProgressActive = function()
+    for _, bar in pairs(activeBars) do
+        if not bar.data.is3d then
+            return true
+        end
+    end
+    return false
+end
+
+Interface.CreateProgress = function(data)
+    local _, publicWrapper = createProgressInstance(data)
     return publicWrapper
 end
 
 Interface.ShowProgress = function(data, onFinish, onCancel)
-    for _, v in pairs(activeBars) do
-        if not v.data.is3d then 
-            v:destroy()
-        end
+    data = data or {}
+    if not data.is3d and Interface.IsProgressActive() then
+        if onCancel then onCancel() end
+        return false
     end
-    
-    local bar = Interface.CreateProgress(data)
+
+    local internalInstance, bar = createProgressInstance(data)
     bar.show()
 
     CreateThread(function()
         local startTime = GetGameTimer()
         local cancelled = false
         local completed = false
-        local ped = PlayerPedId()
-        
+
         while activeBars[bar.id] do
+            local ped = PlayerPedId()
+
             if not data.manual then
                 if (GetGameTimer() - startTime) >= data.duration then
                     completed = true
+                    internalInstance.completed = true
                     break
                 end
             end
-            
-            if data.canCancel and IsControlJustPressed(0, 73) then 
+
+            if data.canCancel and IsControlJustPressed(0, 73) then
                 cancelled = true
                 break
             end
-            
+
             if data.useWhileDead == false and IsEntityDead(ped) then cancelled = true break end
             if data.allowSwimming == false and IsPedSwimming(ped) then cancelled = true break end
             if data.allowFalling == false and IsPedFalling(ped) then cancelled = true break end
@@ -307,16 +356,16 @@ Interface.ShowProgress = function(data, onFinish, onCancel)
 
             Wait(0)
         end
-        
+
         bar.destroy()
-        
-        if cancelled then
-            if onCancel then onCancel() end
-        elseif completed then
+
+        if completed then
             if onFinish then onFinish() end
+        elseif cancelled or internalInstance.cancelled then
+            if onCancel then onCancel() end
         end
     end)
-    
+
     return bar
 end
 
@@ -329,20 +378,22 @@ Interface.CancelProgress = function()
 end
 
 exports('CreateProgress', Interface.CreateProgress)
+exports('IsProgressActive', Interface.IsProgressActive)
 -- exports moved to integration
 
 Lib47.CreateProgress = Interface.CreateProgress
+Lib47.IsProgressActive = Interface.IsProgressActive
 
 AddEventHandler('onResourceStop', function(resourceName)
     if resourceName == GetCurrentResourceName() then
         for i, v in pairs(activeBars) do
-            v:destroy()
+            v:destroy(true)
         end
         activeBars = {}
     else
         for i, v in pairs(activeBars) do
             if v.invoked == resourceName then
-                v:destroy()
+                v:destroy(true)
             end
         end
     end
