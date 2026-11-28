@@ -47,6 +47,7 @@ end)
 
 RegisterNetEvent('esx:setJob', function(job)
     if not job or not job.name then return end
+    if not Lib47.PlayerData then return end
     Lib47.PlayerData.job = Functions.FormatJobData(job)
     TriggerEvent('ak47_lib:OnJobUpdate', Lib47.PlayerData.job)
 end)
